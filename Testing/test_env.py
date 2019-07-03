@@ -9,10 +9,14 @@ action_space = env.action_space.n
 
 env.reset()
 
+print(env.observation_space)
+print(type(env.observation_space))
 while True:
 
     env.render()
     state_next, reward, terminal, info = env.step(0)
+
+    print(state_next)
     
     if terminal:
-        env.reset
+        env.reset()
