@@ -23,10 +23,11 @@ import numpy as np
 S_WIDTH = 640
 S_HEIGHT = 480
 
+
 ARM_ANGLE = 30
 ARM_LENGTH = 50
 
-N_JOINTS = 5
+N_JOINTS = 0
 
 N_OBJECTIVES = 1
 
@@ -52,13 +53,27 @@ class SimpleEnv(gym.Env):
         self.action_space = spaces.MultiDiscrete((N_JOINTS+1)*[3])
         #self.observation_space = spaces.
         
-        print(self.action_space)
+        centre_x = round(S_WIDTH/2)
+        centre_y = round(S_HEIGHT/2)
+
         #Initialise the default single arm
-        self.arm = Arm(S_WIDTH/2,S_HEIGHT/2,ARM_ANGLE,ARM_LENGTH)
+        self.arm = Arm(centre_x,S_HEIGHT/2,ARM_ANGLE,ARM_LENGTH)
         self.arms = [self.arm]
 
         self.max_radius = (N_JOINTS)*ARM_LENGTH
 
+        arcpos = random.uniform(0,1)*2*math.pi
+        #If we have more than one joint, the circle must be on the radius
+        #Otherwise it can lie anywhere from 0 to the max dist
+        #TODO bound to screen
+        if(N_JOINTS > 0):
+            rad = ARM_LENGTH*N_JOINTS*random.uniform(0,1)
+            self.ob_x = centre_x + round(rad*math.cos(arcpos))
+            self.ob_y = centre_y + round(rad*math.sin(arcpos))
+        else:
+            self.ob_x = centre_x +round(ARM_LENGTH*math.cos(arcpos))
+            self.ob_y = centre_y +round(ARM_LENGTH*math.sin(arcpos))
+        
         
         #Intialise the extra arms
         for i in range(1,N_JOINTS+1):
@@ -71,7 +86,6 @@ class SimpleEnv(gym.Env):
         l_bounds = np.array([0]*(N_JOINTS+1) + [0] * (N_OBJECTIVES*2))
         h_bounds = np.array([2*math.pi]*(N_JOINTS+1)+[S_WIDTH,S_HEIGHT]*N_OBJECTIVES)
         
-
         self.action_space = spaces.Discrete(2)
         self.observation_space = spaces.Box(l_bounds, h_bounds, dtype=np.float32)
 
@@ -97,9 +111,7 @@ class SimpleEnv(gym.Env):
             pygame.init()
         self.screen.fill((255,255,255))
 
-
-
-
+        #Render joints ontop of arms
         for arm in self.arms:
             arm.render_arm(self.screen)
         for arm in self.arms:
@@ -107,16 +119,19 @@ class SimpleEnv(gym.Env):
 
         #Draw the center circle
         pygame.draw.circle(self.screen,(0,0,255),(S_WIDTH//2, S_HEIGHT//2),5)
-
-
+        
+        pygame.draw.circle(self.screen,(70,30,255), (self.ob_x, self.ob_y), 10)
         pygame.display.update()
 
-
+class Objective:
+    ...
 
 class Arm:
     '''
-    Basic class for an arm defined by the start x,y, angle in rads and
-    length of the arm
+    Basic class for an arm defined by:
+        x,y start position
+        angle in rads
+        length of the arm
     '''
     def __init__(self, x, y, angle, length):
         self.x = x
