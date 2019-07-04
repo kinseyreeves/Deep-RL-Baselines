@@ -20,16 +20,28 @@ import numpy as np
 
 #Paramaters
 
-S_WIDTH = 640
-S_HEIGHT = 480
+#Screen width/height
+S_WIDTH = 400
+S_HEIGHT = 300
 
-
-ARM_ANGLE = 30
+#Arm params
+ARM_ANGLE = 0
 ARM_LENGTH = 50
 
-N_JOINTS = 0
+N_JOINTS = 2
 
+#Number of objectives, TODO able to change
 N_OBJECTIVES = 1
+
+#Whether or not the arm movements are relative. Read step()
+RELATIVE = False
+
+#Radians change per step() action, i.e. [-1,0,1] each change
+#either -.1, 0 or .1 rads of the arm
+ARM_RADS_CHANGE = 0.1
+
+#Distance before goal is considered reached
+DIST_THRESH = 80
 
 
 
@@ -57,11 +69,21 @@ class SimpleEnv(gym.Env):
         centre_y = round(S_HEIGHT/2)
 
         #Initialise the default single arm
-        self.arm = Arm(centre_x,S_HEIGHT/2,ARM_ANGLE,ARM_LENGTH)
+        self.arm = Arm(centre_x,S_HEIGHT/2,ARM_ANGLE,ARM_LENGTH, None)
         self.arms = [self.arm]
 
-        self.max_radius = (N_JOINTS)*ARM_LENGTH
+        #self.max_radius = (N_JOINTS)*ARM_LENGTH
 
+        #Intialise the extra arms
+        for i in range(1,N_JOINTS+1):
+            prev_arm = self.arms[i-1]
+            (p_x, p_y) = prev_arm.getEnd()
+            new_arm = Arm(p_x, p_y, random.uniform(0,3.14), ARM_LENGTH, prev_arm)
+            self.arms.append(new_arm)
+
+        self.end_arm = self.arms[-1]
+
+        #Intialise the objective
         arcpos = random.uniform(0,1)*2*math.pi
         #If we have more than one joint, the circle must be on the radius
         #Otherwise it can lie anywhere from 0 to the max dist
@@ -73,14 +95,6 @@ class SimpleEnv(gym.Env):
         else:
             self.ob_x = centre_x +round(ARM_LENGTH*math.cos(arcpos))
             self.ob_y = centre_y +round(ARM_LENGTH*math.sin(arcpos))
-        
-        
-        #Intialise the extra arms
-        for i in range(1,N_JOINTS+1):
-            prev_arm = self.arms[i-1]
-            (p_x, p_y) = prev_arm.getEnd()
-            new_arm = Arm(p_x, p_y, random.uniform(0,3.14), 50)
-            self.arms.append(new_arm)
 
         #Observation space [Joint angles ... , objective1x, ob1y]
         l_bounds = np.array([0]*(N_JOINTS+1) + [0] * (N_OBJECTIVES*2))
@@ -92,12 +106,49 @@ class SimpleEnv(gym.Env):
 
     def step(self, action):
         '''
-        TODO:
-            should we represent arm actions as angles 
-            or movements from the current angle?
-
+        Arms relative angle change or global angle change?
+        if RELATIVE is set, an arms global angle will be 
+        additive of the previous arms. e.g. the first arms
+        angle will affect the global angle of all following
+        arms. If RELATIVE is False, a former arm will not
+        result in latter arms global angles being changed
         '''
-        ...
+        def update_arms(zip_changes, dtheta):
+            for _, arm in zip_changes:
+                arm.move_arm(dtheta)
+
+        reward = 0
+        #Testing
+        action = [-1,0,1]
+
+
+        #Update each angle either pos, neg or nil
+        action_arms = list(zip(action,self.arms))
+
+        if(RELATIVE):
+            for action, arm in action_arms:
+                arm.move_arm(action)
+        else:
+            for i in range(0,len(action_arms)):
+                change = action_arms[i][0]
+                arm = action_arms[i][1]
+                if(change):
+                    arm.move_arm(change)
+                    update_arms(action_arms[i+1:], change)
+
+        #check distance from goal of end arm, if less than thresh episode done
+        if(math.hypot(self.end_arm.endX-self.ob_x,
+             self.end_arm.endY - self.ob_y) < DIST_THRESH):
+
+             done=True
+             reward = 100
+        
+        #Reward 
+
+        state = [arm.angle for arm in self.arms] + [self.ob_x, self.ob_y]
+        
+        return np.array(state), reward, done, {}
+
 
 
     def reset(self):
@@ -120,9 +171,11 @@ class SimpleEnv(gym.Env):
         #Draw the center circle
         pygame.draw.circle(self.screen,(0,0,255),(S_WIDTH//2, S_HEIGHT//2),5)
         
+        #draw the objective
         pygame.draw.circle(self.screen,(70,30,255), (self.ob_x, self.ob_y), 10)
         pygame.display.update()
 
+#TODO
 class Objective:
     ...
 
@@ -132,16 +185,20 @@ class Arm:
         x,y start position
         angle in rads
         length of the arm
+        the preceeding arm
     '''
-    def __init__(self, x, y, angle, length):
+    def __init__(self, x, y, angle, length, prev_arm):
         self.x = x
         self.y = y
         self.length = length
         self.origin = (x,y)
+        #Angle in rads
         self.angle = angle
         self.endX = math.cos(self.angle)*length + x
         self.endY = math.sin(self.angle)*length + y
         self.end = (self.endX, self.endY)
+
+        self.prev_arm = prev_arm
 
     def render_arm(self,screen):
         '''
@@ -173,11 +230,26 @@ class Arm:
         self.angle = self.angle + rads
         self.update()
 
+
+    def move_arm(self,dir):
+        '''
+        Moves the arm by defined angle in params
+
+        '''
+        dtheta = dir*ARM_RADS_CHANGE
+        self.angle+=dtheta
+        self.update()
+
     def update(self):
+        
+        if(self.prev_arm):
+            self.origin = self.prev_arm.end
+            self.x = self.prev_arm.endX
+            self.y = self.prev_arm.endY
+
         self.endX = math.cos(self.angle)*self.length + self.x
         self.endY = math.sin(self.angle)*self.length + self.y
         self.end = (self.endX, self.endY)
-
 
     def getAngle(self):
         return self.angle
