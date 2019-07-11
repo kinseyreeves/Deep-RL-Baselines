@@ -22,11 +22,10 @@ import time
 
 #TODO Add periodic target network update
 
-#PARAMS::
 
 #number of experiences of (s, a, r, s') in memory
-MEMORY_SIZE = 1000
-BATCH_SIZE = 30
+MEMORY_SIZE = 100
+BATCH_SIZE = 500
 
 TRAINING_EPISODES = 1000
 
@@ -37,7 +36,7 @@ EPSILON_MIN = 0.01
 EPSILON_DECAY = 0.995
 
 #Number of episodes until we copy our target network to our 
-TARGET_UPDATE_EPISODES = 100
+TARGET_UPDATE_EPISODES = 5
 
 Training = False
 
@@ -110,14 +109,14 @@ class DQN:
             if(terminal):
                 new_q = reward
             else:
-                new_q = (reward + GAMMA * np.amax(target_Q_network.predict(state_next)[0]))
+                new_q = (reward + GAMMA * np.amax(self.target_Q_network.predict(state_next)[0]))
 
             start = time.time()
             
             q_vals = self.target_Q_network.predict(state)
 
             q_vals[0][action] = new_q
-            print(q_vals)
+            #print(q_vals)
             
             start = time.time()
             self.Q_network.fit(state, q_vals, verbose=0)
@@ -160,6 +159,10 @@ def train_DQN():
 
             episode+=1
 
+            if(episode % TARGET_UPDATE_EPISODES==0):
+                print("copying network")
+                dqn.copy_network()
+
             if(episode%20==0 and episode >1):
                 dqn.save()
                 print("saving model")
@@ -184,7 +187,7 @@ def train_DQN():
                 state = state_next
 
                 if(terminal):
-                    print("Failed : steps upright" + step)
+                    print("Failed : steps upright" + str(step))
                     break
 
                 #Learn from our minibatches
@@ -192,6 +195,9 @@ def train_DQN():
 
 
 def test():
+    '''
+    Function to test the algorithm. Set hyperparameter TRAINING = False
+    '''
     env = gym.make("CartPole-v0")
     observation_space = env.observation_space.shape[0]
     action_space = env.action_space.n
