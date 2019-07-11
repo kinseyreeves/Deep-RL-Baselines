@@ -1,5 +1,5 @@
 '''
-Simple environment as 1st prototype
+N-Jointed arm environment
 Author : Kinsey Reeves
 Goal:
     N-Jointed arm touches each point with its tip, 
@@ -26,9 +26,9 @@ S_HEIGHT = 300
 
 #Arm params
 ARM_ANGLE = 0
-ARM_LENGTH = 50
+ARM_LENGTH = 40
 
-N_JOINTS = 2
+N_JOINTS = 5
 
 #Number of objectives, TODO able to change
 N_OBJECTIVES = 1
@@ -43,9 +43,12 @@ ARM_RADS_CHANGE = 0.1
 #Distance before goal is considered reached
 DIST_THRESH = 80
 
+#Reward for reaching objective
+END_REWARD = 500
 
 
-class SimpleEnv(gym.Env):
+
+class NJointArm(gym.Env):
     '''
     N-Jointed Arm environment. Currently goal is to reach point destinations
         - May update to have destinations moving towards object
@@ -65,11 +68,11 @@ class SimpleEnv(gym.Env):
         self.action_space = spaces.MultiDiscrete((N_JOINTS+1)*[3])
         #self.observation_space = spaces.
         
-        centre_x = round(S_WIDTH/2)
-        centre_y = round(S_HEIGHT/2)
+        self.centre_x = round(S_WIDTH/2)
+        self.centre_y = round(S_HEIGHT/2)
 
         #Initialise the default single arm
-        self.arm = Arm(centre_x,S_HEIGHT/2,ARM_ANGLE,ARM_LENGTH, None)
+        self.arm = Arm(self.centre_x,S_HEIGHT/2,ARM_ANGLE,ARM_LENGTH, None)
         self.arms = [self.arm]
 
         #self.max_radius = (N_JOINTS)*ARM_LENGTH
@@ -78,23 +81,12 @@ class SimpleEnv(gym.Env):
         for i in range(1,N_JOINTS+1):
             prev_arm = self.arms[i-1]
             (p_x, p_y) = prev_arm.getEnd()
-            new_arm = Arm(p_x, p_y, random.uniform(0,3.14), ARM_LENGTH, prev_arm)
+            new_arm = Arm(p_x, p_y, random.uniform(0,2*3.14), ARM_LENGTH, prev_arm)
             self.arms.append(new_arm)
 
         self.end_arm = self.arms[-1]
 
-        #Intialise the objective
-        arcpos = random.uniform(0,1)*2*math.pi
-        #If we have more than one joint, the circle must be on the radius
-        #Otherwise it can lie anywhere from 0 to the max dist
-        #TODO bound to screen
-        if(N_JOINTS > 0):
-            rad = ARM_LENGTH*N_JOINTS*random.uniform(0,1)
-            self.ob_x = centre_x + round(rad*math.cos(arcpos))
-            self.ob_y = centre_y + round(rad*math.sin(arcpos))
-        else:
-            self.ob_x = centre_x +round(ARM_LENGTH*math.cos(arcpos))
-            self.ob_y = centre_y +round(ARM_LENGTH*math.sin(arcpos))
+        self.reset_objective()
 
         #Observation space [Joint angles ... , objective1x, ob1y]
         l_bounds = np.array([0]*(N_JOINTS+1) + [0] * (N_OBJECTIVES*2))
@@ -117,9 +109,11 @@ class SimpleEnv(gym.Env):
             for _, arm in zip_changes:
                 arm.move_arm(dtheta)
 
+        done = False
+
         reward = 0
         #Testing
-        action = [-1,0,1]
+        action = [1]*(N_JOINTS+1)
 
 
         #Update each angle either pos, neg or nil
@@ -141,7 +135,7 @@ class SimpleEnv(gym.Env):
              self.end_arm.endY - self.ob_y) < DIST_THRESH):
 
              done=True
-             reward = 100
+             reward += END_REWARD
         
         #Reward 
 
@@ -152,7 +146,15 @@ class SimpleEnv(gym.Env):
 
 
     def reset(self):
-        ...
+        for arm in self.arms:
+            arm.setAngle(random.uniform(0,2*3.14))
+
+        self.reset_objective()
+
+        
+
+
+
     def render(self, mode='human', close=False):
 
         #If screen isnt initiated, initiate it, fill it white
@@ -175,9 +177,24 @@ class SimpleEnv(gym.Env):
         pygame.draw.circle(self.screen,(70,30,255), (self.ob_x, self.ob_y), 10)
         pygame.display.update()
 
-#TODO
-class Objective:
-    ...
+
+    def reset_objective(self):
+        '''
+        Initialises the objective
+        '''
+        #Intialise the objective
+        arcpos = random.uniform(0,1)*2*math.pi
+        #If we have more than one joint, the circle must be on the radius
+        #Otherwise it can lie anywhere from 0 to the max dist
+        #TODO bound to screen
+        if(N_JOINTS > 0):
+            rad = ARM_LENGTH*N_JOINTS*random.uniform(0,1)
+            self.ob_x = self.centre_x + round(rad*math.cos(arcpos))
+            self.ob_y = self.centre_y + round(rad*math.sin(arcpos))
+        else:
+            self.ob_x = self.centre_x +round(ARM_LENGTH*math.cos(arcpos))
+            self.ob_y = self.centre_y +round(ARM_LENGTH*math.sin(arcpos))
+
 
 class Arm:
     '''
