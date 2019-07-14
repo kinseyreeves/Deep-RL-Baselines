@@ -26,7 +26,11 @@ Algorithms implemented:
 
 - Deep Q Learning
 
-TODO
-    - Recurrent Q-Learning
+TODO 
+    - DQN
+        - Double Q-Learning
     - A2C
     - Double Q-Learning
+    - PPO
+    - TRPO?
+    - 
