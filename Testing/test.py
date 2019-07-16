@@ -1,5 +1,5 @@
 import gym
-import n_joints
+import gym_scalable
 
 
 env = gym.make('n-joints-v0')

@@ -17,30 +17,42 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.optimizers import Adam
+
+
 import time
 
 
-#TODO Add periodic target network update
 
 
 #number of experiences of (s, a, r, s') in memory
-MEMORY_SIZE = 100
-BATCH_SIZE = 500
+MEMORY_SIZE = 1000000
+BATCH_SIZE = 20
 
 TRAINING_EPISODES = 1000
 
-MAX_EP_STEPS = 800
+LEARNING_RATE = 0.001
+
+MAX_EP_STEPS = 8000
 
 EPSILON_MAX = 1.0
 EPSILON_MIN = 0.01
 EPSILON_DECAY = 0.995
 
 #Number of episodes until we copy our target network to our 
-TARGET_UPDATE_EPISODES = 5
+TARGET_UPDATE_EPISODES = 30
+
+#Whether to use interval target updates
+TNET_UPDATE = False
 
 Training = False
 
 SAVING = True
+
+
+
 
 GAMMA = 0.95
 
@@ -76,17 +88,17 @@ class DQN:
 
         #Generate the target and Q networks.
         self.Q_network = self.generate_model()
-        self.target_Q_network = self.generate_model()
+        #self.target_Q_network = self.generate_model()
         
 
     def generate_model(self):
         model = tf.keras.Sequential([
-            tf.keras.layers.Dense(24,input_shape=(self.observation_space,)),
+            tf.keras.layers.Dense(24,input_shape=(self.observation_space,),activation=tf.nn.relu),
             tf.keras.layers.Dense(24, activation=tf.nn.relu),
             tf.keras.layers.Dense(self.action_space, activation=keras.activations.linear)
             ])
-        model.compile(optimizer='adam', 
-              loss='mean_squared_error',
+        model.compile(optimizer=tf.keras.optimizers.Adam(LEARNING_RATE), 
+              loss="mse",
               metrics=['accuracy'])
 
         return model
@@ -94,8 +106,9 @@ class DQN:
     def get_action(self, state):
         
         if Training and np.random.rand() < self.epsilon:
-            return random.randrange(0,1)
-        return np.argmax(self.target_Q_network.predict(state)[0])
+            return random.randrange(self.action_space)
+        
+        return np.argmax(self.Q_network.predict(state)[0])
 
     def learn(self):
         
@@ -106,46 +119,47 @@ class DQN:
         batch = self.memory.sample(BATCH_SIZE)
         for state, action, reward, state_next, terminal in batch:
             
-            if(terminal):
-                new_q = reward
-            else:
-                new_q = (reward + GAMMA * np.amax(self.target_Q_network.predict(state_next)[0]))
+            
+            new_q = reward
+            if not terminal:
+                new_q = (reward + GAMMA * np.amax(self.Q_network.predict(state_next)[0]))
 
             start = time.time()
             
-            q_vals = self.target_Q_network.predict(state)
-
+            q_vals = self.Q_network.predict(state)
             q_vals[0][action] = new_q
-            #print(q_vals)
             
             start = time.time()
             self.Q_network.fit(state, q_vals, verbose=0)
             #print("fit : " + str(time.time() - start))
 
+        #print(self.epsilon)
         self.epsilon *= EPSILON_DECAY
         self.epsilon = max(EPSILON_MIN, self.epsilon)
+        #print(self.epsilon)
 
     def copy_network(self):
         '''
         Copies from the Q network to the target network.
         '''
-        self.target_Q_network = tf.keras.models.clone_model(self.Q_network)
+        #if(TNET_UPDATE):
+            #self.target_Q_network = tf.keras.models.clone_model(self.Q_network)
 
     def save(self):
         if(SAVING):
-            self.target_Q_network.save(MODEL_FILENAME)
+            self.Q_network.save(MODEL_FILENAME)
 
 
 def train_DQN():
     '''
     Main training loop
     '''
-    env = gym.make("CartPole-v0")
+    env = gym.make("CartPole-v1")
     observation_space = env.observation_space.shape[0]
     action_space = env.action_space.n
     #print(observation_space, action_space)
     memory = ReplayMemory(MEMORY_SIZE)
-    dqn = DQN(observation_space, action_space, memory,0)
+    dqn = DQN(observation_space, action_space, memory,EPSILON_MAX)
 
     
     with tf.Session() as sess:
