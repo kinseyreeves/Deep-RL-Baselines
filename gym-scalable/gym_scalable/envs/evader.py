@@ -1,4 +1,3 @@
-
 import gym
 from gym import error, spaces, utils
 from gym.utils import seeding
@@ -12,34 +11,23 @@ import numpy as np
 S_WIDTH = 500
 S_HEIGHT = 480
 
+N_EVADERS = 1
 
-class Chasers(gym.Env):
-    '''
-    N-Chasers M-Evaders problem.
-    For simplicity we will start with 1 chaser and 1 simple evader.
-    The evader will have evade by going towards a distance maximising
-    position.
+
+class Evader():
     
-        - 
-
-        Action space:
-            N-Chasers * 3
-                Turn clockw, anticw, and dont turn
-        
-        Observation space:
-            Position of self, position of all chasers
-    '''
     metadata = {'render.modes': ['human']}
 
     def __init__(self):
         self.screen = None
         #Action space initialised to [-1,0,1] for each joint
-        self.action_space = spaces.MultiDiscrete((N_CHASERS)*[3])
+        self.action_space = spaces.MultiDiscrete((N_EVADERS)*[3])
         #self.observation_space = spaces.
         
         self.centre_x = round(S_WIDTH/2)
         self.centre_y = round(S_HEIGHT/2)
 
+        #observation space = [self.x, self.y, enemy.x, enemy.y]
         self.observation_space = spaces.Box(l_bounds, h_bounds, dtype=np.float32)
 
 
@@ -74,19 +62,9 @@ class Chasers(gym.Env):
         '''
         ...
 
-class Mover:
-    
+
+class Evader:
+
     def __init__(x, y):
-        ...
-    def render():
-        ...
-
-    def collides(enemy):
-        ...
-
-class Chaser(Mover):
-    ...
-
-class Evader(Mover):
-    ...
-
+        self.x = x
+        self.y = y

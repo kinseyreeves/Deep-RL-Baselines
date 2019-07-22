@@ -1,5 +1,5 @@
 '''
-Cartpole Cross Entropy
+N-Jointed arm Cross Entropy
 Author : Kinsey Reeves
 
 Cross entropy deep RL algorithm.
@@ -14,6 +14,10 @@ import numpy as np
 import tensorflow as tf
 
 from collections import namedtuple
+
+import gym_scalable
+
+
 
 HIDDEN_SIZE = 64
 EPISODE_N = 16
@@ -31,6 +35,7 @@ Episode = namedtuple('Episode', field_names=['reward', 'steps'])
 class Model:
 
     def __init__(self, observation_size, action_size):
+        self.action_size = action_size
         self.model=tf.keras.Sequential([
             tf.keras.layers.Dense(HIDDEN_SIZE, activation = 'relu', input_dim = observation_size),
             tf.keras.layers.Dense(action_size, activation = 'softmax')
@@ -43,14 +48,16 @@ class Model:
         action_probabilities = self.model.predict(np.asarray([state]), verbose=0)
         print("ap")
         print(action_probabilities)
-        action = np.random.choice(len(action_probabilities[0]), p=action_probabilities[0])
-        print(action)
-        return action
+        a = input()
+        action =  np.random.choice(len(action_probabilities[0]), p=action_probabilities[0])
+        vec = np.zeros(self.action_size)
+        vec[action] = 1
+        return vec
 
     def train(self, train_observations, train_actions):
         self.model.fit(train_observations, train_actions, epochs=EPOCH_N, verbose=0)
 
-def run_episode(env, network, render=False):
+def run_episode(env, network, render=True):
     '''
     Runs a single episode and returns the steps taken and the
     reward as an Episode tuple
@@ -60,7 +67,7 @@ def run_episode(env, network, render=False):
     ep_steps = []
 
     state = env.reset()
-
+    
     terminal = False
 
     while not terminal:
@@ -68,14 +75,18 @@ def run_episode(env, network, render=False):
             env.render()
 
         action = network.get_action(state)
+
         next_state, reward, is_terminal, _ = env.step(action)
         total_reward += reward
         ep_steps.append(EpisodeStep(observation = state, action = action))
         terminal = is_terminal
 
         state = next_state
+        print(state)
+        print(action)
     
     print(total_reward)
+    print("here1")
 
     return Episode(steps = ep_steps, reward = total_reward)
 
@@ -91,8 +102,6 @@ def cull_episodes(batch):
     train_states = []
     train_actions = []
 
-    print(rewards)
-    
     reward_mean = float(np.mean(rewards))
     for episode in batch:
         #if the episodes rewad is less than the perctile,
@@ -103,11 +112,13 @@ def cull_episodes(batch):
         train_states.extend([step.observation for step in episode.steps])
         train_actions.extend([step.action for step in episode.steps])
 
+
     return train_states, train_actions, reward_mean
 
 def run():
 
-    env = gym.make("CartPole-v1")
+    env = gym.make('n-joints-v0')
+    #env = gym.make("CartPole-v1")
     observation_space = env.observation_space.shape[0]
     action_space = env.action_space.n
 
@@ -118,7 +129,7 @@ def run():
         for _ in range(EPISODE_N):
             new_ep = run_episode(env,network)
             all_eps.append(new_ep)
-        
+        print("here2")
         states, actions, rw_mean = cull_episodes(all_eps)
 
         network.train(np.asarray(states), np.asarray(actions))
