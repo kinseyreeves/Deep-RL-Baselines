@@ -46,9 +46,9 @@ class Model:
 
     def get_action(self, state):
         action_probabilities = self.model.predict(np.asarray([state]), verbose=0)
-        print("ap")
-        print(action_probabilities)
-        a = input()
+        # print("ap")
+        # print(action_probabilities)
+        # a = input()
         action =  np.random.choice(len(action_probabilities[0]), p=action_probabilities[0])
         vec = np.zeros(self.action_size)
         vec[action] = 1

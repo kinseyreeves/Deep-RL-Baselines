@@ -3,7 +3,6 @@ import gym_scalable
 import random
 import numpy as np
 
-
 env = gym.make('n-joints-v0')
 i=0
 
