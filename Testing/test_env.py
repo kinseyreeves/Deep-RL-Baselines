@@ -16,7 +16,9 @@ while True:
     env.render()
     state_next, reward, terminal, info = env.step(0)
 
-    print(state_next)
+    print(reward)
     
     if terminal:
+        print(reward)
+        print("here")
         env.reset()

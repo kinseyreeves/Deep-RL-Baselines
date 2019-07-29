@@ -9,13 +9,14 @@ implements :
     - Periodic updating of target Q network from the training network
 '''
 
+import gym_scalable
 import gym
 import numpy as np
 import tensorflow as tf
 
 from collections import namedtuple
 
-HIDDEN_SIZE = 64
+HIDDEN_SIZE = 128
 EPISODE_N = 16
 
 PERCENTILE = 70
@@ -40,11 +41,17 @@ class Model:
                            metrics=['accuracy'])
 
     def get_action(self, state):
+        #print("state " , state)
+        #a = input()
         action_probabilities = self.model.predict(np.asarray([state]), verbose=0)
         #print("ap")
         #print(action_probabilities)
         action = np.random.choice(len(action_probabilities[0]), p=action_probabilities[0])
+        
+        
         #print(action)
+        
+        #a = input()
         return action
 
     def train(self, train_observations, train_actions):
@@ -68,13 +75,18 @@ def run_episode(env, network, render=False):
             env.render()
 
         action = network.get_action(state)
+        #print(action)
         next_state, reward, is_terminal, _ = env.step(action)
+
+
         total_reward += reward
         ep_steps.append(EpisodeStep(observation = state, action = action))
         terminal = is_terminal
 
         state = next_state
     
+    #print(total_reward)
+
     return Episode(steps = ep_steps, reward = total_reward)
 
 def cull_episodes(batch):
@@ -89,7 +101,7 @@ def cull_episodes(batch):
     train_states = []
     train_actions = []
 
-    #print(rewards)
+    print(rewards)
     
     reward_mean = float(np.mean(rewards))
     for episode in batch:
@@ -105,23 +117,30 @@ def cull_episodes(batch):
 
 def run():
 
-    env = gym.make("CartPole-v1")
+    env = gym.make('n-evaders-v0')
     observation_space = env.observation_space.shape[0]
     action_space = env.action_space.n
+    #print(observation_space.n)
+    #print(action_space)
+    #exit(0)
+    #print(observation_space)
+
+    
 
     network = Model(observation_space, action_space)
+    
     rw_mean = 0
-    while True and rw_mean < 400:
+    while True:
         all_eps = []
         for _ in range(EPISODE_N):
             new_ep = run_episode(env,network)
             all_eps.append(new_ep)
-        
+        #exit(0)
         states, actions, rw_mean = cull_episodes(all_eps)
 
         network.train(np.asarray(states), np.asarray(actions))
 
-        print(f"training.. mean reward: {rw_mean}")
+        print(f"training.. mean episode reward: {rw_mean}")
     
     state = env.reset()
 
@@ -135,7 +154,6 @@ def run():
             env.reset()
 
         state = next_state
-            
 
 run()
 

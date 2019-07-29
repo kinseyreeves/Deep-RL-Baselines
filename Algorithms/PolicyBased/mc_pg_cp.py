@@ -5,7 +5,6 @@
 #TODO convert tf to keras https://gist.github.com/calclavia/cfcd41ad4e47d7b9b6ab8af15410747a
 
 
-
 import tensorflow as tf
 import numpy as np
 import gym

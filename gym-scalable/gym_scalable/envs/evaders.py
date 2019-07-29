@@ -1,3 +1,11 @@
+'''
+Evader environment
+Author : Kinsey Reeves
+Goal:
+    Evade the chaser as long as possible
+'''
+
+
 import gym
 from gym import error, spaces, utils
 from gym.utils import seeding
@@ -6,7 +14,7 @@ import pygame
 import math
 import random
 import time
-
+from gym_scalable.envs import utils
 import numpy as np
 
 S_WIDTH = 500
@@ -17,12 +25,12 @@ N_EVADERS = 1
 #minimum chaser/evader angle change
 DTHETA = 0.2
 
-CHASER_SPEED = 1.5
+CHASER_SPEED = 3
 
-EVADER_SPEED = 4
-MAX_SCORE = 100
+EVADER_SPEED = 6
+MAX_SCORE = 200
 
-CAUGHT_DIST = 100
+CAUGHT_DIST = 20
 
 
 class EvadersEnv(gym.Env):
@@ -41,17 +49,22 @@ class EvadersEnv(gym.Env):
         self.screen = None
         #Action space initialised to [-1,0,1] for each joint
         self.action_space = spaces.Discrete(2)
-        self.observation_space = None
+
+        #TODO should we normalize or use int vals?
+        high = np.array([1, 1, 1, 1, 1])
+        low = np.array([0,0,0,0,0])
+
+        self.observation_space = spaces.Box(low = low, high = high, dtype = np.float32)
         
         self.centre_x = round(S_WIDTH/2)
         self.centre_y = round(S_HEIGHT/2)
         self.steps = 0
         self.reward = 0
-    
+        self.done = False
         self.evader = Evader(self.centre_x, self.centre_y)
         self.chaser = Chaser(random.randrange(0,S_WIDTH), random.randrange(0,S_WIDTH))
 
-        self.observation, self.reward, self.done, _ = self.reset()
+        self.state = self.reset()
         
         #observation space = [self.x, self.y, enemy.x, enemy.y]
         #self.observation_space = spaces.Box(l_bounds, h_bounds, dtype=np.float32)
@@ -62,28 +75,42 @@ class EvadersEnv(gym.Env):
         self.chaser.update((self.evader.x, self.evader.y))
         
         self.steps += 1
-        self.reward +=1
+        self.reward = 1
+        
 
-        self.state = [self.evader.x, self.evader.y, self.chaser.x, self.chaser.y]
+        self.set_state()
 
         if out_of_bounds((self.evader.x, self.evader.y)) or \
-                self.evader.is_caught((self.evader.x, self.evader.y)):
-            self.reward = -100
+                self.evader.is_caught((self.chaser.x, self.chaser.y)):
+            
+            #self.reward = -100 + self.reward
             self.done = True
             return np.array(self.state), self.reward, self.done, {}
         
-        if(self.reward >= MAX_SCORE):
+        if(self.steps >= MAX_SCORE):
+            
             self.done = True
-            return np.array(state), self.reward, self.done, {}
+            return np.array(self.state), self.reward, self.done, {}
         
         return np.array(self.state), self.reward, self.done, {}
 
+    def set_state(self):
 
+        self.state = [utils.normalize(self.evader.angle,0,2*math.pi), 
+                        utils.normalize(self.evader.x, 0, S_WIDTH),
+                        utils.normalize(self.evader.y, 0, S_HEIGHT),
+                        utils.normalize(self.chaser.x, 0, S_WIDTH),
+                        utils.normalize(self.chaser.y, 0, S_HEIGHT)]
+    
     def reset(self):
-        self.state = [self.evader.x, self.evader.y, self.chaser.x, self.evader.y]
+        
         self.reward = 0
         self.steps = 0
         self.done = False
+        self.evader = Evader(self.centre_x, self.centre_y)
+        self.chaser = Chaser(random.randrange(0,S_WIDTH), random.randrange(0,S_WIDTH))
+
+        self.set_state()
 
         return np.array(self.state)
 
@@ -116,6 +143,7 @@ def out_of_bounds(pos):
     return False
 
 class Entity:
+    #Basic class for defining circle object
     def __init__(self, x, y,color):
 
         self.x = x
@@ -130,14 +158,14 @@ class Entity:
 
 
 class Evader(Entity):
-
+    #evader class, moves away from the chaser
     def __init__(self, x, y):
         color = (255,0,0)
         super().__init__(x,y,color)
     
     def update(self,action):
         #clockwise
-        print(self.angle)
+        #print(self.angle)
         if(action):
             self.angle += DTHETA
         else:
@@ -147,6 +175,7 @@ class Evader(Entity):
 
         self.x += dx
         self.y += dy
+        self.angle = utils.clamp_angle(self.angle)
 
     def is_caught(self,chaser_pos):
         c_x, c_y = chaser_pos
@@ -157,6 +186,9 @@ class Evader(Entity):
         
     
 class Chaser(Entity):
+    '''
+    Chaser class, moves towards the evader
+    '''
     def __init__(self, x, y):
         color = (0,255,0)
         super().__init__(x,y,color)
@@ -168,20 +200,13 @@ class Chaser(Entity):
         ev_x, ev_y = ev_pos
 
         x_diff = ev_x - self.x
-
-
         y_diff = ev_y - self.y
 
         self.angle = math.atan2(y_diff,x_diff)
-        print("evader angle " , self.angle)
+        #print("evader angle " , self.angle)
         dx = math.cos(self.angle)*CHASER_SPEED
         dy = math.sin(self.angle)*CHASER_SPEED
 
         self.x += dx
         self.y += dy
-
-    
-
-
-
 
