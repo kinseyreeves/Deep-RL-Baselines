@@ -17,8 +17,8 @@ import time
 from gym_scalable.envs import utils
 import numpy as np
 
-S_WIDTH = 500
-S_HEIGHT = 480
+S_WIDTH = 200   
+S_HEIGHT = 200
 
 N_EVADERS = 1
 
@@ -30,7 +30,7 @@ CHASER_SPEED = 3
 EVADER_SPEED = 6
 MAX_SCORE = 200
 
-CAUGHT_DIST = 20
+CAUGHT_DIST = 10
 
 
 class EvadersEnv(gym.Env):

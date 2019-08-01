@@ -48,7 +48,6 @@ class Model:
         #print(action_probabilities)
         action = np.random.choice(len(action_probabilities[0]), p=action_probabilities[0])
         
-        
         #print(action)
         
         #a = input()
@@ -130,7 +129,7 @@ def run():
     network = Model(observation_space, action_space)
     
     rw_mean = 0
-    while True:
+    for _ in range(0,250):
         all_eps = []
         for _ in range(EPISODE_N):
             new_ep = run_episode(env,network)

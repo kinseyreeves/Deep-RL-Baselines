@@ -12,6 +12,13 @@ register(
 )
 
 
+
+register(
+    id='n-traffic-v0',
+    entry_point='gym_scalable.envs:TrafficEnv',
+)
+
+
 # register(
 #     id='n-chasers-v0',
 #     entry_point='gym_scalable.envs:Chasers',
