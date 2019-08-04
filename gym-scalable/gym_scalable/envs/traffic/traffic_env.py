@@ -14,8 +14,8 @@ S_WIDTH = 400
 
 B_LEN = 10
 
-EW_ROADS = 4
-NS_ROADS = 4
+EW_ROADS = 1
+NS_ROADS = 1
 ROAD_WIDTH = 10
 
 
@@ -50,11 +50,25 @@ class TrafficEnv(gym.Env):
 
             self.ns_roads.append(r)
 
+        self.ns_roads[0].generate_car(True)
+        self.ns_roads[0].generate_car(False)
+
+        self.ew_roads[0].generate_car(True)
+        self.ew_roads[0].generate_car(False)
+
+
         # observation space = [self.x, self.y, enemy.x, enemy.y]
         # self.observation_space = spaces.Box(l_bounds, h_bounds, dtype=np.float32)
 
     def step(self, action):
-        ...
+
+        # TODO apply action to intersection before road update
+        for road in self.ns_roads:
+            road.update()
+        for road in self.ew_roads:
+            road.update()
+
+
 
     def set_state(self):
         ...
@@ -68,63 +82,98 @@ class TrafficEnv(gym.Env):
             self.screen.fill((255, 255, 255))
             pygame.init()
         self.screen.fill((255, 255, 255))
-        for r in self.ew_roads:
+        for r in self.ew_roads + self.ns_roads:
             r.render(self.screen)
-        for r in self.ns_roads:
-            r.render(self.screen)
+
+        for r in self.ew_roads + self.ns_roads:
+            for car in r.get_all_cars():
+                car.render(self.screen)
+
+
+
+
         pygame.display.update()
 
 
 class Car:
-    def __init__(self, track, position):
+    def __init__(self, track, index, pos, offset):
         self.track = track
-        self.position = position
+        self.index = index
+        self.pos = pos
+        self.offset = offset
 
     def render(self, screen):
+        # pygame.draw.rect(screen, (0,0,255), (self.pos[0], self.pos[1], 5, 5))
+        pygame.draw.rect(screen, (0,0,255), (self.pos[0], self.pos[1], 5, 5))
 
-        ...
 
     def update(self):
-        self.position += 1
-        self.track[self.position] = self
-        self.track[self.position-1] = None
+
+        if self.track[self.index + 1].is_drivable():
+            self.track[self.index].remove_car(self)
+            self.index += 1
+            self.track[self.index].add_car(self)
+
+        self.pos = (self.pos[0] + self.offset[0], self.pos[1] + self.offset[1])
+
+class RoadSegment:
+
+    def __init__(self):
+        self.car = None
+
+    def is_drivable(self):
+        if self.car:
+            return True
+        return False
+
+    def add_car(self, car):
+        if not self.car:
+            self.car = car
+
+    def remove_car(self):
+        self.car = None
+
+
+class IntersectionSegment(RoadSegment):
+    def __init__(self):
+        super().__init__()
+        self.green = True
+
+    def is_drivable(self):
+        if self.car:
+            return True
+        return False
+
+    def add_car(self, car):
+        self.car = car
+
+    def remove_car(self):
+        self.car = None
 
 
 class Intersection:
-    def __init__(self, road1, road2):
+    def __init__(self, seg1, seg2, seg3, seg4):
         ...
-
-
-
-
-
 
 
 class Road:
     """
     Road class
 
-    No road really starts and ends, just for simplicity
+    Handles car generation and has 2 lists for each lane.
     """
 
     def __init__(self, start_pos, end_pos, ns_road):
         self.start_pos = start_pos
         self.end_pos = end_pos
         # If its a north/south road or not
+        self.ns_road = ns_road
         self.all_cars = []
         num_blocks = int(S_WIDTH / ROAD_WIDTH)
-        self.forward_cars = [None for x in range(0, num_blocks)]
-        self.reverse_cars = [None for x in range(0, num_blocks)]
+        self.forward_lane = [RoadSegment() for _ in range(0, num_blocks)]
+        self.reverse_lane = [RoadSegment() for _ in range(0, num_blocks)]
 
-        print(self.forward_cars)
-        c = self.ad
-        d_car(True)
-        print(self.forward_cars)
-        c.update()
-        print(self.forward_cars)
-        c.update()
-        print(self.forward_cars)
-
+        # Adds the rectangles for each lane
         if ns_road:
             self.forward_lane_rect = pygame.Rect(self.start_pos, (ROAD_WIDTH, S_WIDTH))
             start_pos2 = (self.start_pos[0] - ROAD_WIDTH, self.start_pos[1])
@@ -147,15 +196,37 @@ class Road:
         for car in self.all_cars:
             car.update()
 
-    def add_car(self, forward):
-        if forward:
-            car = Car(self.forward_cars, 0)
-            self.forward_cars[0] = car
+    def generate_car(self, forward):
+        """
+        Generates a car and adds it to the road
+        :param forward: Add it to the forward lane, otherwise reverse
+        :return: the car
+        """
+
+        # setup offsets and car starting positions depending on orientation of road
+        if self.ns_road:
+            offset_for = (0, ROAD_WIDTH)
+            offset_rev = (0, -ROAD_WIDTH)
+            end_pos = (self.end_pos[0] - ROAD_WIDTH, self.end_pos[1])
+            start_pos = self.start_pos
         else:
-            car = Car(self.reverse_cars, 0)
-            self.reverse_cars[0] = car
+            offset_for = (ROAD_WIDTH, 0)
+            offset_rev = (-ROAD_WIDTH, 0)
+            end_pos = (self.end_pos[0], self.end_pos[1])
+            start_pos = (self.start_pos[0], self.start_pos[1] - ROAD_WIDTH)
+        if forward:
+            car = Car(self.forward_lane, 0, start_pos, offset_for)
+            self.forward_lane[0].add_car(car)
+        else:
+            car = Car(self.reverse_lane, 0, end_pos, offset_rev)
+            self.reverse_lane[0].add_car(car)
+
+        self.all_cars.append(car)
         return car
 
     def render(self, screen):
         pygame.draw.rect(screen, (0, 0, 0), self.forward_lane_rect)
         pygame.draw.rect(screen, (40, 40, 40), self.rev_lane_rect)
+
+    def get_all_cars(self):
+        return self.all_cars

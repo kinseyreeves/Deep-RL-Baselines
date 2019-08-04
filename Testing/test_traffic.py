@@ -17,5 +17,7 @@ while True:
     #print(action)
     #for i in range
     env.step(1)
+    a = input()
+    print("step")
     
     
