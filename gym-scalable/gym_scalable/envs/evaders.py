@@ -188,6 +188,7 @@ class Evader(Entity):
 class Chaser(Entity):
     '''
     Chaser class, moves towards the evader
+    TODO replace with trained chaser
     '''
     def __init__(self, x, y):
         color = (0,255,0)

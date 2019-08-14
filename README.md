@@ -15,6 +15,8 @@ Environments implemented:
     - Action space : discrete (scalable)
     - State space : continuous (joints + objective placement)
 
+- Evader environment
+
 TODO
 - Traffic Lights
     - Action space : discrete (scalable)
