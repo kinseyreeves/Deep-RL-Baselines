@@ -50,8 +50,10 @@ END_REWARD = 500
 
 TIME_PENALTY = 200
 
-MAX_STEPS = 200
+MAX_STEPS = 400
 
+# should the objective position stay static
+STATIC = False
 
 class NJointArm(gym.Env):
     '''
@@ -100,7 +102,7 @@ class NJointArm(gym.Env):
 
         self.end_arm = self.arms[-1]
 
-        self.reset_objective()
+        self.reset_objective(static = True)
 
         # Observation space [Joint angles ... , objective1x, ob1y]
         l_bounds = np.array([0] * (N_EXTRA_JOINTS + 1) + [0] * (N_OBJECTIVES * 2))
@@ -183,7 +185,7 @@ class NJointArm(gym.Env):
 
     def reset(self):
         for arm in self.arms:
-            arm.setAngle(random.uniform(0, 2 * math.pi))
+            arm.setAngle(0)
         self.time_pen = TIME_PENALTY
         self.reset_objective()
         self.done = False
@@ -198,7 +200,7 @@ class NJointArm(gym.Env):
             pygame.init()
         self.screen.fill((255, 255, 255))
 
-        #Draw the objective
+        # Draw the objective
         pygame.draw.circle(self.screen, (100, 100, 10), (self.ob_x, self.ob_y), DIST_THRESH)
 
         # Render joints ontop of arms
@@ -214,22 +216,31 @@ class NJointArm(gym.Env):
 
         pygame.display.update()
 
-    def reset_objective(self):
+    def reset_objective(self, static=STATIC):
         '''
         Initialises the objective
         '''
         # Intialise the objective
-        arcpos = random.uniform(0, 1) * 2 * math.pi
+        if static:
+            arcpos = math.pi + 0.5
+        else:
+            arcpos = random.uniform(0, 1) * 2 * math.pi
+
         # If we have more than one joint, the circle must be on the radius
         # Otherwise it can lie anywhere from 0 to the max dist
         # TODO bound to screen
-        if (N_EXTRA_JOINTS > 0):
-            rad = ARM_LENGTH * N_EXTRA_JOINTS * random.uniform(0, 1)
+        if static:
+            rad = ARM_LENGTH * (N_EXTRA_JOINTS+1)
+            self.ob_x = self.centre_x + round(rad * math.cos(arcpos))
+            self.ob_y = self.centre_y + round(rad * math.sin(arcpos))
+        elif N_EXTRA_JOINTS > 0:
+            rad = ARM_LENGTH * (N_EXTRA_JOINTS+1) * random.uniform(0, 1)
             self.ob_x = self.centre_x + round(rad * math.cos(arcpos))
             self.ob_y = self.centre_y + round(rad * math.sin(arcpos))
         else:
             self.ob_x = self.centre_x + round(ARM_LENGTH * math.cos(arcpos))
             self.ob_y = self.centre_y + round(ARM_LENGTH * math.sin(arcpos))
+
 
     def action_one_hot(self):
         out = []

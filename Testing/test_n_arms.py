@@ -13,7 +13,7 @@ print(env.action_space.n)
 
 while True:
     i += 1
-    env.render()
+
     action_size = env.action_space.n
     # print(action_size)
     # print(env.action_space)
@@ -28,7 +28,9 @@ while True:
     # a = input()
     # print(reward)
     # print(state)
-    if (i % 500 == 0 or done):
+    if (done):
         print("done")
         a = input()
         env.reset()
+        a = input()
+        env.render()

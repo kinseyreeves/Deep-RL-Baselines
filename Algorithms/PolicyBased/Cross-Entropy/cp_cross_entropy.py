@@ -131,7 +131,7 @@ def run():
         
         next_state, reward, terminal, _ = env.step(action)
 
-        if(terminal):
+        if terminal:
             env.reset()
 
         state = next_state

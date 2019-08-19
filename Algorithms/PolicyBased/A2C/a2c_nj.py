@@ -15,7 +15,7 @@ from keras.optimizers import Adam
 
 import gym_scalable
 
-EPISODES = 1000
+EPISODES = 10000
 
 
 # A2C(Advantage Actor-Critic) agent for the Cartpole
@@ -111,7 +111,7 @@ if __name__ == "__main__":
         state = np.reshape(state, [1, state_size])
 
         while not done:
-            if agent.render:
+            if e > 900:
                 env.render()
 
             arr_act = np.zeros(action_size)
