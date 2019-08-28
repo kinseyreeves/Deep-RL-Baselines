@@ -6,7 +6,7 @@ The far away from blue point the less reward; touch blue r+=1; stop at blue for 
 You can train this RL by using LOAD = False, after training, this model will be store in the a local folder.
 Using LOAD = True to reload the trained model for playing.
 You can customize this script in a way you want.
-View more on [莫烦Python] : https://morvanzhou.github.io/tutorials/
+View more on [Python] : https://morvanzhou.github.io/tutorials/
 Requirement:
 pyglet >= 1.2.4
 numpy >= 1.12.1
@@ -20,11 +20,12 @@ import shutil
 from arm_env import ArmEnv
 import gym_scalable
 import gym
+import sys
 
 np.random.seed(1)
 tf.set_random_seed(1)
 
-MAX_EPISODES = 600
+MAX_EPISODES = 1000
 MAX_EP_STEPS = 200
 LR_A = 1e-4  # learning rate for actor
 LR_C = 1e-4  # learning rate for critic
@@ -33,17 +34,18 @@ REPLACE_ITER_A = 1100
 REPLACE_ITER_C = 1000
 MEMORY_CAPACITY = 5000
 BATCH_SIZE = 16
-VAR_MIN = 0.1
-RENDER = True
+VAR_MIN = 0.01
+RENDER = False
 LOAD = False
-MODE = ['easy', 'hard']
-n_model = 1
 
-env = ArmEnv(mode=MODE[n_model])
-env = gym.make('n-joints-v0')
+extra_j = int(sys.argv[1])
+
+
+env = gym.make('n-joints-v0', extra_joints = extra_j)
 STATE_DIM = env.observation_space.shape[0]
 ACTION_DIM = env.action_space.shape[0]
 ACTION_BOUND = env.action_bound
+
 
 # all placeholder for tf
 with tf.name_scope('S'):
@@ -196,7 +198,6 @@ class Memory(object):
 
 
 sess = tf.Session()
-
 # Create actor and critic.
 actor = Actor(sess, ACTION_DIM, ACTION_BOUND[1], LR_A, REPLACE_ITER_A)
 critic = Critic(sess, STATE_DIM, ACTION_DIM, LR_C, GAMMA, REPLACE_ITER_C, actor.a, actor.a_)
@@ -205,7 +206,7 @@ actor.add_grad_to_graph(critic.a_grads)
 M = Memory(MEMORY_CAPACITY, dims=2 * STATE_DIM + ACTION_DIM + 1)
 
 saver = tf.train.Saver()
-path = './' + MODE[n_model]
+path = './models/' + str(extra_j)
 
 if LOAD:
     saver.restore(sess, tf.train.latest_checkpoint(path))
@@ -213,9 +214,13 @@ else:
     sess.run(tf.global_variables_initializer())
 
 
+
 def train():
     var = 2.  # control exploration
-
+    rd_file = open("./data/rdata.csv", "a+")
+    ep_file = open("./data/ddata.csv", "a+")
+    rd_file.write(str(extra_j) + ",")
+    ep_file.write(str(extra_j) + ",")
     for ep in range(MAX_EPISODES):
         s = env.reset()
         ep_reward = 0
@@ -224,17 +229,12 @@ def train():
             # while True:
             if RENDER:
                 env.render()
-
+            #input()
             # Added exploration noise
             a = actor.choose_action(s)
             a = np.clip(np.random.normal(a, var), *ACTION_BOUND)  # add randomness to action selection for exploration
             s_, r, done, _ = env.step(a)
 
-            # print("action : ", a)
-            # print(type(a))
-            # print("state: ", s)
-            # print(type(s))
-            # input()
 
             M.store_transition(s, a, r, s_)
 
@@ -259,24 +259,33 @@ def train():
                       result,
                       '| R: %i' % int(ep_reward),
                       '| Explore: %.2f' % var,
+                      '| nj : %i' % int(extra_j)
                       )
+                rd_file.write(str(int(ep_reward)) + ",")
+                out_r = 'd' if done else 'f'
+                ep_file.write(out_r + ",")
                 break
 
     if os.path.isdir(path): shutil.rmtree(path)
     os.mkdir(path)
-    ckpt_path = os.path.join('./' + MODE[n_model], 'DDPG.ckpt')
+    ckpt_path = os.path.join('./models/' + str(extra_j), 'DDPG.ckpt')
     save_path = saver.save(sess, ckpt_path, write_meta_graph=False)
     print("\nSave Model %s\n" % save_path)
 
+    rd_file.write("\n")
+    rd_file.close()
+    ep_file.write("\n")
+    ep_file.close()
+
 
 def eval():
-    env.set_fps(30)
+    #env.set_fps(30)
     s = env.reset()
     while True:
         if RENDER:
             env.render()
         a = actor.choose_action(s)
-        s_, r, done = env.step(a)
+        s_, r, done, _ = env.step(a)
         s = s_
 
 

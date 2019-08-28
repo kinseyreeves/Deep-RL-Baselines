@@ -1,4 +1,14 @@
 # Another CE implementation without keras
+'''
+Cartpole Cross Entropy
+Author : Kinsey Reeves
+
+Cross entropy deep RL algorithm.
+implements :
+    - Neural network with one hidden layer (pytorch)
+    -
+    - Periodic updating of target Q network from the training network
+'''
 
 import gym
 import torch.nn as nn
@@ -16,25 +26,19 @@ EPISODE_N = 50
 
 class Model(nn.Module):
 
-    def __init__(self):
+    def __init__(self, input_size, output_size):
 
         super().__init__()
-        input_size = 4
-        output_size = 1
 
-        self.inp = nn.Linear(input_size, 64)
-
-        self.hc1 = nn.Linear(64, output_size)
-        self.relu1 = nn.ReLU()
-        self.sm = nn.Softmax()
-
+        self.net = nn.Sequential(
+            nn.Linear(input_size, 64),
+            nn.ReLU(),
+            nn.Linear(64, output_size)
+        )
 
     def forward(self, x):
-        x = self.inp(x)
-        x = self.relu1(x)
-        x = self.hc1(x)
-        x = self.sm(x)
-        return x
+
+        return self.net(x)
 
     def get_action(self, state):
         return self.forward(state)
@@ -52,17 +56,20 @@ def run_episode(env, network, render=False):
     state = env.reset()
 
     terminal = False
-
+    sm = nn.Softmax(dim=1)
     while not terminal:
         if (render):
             env.render()
 
-        x_input = Variable(torch.FloatTensor(state))
+        x_input = Variable(torch.FloatTensor([state]))
         action = network.forward(x_input)
-        print(action)
-        #exit(0)
+        act_probs_v = sm(action)
+        act_probs = act_probs_v.data.numpy()[0]
+
+        action = np.random.choice(len(act_probs), p = act_probs)
+
         next_state, reward, is_terminal, _ = env.step(action)
-        exit(0)
+
         total_reward += reward
         ep_steps.append(EpisodeStep(observation=state, action=action))
         terminal = is_terminal
@@ -103,10 +110,10 @@ def run():
     observation_space = env.observation_space.shape[0]
     action_space = env.action_space.n
 
-    net = Model()
+    net = Model(observation_space, action_space)
 
     optimizer = torch.optim.Adam(net.parameters(), lr = 0.01)
-
+    loss = nn.CrossEntropyLoss()
     rw_mean = 0
     while True and rw_mean < 400:
         all_eps = []
@@ -114,9 +121,21 @@ def run():
             new_ep = run_episode(env, net)
             all_eps.append(new_ep)
 
-        states, actions, rw_mean = cull_episodes(all_eps)
+        train_states, train_actions, rw_mean = cull_episodes(all_eps)
+        train_states = torch.FloatTensor(train_states)
+        train_actions = torch.LongTensor(train_actions)
 
-        print(states)
+        pred_actions = net.forward(train_states)
+
+        loss_v = loss(pred_actions,train_actions)
+        loss_v.backward()
+        optimizer.step()
+        print(rw_mean)
+        optimizer.zero_grad()
+        #action_scores = net.forward(train_states)
+        #print(action_scores)
+        #exit(0)
+
 
         print(f"training.. mean reward: {rw_mean}")
     state = env.reset()

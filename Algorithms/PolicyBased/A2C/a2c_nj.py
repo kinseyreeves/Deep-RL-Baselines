@@ -96,7 +96,7 @@ if __name__ == "__main__":
     env = gym.make('n-joints-v0')
     # get size of state and action from environment
     state_size = env.observation_space.shape[0]
-    action_size = env.action_space.n
+    action_size = env.action_space.shape[0]
     print(action_size)
 
     # make A2C agent

@@ -2,10 +2,13 @@ import os
 import ptan
 import time
 import gym
-import pybullet_envs
+#import pybullet_envs
 import argparse
 from tensorboardX import SummaryWriter
 import numpy as np
+
+import gym_scalable
+import gym
 
 import torch
 import torch.optim as optim
@@ -96,7 +99,7 @@ class AgentDDPG(ptan.agent.BaseAgent):
         return actions, new_a_states
 
 
-def test_net(net, env, count=10, device="cpu"):
+def test_net(net, env, count=10, device="cuda"):
     rewards = 0.0
     steps = 0
     for _ in range(count):
@@ -110,12 +113,13 @@ def test_net(net, env, count=10, device="cpu"):
             obs, reward, done, _ = env.step(action)
             rewards += reward
             steps += 1
-            if done:
+            #print("here", steps)
+            if done or steps > 500:
                 break
     return rewards / count, steps / count
 
 
-def unpack_batch_ddqn(batch, device="cpu"):
+def unpack_batch_ddqn(batch, device="cuda"):
     states, actions, rewards, dones, last_states = [], [], [], [], []
     for exp in batch:
         states.append(exp.state)
@@ -126,6 +130,7 @@ def unpack_batch_ddqn(batch, device="cpu"):
             last_states.append(exp.state)
         else:
             last_states.append(exp.last_state)
+
     states_v = ptan.agent.float32_preprocessor(states).to(device)
     actions_v = ptan.agent.float32_preprocessor(actions).to(device)
     rewards_v = ptan.agent.float32_preprocessor(rewards).to(device)
@@ -143,13 +148,12 @@ if __name__ == "__main__":
     save_path = os.path.join("saves", "ddpg-" + args.name)
     os.makedirs(save_path, exist_ok=True)
 
-    env = gym.make(ENV_ID)
-    test_env = gym.make(ENV_ID)
+    env = gym.make('n-joints-v0')
+    test_env = gym.make('n-joints-v0')
 
     act_net = DDPGActor(env.observation_space.shape[0], env.action_space.shape[0]).to(device)
     crt_net = DDPGCritic(env.observation_space.shape[0], env.action_space.shape[0]).to(device)
-    print(act_net)
-    print(crt_net)
+
     tgt_act_net = ptan.agent.TargetNet(act_net)
     tgt_crt_net = ptan.agent.TargetNet(crt_net)
 
@@ -203,12 +207,13 @@ if __name__ == "__main__":
 
                 tgt_act_net.alpha_sync(alpha=1 - 1e-3)
                 tgt_crt_net.alpha_sync(alpha=1 - 1e-3)
-
+                #print("here")
                 if frame_idx % TEST_ITERS == 0:
                     ts = time.time()
                     rewards, steps = test_net(act_net, test_env, device=device)
                     print("Test done in %.2f sec, reward %.3f, steps %d" % (
                         time.time() - ts, rewards, steps))
+                    #input()
                     writer.add_scalar("test_reward", rewards, frame_idx)
                     writer.add_scalar("test_steps", steps, frame_idx)
                     if best_reward is None or best_reward < rewards:

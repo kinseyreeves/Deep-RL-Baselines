@@ -20,11 +20,10 @@ import shutil
 from arm_env import ArmEnv
 
 
-
 np.random.seed(1)
 tf.set_random_seed(1)
 
-MAX_EPISODES = 600
+MAX_EPISODES = 200
 MAX_EP_STEPS = 200
 LR_A = 1e-4  # learning rate for actor
 LR_C = 1e-4  # learning rate for critic
@@ -201,7 +200,7 @@ actor.add_grad_to_graph(critic.a_grads)
 M = Memory(MEMORY_CAPACITY, dims=2 * STATE_DIM + ACTION_DIM + 1)
 
 saver = tf.train.Saver()
-path = './'+MODE[n_model]
+path = './'+MODE[n_model]+str()
 
 if LOAD:
     saver.restore(sess, tf.train.latest_checkpoint(path))
