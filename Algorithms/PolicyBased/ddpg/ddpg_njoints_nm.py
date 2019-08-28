@@ -21,6 +21,7 @@ from arm_env import ArmEnv
 import gym_scalable
 import gym
 import sys
+import time
 
 np.random.seed(1)
 tf.set_random_seed(1)
@@ -34,7 +35,7 @@ REPLACE_ITER_A = 1100
 REPLACE_ITER_C = 1000
 MEMORY_CAPACITY = 5000
 BATCH_SIZE = 16
-VAR_MIN = 0.01
+VAR_MIN = 0.1
 RENDER = False
 LOAD = False
 
@@ -281,12 +282,18 @@ def train():
 def eval():
     #env.set_fps(30)
     s = env.reset()
+    steps = 0
     while True:
         if RENDER:
             env.render()
         a = actor.choose_action(s)
         s_, r, done, _ = env.step(a)
         s = s_
+        steps+=1
+        time.sleep(0.05)
+        if(done or steps > 200):
+            s = env.reset()
+            steps = 0
 
 
 if __name__ == '__main__':
