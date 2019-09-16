@@ -24,7 +24,10 @@ Environments implemented:
 
 - N-Evaders
     - Action space : discrete (scalable)
-    - State space : continuous ()
+    - State space : continuous (joints + objective placement)
+
+- Evader environment
+
 TODO
 - Traffic Lights
     - Action space : discrete (scalable)
