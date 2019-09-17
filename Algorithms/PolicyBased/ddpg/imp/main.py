@@ -68,6 +68,7 @@ def run():
             if(done or step == MAX_EP_STEPS):
                 print("episode {} reward : {} \n".format(ep_n, episode_reward))
                 print(done)
+                break
 
             rewards.append(episode_reward)
             avg_rewards.append(np.mean(rewards[-10:]))
