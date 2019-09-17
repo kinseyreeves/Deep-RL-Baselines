@@ -17,11 +17,12 @@ import tensorflow as tf
 import numpy as np
 import os
 import shutil
-from arm_env import ArmEnv
+
 import gym_scalable
 import gym
 import sys
 import time
+import math
 
 np.random.seed(1)
 tf.set_random_seed(1)
@@ -35,12 +36,11 @@ REPLACE_ITER_A = 1100
 REPLACE_ITER_C = 1000
 MEMORY_CAPACITY = 5000
 BATCH_SIZE = 16
-VAR_MIN = 0.1
+VAR_MIN = 0.01
 RENDER = False
 LOAD = False
 
 extra_j = int(sys.argv[1])
-
 
 env = gym.make('n-joints-v0', extra_joints = extra_j)
 STATE_DIM = env.observation_space.shape[0]
@@ -236,7 +236,6 @@ def train():
             a = np.clip(np.random.normal(a, var), *ACTION_BOUND)  # add randomness to action selection for exploration
             s_, r, done, _ = env.step(a)
 
-
             M.store_transition(s, a, r, s_)
 
             if M.pointer > MEMORY_CAPACITY:
@@ -278,9 +277,21 @@ def train():
     ep_file.write("\n")
     ep_file.close()
 
+def get_state_data(state, nj):
+    obj = state[0:2]
+    joint_poss = state[2:((nj+1)*2)]
+    eff_pos = state[((nj+1)*2):((nj+1)*2)+2]
+    joint_angs = state[((nj+1)*2)+2:]
+
+    return obj, joint_poss, joint_angs, eff_pos
+
 
 def eval():
-    #env.set_fps(30)
+    THRESH = 50
+    f = open("results.txt", "a+")
+    f.write(sys.argv[1] + ",")
+    num_joints = int(sys.argv[1])
+
     s = env.reset()
     steps = 0
     while True:
@@ -289,8 +300,16 @@ def eval():
         a = actor.choose_action(s)
         s_, r, done, _ = env.step(a)
         s = s_
+        obj_pos, _, _, eff_pos = get_state_data(s, num_joints)
+
         steps+=1
         time.sleep(0.05)
+        input()
+        if (s[0]):
+            f.write(str(steps) + ",")
+            s = env.reset()
+            steps = 0
+
         if(done or steps > 200):
             s = env.reset()
             steps = 0
