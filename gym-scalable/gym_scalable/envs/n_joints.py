@@ -30,7 +30,7 @@ ARM_ANGLE = 0
 ARM_LENGTH = 60
 
 # Number of joints excluding the middle point
-extra_joints = 2
+extra_joints = 1
 
 # Number of objectives, TODO able to change
 N_OBJECTIVES = 1
@@ -40,10 +40,10 @@ RELATIVE = False
 
 # Radians change per step() action, i.e. [-1,0,1] each change
 # either -.1, 0 or .1 rads of the arm
-ARM_RADS_CHANGE = 0.2
+ARM_RADS_CHANGE = 0.1
 
 # Distance before goal is considered reached
-DIST_THRESH = 15
+DIST_THRESH = 10
 
 # Reward for reaching objective
 END_REWARD = 100
