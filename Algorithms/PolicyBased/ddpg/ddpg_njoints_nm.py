@@ -27,18 +27,19 @@ import math
 np.random.seed(1)
 tf.set_random_seed(1)
 
-MAX_EPISODES = 1000
-MAX_EP_STEPS = 200
+MAX_EPISODES = 500
+MAX_EP_STEPS = 250
 LR_A = 1e-4  # learning rate for actor
 LR_C = 1e-4  # learning rate for critic
 GAMMA = 0.9  # reward discount
 REPLACE_ITER_A = 1100
 REPLACE_ITER_C = 1000
 MEMORY_CAPACITY = 5000
-BATCH_SIZE = 16
+BATCH_SIZE = 32
 VAR_MIN = 0.01
 RENDER = False
 LOAD = False
+WRITE_OUT = True
 
 extra_j = int(sys.argv[1])
 
@@ -65,6 +66,8 @@ class Actor(object):
         self.lr = learning_rate
         self.t_replace_iter = t_replace_iter
         self.t_replace_counter = 0
+        print(self.action_bound)
+
 
         with tf.variable_scope('Actor'):
             # input s, output a
@@ -90,12 +93,13 @@ class Actor(object):
             net = tf.layers.dense(net, 10, activation=tf.nn.relu,
                                   kernel_initializer=init_w, bias_initializer=init_b, name='l3',
                                   trainable=trainable)
-            with tf.variable_scope('a'):
-                actions = tf.layers.dense(net, self.a_dim, activation=tf.nn.tanh, kernel_initializer=init_w,
+
+            actions = tf.layers.dense(net, self.a_dim, activation=tf.nn.tanh, kernel_initializer=init_w,
                                           name='a', trainable=trainable)
-                scaled_a = tf.multiply(actions, self.action_bound,
-                                       name='scaled_a')  # Scale output to -action_bound to action_bound
-        return scaled_a
+            #scaled_a = tf.multiply(actions, 1,
+            #                          name='scaled_a')  # Scale output to -action_bound to action_bound
+            actions*=1
+        return actions
 
     def learn(self, s):  # batch update
         self.sess.run(self.train_op, feed_dict={S: s})
@@ -198,14 +202,14 @@ class Memory(object):
         return self.data[indices, :]
 
 
-sess = tf.Session()
+sess = tf.compat.v1.InteractiveSession()
 # Create actor and critic.
+print(ACTION_BOUND)
 actor = Actor(sess, ACTION_DIM, ACTION_BOUND[1], LR_A, REPLACE_ITER_A)
 critic = Critic(sess, STATE_DIM, ACTION_DIM, LR_C, GAMMA, REPLACE_ITER_C, actor.a, actor.a_)
 actor.add_grad_to_graph(critic.a_grads)
 
 M = Memory(MEMORY_CAPACITY, dims=2 * STATE_DIM + ACTION_DIM + 1)
-
 saver = tf.train.Saver()
 path = './models/' + str(extra_j)
 
@@ -218,27 +222,30 @@ else:
 
 def train():
     var = 2.  # control exploration
-    rd_file = open("./data/rdata.csv", "a+")
-    ep_file = open("./data/ddata.csv", "a+")
-    rd_file.write(str(extra_j) + ",")
-    ep_file.write(str(extra_j) + ",")
+    if(WRITE_OUT):
+        rd_file = open("./data/rdata_rel_true.csv", "a+")
+        ep_file = open("./data/ddata_rel_true.csv", "a+")
+        rd_file.write(str(extra_j) + ",")
+        ep_file.write(str(extra_j) + ",")
     for ep in range(MAX_EPISODES):
         s = env.reset()
         ep_reward = 0
-
         for t in range(MAX_EP_STEPS):
             # while True:
-            if RENDER:
+            if ep > 200 or RENDER:
                 env.render()
             #input()
             # Added exploration noise
             a = actor.choose_action(s)
+            #print(a)
+            #print(type(a))
             a = np.clip(np.random.normal(a, var), *ACTION_BOUND)  # add randomness to action selection for exploration
             s_, r, done, _ = env.step(a)
 
             M.store_transition(s, a, r, s_)
 
             if M.pointer > MEMORY_CAPACITY:
+                #print("here")
                 var = max([var * .9999, VAR_MIN])  # decay the action randomness
                 b_M = M.sample(BATCH_SIZE)
                 b_s = b_M[:, :STATE_DIM]
@@ -252,6 +259,7 @@ def train():
             s = s_
             ep_reward += r
 
+
             if t == MAX_EP_STEPS - 1 or done:
                 # if done:
                 result = '| done' if done else '| ----'
@@ -261,9 +269,10 @@ def train():
                       '| Explore: %.2f' % var,
                       '| nj : %i' % int(extra_j)
                       )
-                rd_file.write(str(int(ep_reward)) + ",")
-                out_r = 'd' if done else 'f'
-                ep_file.write(out_r + ",")
+                if(WRITE_OUT):
+                    rd_file.write(str(int(ep_reward)) + ",")
+                    out_r = str(t) if done else str(-1)
+                    ep_file.write(out_r + ",")
                 break
 
     if os.path.isdir(path): shutil.rmtree(path)
@@ -272,10 +281,11 @@ def train():
     save_path = saver.save(sess, ckpt_path, write_meta_graph=False)
     print("\nSave Model %s\n" % save_path)
 
-    rd_file.write("\n")
-    rd_file.close()
-    ep_file.write("\n")
-    ep_file.close()
+    if(WRITE_OUT):
+        rd_file.write("\n")
+        rd_file.close()
+        ep_file.write("\n")
+        ep_file.close()
 
 def get_state_data(state, nj):
     obj = state[0:2]
@@ -288,31 +298,40 @@ def get_state_data(state, nj):
 
 def eval():
     THRESH = 50
-    f = open("results.txt", "a+")
-    f.write(sys.argv[1] + ",")
+    f = open(f"eval_res_{sys.argv[1]}.txt", "w+")
+    #f.write(sys.argv[1] + "\n")
     num_joints = int(sys.argv[1])
 
     s = env.reset()
-    steps = 0
-    while True:
-        if RENDER:
-            env.render()
-        a = actor.choose_action(s)
-        s_, r, done, _ = env.step(a)
-        s = s_
-        obj_pos, _, _, eff_pos = get_state_data(s, num_joints)
+    for _ in range(0,200):
+        reward = []
+        steps = 0
+        while True:
+            if RENDER:
+                env.render()
+            a = actor.choose_action(s)
+            s_, r, done, _ = env.step(a)
+            s = s_
+            obj_pos, _, _, eff_pos = get_state_data(s, num_joints)
+            reward.append(r)
+            steps+=1
+            #time.sleep(0.01)
 
-        steps+=1
-        time.sleep(0.05)
-        input()
-        if (s[0]):
-            f.write(str(steps) + ",")
-            s = env.reset()
-            steps = 0
-
-        if(done or steps > 200):
-            s = env.reset()
-            steps = 0
+            if(done):
+                f.write(str(steps) + ",")
+                f.write(str(sum(reward))+ "\n")
+                s = env.reset()
+                steps = 0
+                break
+            if(steps > 250):
+                #print("here")
+                s = env.reset()
+                break
+                # f.write(str(-1) + ",")
+                # f.write(str(sum(reward)) + "\n")
+                # s = env.reset()
+                # steps = 0
+                # break
 
 
 if __name__ == '__main__':

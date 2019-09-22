@@ -7,26 +7,27 @@ import torch.optim as optim
 from torch.autograd import Variable
 
 
-BATCH_SIZE = 128
-
-
 class Critic(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
         super(Critic, self).__init__()
         self.linear1 = nn.Linear(input_size, hidden_size)
-        self.linear2 = nn.Linear(hidden_size, hidden_size)
-        self.linear3 = nn.Linear(hidden_size, output_size)
+        self.linear2 = nn.Linear(hidden_size, 10)
+        self.linear3 = nn.Linear(10, 1)
+
+        # torch.nn.init.xavier_uniform(self.linear1.weight)
+        # torch.nn.init.xavier_uniform(self.linear2.weight)
+        # torch.nn.init.xavier_uniform(self.linear3.weight)
+        # self.linear1.bias.data.fill_(0.01)
+        # self.linear2.bias.data.fill_(0.01)
+        # self.linear3.bias.data.fill_(0.01)
 
     def forward(self, state, action):
         """
         Params state and actions are torch tensors
         """
-        #print(state.shape)
-        #print(action.shape)
-
         x = torch.cat([state, action], 1)
 
-        x = F.relu(self.linear1(x))
+        x = F.relu6(self.linear1(x))
         x = F.relu(self.linear2(x))
         x = self.linear3(x)
         return x
@@ -41,14 +42,25 @@ class Actor(nn.Module):
         super(Actor, self).__init__()
         self.l1 = nn.Linear(input_size, hidden_size)
         self.l2 = nn.Linear(hidden_size, hidden_size)
-        self.l22 = nn.Linear(hidden_size, hidden_size)
-        self.l3 = nn.Linear(hidden_size, output_size)
+        self.l22 = nn.Linear(hidden_size, 10)
+        self.l3 = nn.Linear(10, output_size)
+
+        # torch.nn.init.xavier_uniform(self.l1.weight)
+        # torch.nn.init.xavier_uniform(self.l2.weight)
+        # torch.nn.init.xavier_uniform(self.l22.weight)
+        # torch.nn.init.xavier_uniform(self.l3.weight)
+        # self.l1.bias.data.fill_(0.001)
+        # self.l2.bias.data.fill_(0.001)
+        # self.l22.bias.data.fill_(0.001)
+        # self.l3.bias.data.fill_(0.001)
 
     def forward(self, state):
-        x = F.relu(self.l1(state))
-        x = F.relu(self.l2(x))
+
+        x = F.relu6(self.l1(state))
+        x = F.relu6(self.l2(x))
         x = F.relu(self.l22(x))
         x = F.tanh(self.l3(x))
+        x = torch.clamp(x,-1,1)
         return x
 
 
@@ -56,8 +68,8 @@ class DDPGAgent():
     def __init__(self, state_size,
                  action_size,hidden_size=256,
                  a_lr = 1e-4,c_lr = 1e-4,
-                 gamma=0.99,tau=1e-2,
-                 max_memory_size=50000):
+                 gamma=0.99,tau=0.001,
+                 max_memory_size=5000):
 
         self.state_size = state_size
         self.action_size = action_size
@@ -85,8 +97,8 @@ class DDPGAgent():
         #Training
 
         self.critic_criterion = nn.MSELoss()
-        self.actor_optimizer = optim.RMSprop(self.actor.parameters(), lr=self.a_lr)
-        self.critic_optimizer = optim.RMSprop(self.critic.parameters(), lr = self.c_lr)
+        self.actor_optimizer = optim.Adam(self.actor.parameters(), lr=self.a_lr)
+        self.critic_optimizer = optim.Adam(self.critic.parameters(), lr = self.c_lr)
         #optim.RMSprop()
 
     def get_action(self, state):
@@ -105,12 +117,14 @@ class DDPGAgent():
 
         # Critic loss
         Qvals = self.critic.forward(states, actions)
-        # print(Qvals)
+        #print(Qvals.shape)
         # input()
         next_actions = self.actor_target.forward(states_)
         next_Q = self.critic_target.forward(states_, next_actions.detach())
         Qprime = rewards + self.gamma * next_Q
+        #print(Qprime.shape)
         critic_loss = self.critic_criterion(Qvals, Qprime)
+        #a = input()
 
         # Actor loss
         policy_loss = -self.critic.forward(states, self.actor.forward(states)).mean()
@@ -120,15 +134,21 @@ class DDPGAgent():
         policy_loss.backward()
         self.actor_optimizer.step()
 
+        #Update critic
         self.critic_optimizer.zero_grad()
         critic_loss.backward()
         self.critic_optimizer.step()
 
-        # Soft network updates
+    def upate_actor_target(self):
+        self.tau = 0
         for target_param, param in zip(self.actor_target.parameters(), self.actor.parameters()):
             target_param.data.copy_(param.data * self.tau + target_param.data * (1.0 - self.tau))
+            #target_param.data.copy_(param.data)
 
+    def update_critic_target(self):
+        self.tau = 0
         for target_param, param in zip(self.critic_target.parameters(), self.critic.parameters()):
+            #target_param.data.copy_(param.data)
             target_param.data.copy_(param.data * self.tau + target_param.data * (1.0 - self.tau))
 
 

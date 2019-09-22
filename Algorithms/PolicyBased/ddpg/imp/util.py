@@ -30,7 +30,6 @@ class ReplayMemory:
             reward_batch.append(reward)
             next_state_batch.append(next_state)
             done_batch.append(done)
-
         return state_batch, action_batch, reward_batch, next_state_batch, done_batch
 
     def __len__(self):

@@ -27,13 +27,16 @@ S_HEIGHT = 400
 
 # Arm params
 ARM_ANGLE = 0
-ARM_LENGTH = 60
+ARM_LENGTH = 50
 
 # Number of joints excluding the middle point
 extra_joints = 1
 
 # Number of objectives, TODO able to change
 N_OBJECTIVES = 1
+
+#Number of obstacles, set to 0 for jacobian or no obs
+N_OBSTACLES = 0
 
 # Whether or not the arm movements are relative. Read step()
 RELATIVE = False
@@ -46,7 +49,7 @@ ARM_RADS_CHANGE = 0.1
 DIST_THRESH = 10
 
 # Reward for reaching objective
-END_REWARD = 100
+END_REWARD = 10
 
 TIME_PENALTY = 200
 
@@ -160,6 +163,8 @@ class NJointArm(gym.Env):
                 if disc_actions[i]:
                     return list(self.non_discrete_actions[i])
 
+        action = np.clip(action, -1,1)
+
         self.time_pen -= 1
         self.steps += 1
 
@@ -180,31 +185,39 @@ class NJointArm(gym.Env):
                     arm.move_arm(change)
                     update_arms(action_arms[i + 1:], change)
         # check distance from goal of end arm, if less than thresh episode done
-        reward = self.calc_reward()
+        reward = self.calc_reward(action)
 
         state = self.get_state()
 
         return np.array(state), reward, self.done, {}
 
-    def calc_reward(self):
+    def calc_reward(self, action, alpha = 1, beta = 0.1):
         """
         Reward is -ve abs distance
         unless pointer is on objective its dist+1
         (therefore positive)
         :return: reward
         """
-        dist = self.get_dist()
-        r = - dist / (S_WIDTH/2)
-        if dist < DIST_THRESH and (not self.done):
-            r += 1.0
-            self.at_objective_n += 1
-            if self.at_objective_n > HOLD_COUNT:
-                r +=END_REWARD
-                self.done = True
-        elif dist > DIST_THRESH:
-            self.at_objective_n = 0
-            self.done = False
+        dist = self.get_dist() / (S_WIDTH/2)
+        #h = -((dist**2 + alpha**2)**(1/2) + alpha)
+        h = -dist
+        action_pen = beta*sum(action**2)
+        r = h
 
+        # r = -(dist / (S_WIDTH/2))
+        # if(self.steps > MAX_STEPS):
+        #     self.done=True
+        #     r -= 10
+        #     return r
+        # if dist < DIST_THRESH and (not self.done):
+        #     r += 2.0
+        #     self.at_objective_n += 1
+        #     if self.at_objective_n > HOLD_COUNT:
+        #         r +=END_REWARD
+        #         self.done = True
+        # elif dist > DIST_THRESH:
+        #     self.at_objective_n = 0
+        #     self.done = False
         return r
 
     def get_state(self):
@@ -237,7 +250,7 @@ class NJointArm(gym.Env):
 
     def reset(self):
         for arm in self.arms:
-            arm.setAngle(0)
+            arm.setAngle(0 + random.uniform(0,0.01))
         self.time_pen = TIME_PENALTY
         self.reset_objective()
         self.done = False
@@ -318,7 +331,6 @@ class NJointArm(gym.Env):
         perms = [[-1, 0, 1] for _ in range(self.extra_joints + 1)]
         for element in itertools.product(*perms):
             out.append(element)
-
         return out
 
 
@@ -406,7 +418,6 @@ class Arm:
 
     def getEnd(self):
         return self.end
-
 
 def normalize(x, minx, maxx):
     return (x - minx) / (maxx - minx)
