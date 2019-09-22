@@ -14,6 +14,11 @@ Arm.add_revolute_link(length=3, thetaInit=math.radians(10))
 Arm.add_revolute_link(length=3, thetaInit=math.radians(15))
 Arm.add_revolute_link(length=3, thetaInit=math.radians(20))
 Arm.add_revolute_link(length=3, thetaInit=math.radians(20))
+Arm.add_revolute_link(length=3, thetaInit=math.radians(20))
+Arm.add_revolute_link(length=3, thetaInit=math.radians(20))
+Arm.add_revolute_link(length=3, thetaInit=math.radians(20))
+Arm.add_revolute_link(length=3, thetaInit=math.radians(20))
+
 Arm.update_joint_coords()
 
 # Initialize target coordinates to current end effector position.
@@ -54,7 +59,7 @@ def move_to_target():
     # Set distance to move end effector toward target per algorithm iteration.
     distPerUpdate = 0.05 * reach
 
-    input()
+    #input()
 
 
     if np.linalg.norm(target - Arm.joints[:,[-1]]) > 0.02 * reach:

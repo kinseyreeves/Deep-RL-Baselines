@@ -4,10 +4,9 @@ import numpy as np
 import time
 import math
 
-THRESH = 5
-dist_per_update = 50
+THRESH = 10
+dist_per_update = 60
 N_EPS = 10000
-
 
 def get_state_data(state, nj):
     obj = state[0:2]
@@ -45,7 +44,7 @@ def get_jacobian(nj, eff_coords, joints):
     return jacobian
 
 
-for test in range(12,15):
+for test in range(1,15):
     extra_j = test
     env = gym.make('n-joints-v0', extra_joints=extra_j, extra_state=True)
     #f.write(str(extra_j) + ",")
@@ -59,11 +58,15 @@ for test in range(12,15):
         for step in range(0,1000):
 
             obj_pos, joint_poss, joint_angs, eff_pos = get_state_data(state, extra_j + 1)
-
             if done:
                 state = env.reset()
-                f.write(str(step) + "," +str(np.mean(rewards)) + "\n")
+                f.write(str(step) + "," +str(sum(rewards)) + "\n")
+                print("done")
+                print(test)
                 break
+            if(step>999):
+                print("not done")
+                input()
 
             targ_vec = np.concatenate((obj_pos - eff_pos, [0]))
             targ_vec = np.reshape(targ_vec, (3,1))
@@ -85,7 +88,7 @@ for test in range(12,15):
             rewards.append(reward)
 
             #print(rewards)
-            time.sleep(0.05)
+            time.sleep(0.001)
             #print("here")
 
     f.write("\n")
