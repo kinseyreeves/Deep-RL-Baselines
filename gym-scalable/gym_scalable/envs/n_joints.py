@@ -68,6 +68,8 @@ CONT_ACTIONS = True
 # should the objective position stay static
 STATIC = False
 
+USE_MOUSE = True
+
 
 class NJointArm(gym.Env):
     '''
@@ -172,6 +174,8 @@ class NJointArm(gym.Env):
                 if disc_actions[i]:
                     return list(self.non_discrete_actions[i])
 
+
+
         action = np.clip(action, -1,1)
 
         self.time_pen -= 1
@@ -198,20 +202,27 @@ class NJointArm(gym.Env):
 
         state = self.get_state()
 
+        if (USE_MOUSE and self.screen and pygame.mouse.get_focused()):
+            mouse_pos = pygame.mouse.get_pos()
+            self.ob_x = mouse_pos[0]
+            self.ob_y = mouse_pos[1]
+
         return np.array(state), reward, self.done, {}
 
-    def calc_reward(self, action, alpha = 1, beta = 0.1):
+    def calc_reward(self, action, alpha = 0.1, beta = 0.01):
         """
         Reward is -ve abs distance
         unless pointer is on objective its dist+1
         (therefore positive)
         :return: reward
         """
-        dist = self.get_dist() / (S_WIDTH/2)
-        h = ((dist**2 + alpha**2)**(1/2) + alpha)
-        action_pen = beta*sum(action**2)
+        dist_pen = -self.get_dist() / (S_WIDTH/2)
 
-        r = -(h + action_pen)
+        action_pen = sum(-beta*abs(action))
+        h = ((dist_pen ** 2 + alpha ** 2) ** (1 / 2) + alpha)
+
+        r = dist_pen + action_pen
+        #r = (h + action_pen)
 
         #r = math.sqrt(dist**2 + alpha**2) + alpha + action_pen
         #print(f"dist: {dist}, action pen {action_pen}, reward {r}")
@@ -260,8 +271,8 @@ class NJointArm(gym.Env):
         return state
 
     def reset(self):
-        for arm in self.arms:
-            arm.setAngle(0 + random.uniform(0,0.01))
+        # for arm in self.arms:
+        #     arm.setAngle(0 + random.uniform(0,0.01))
         self.time_pen = TIME_PENALTY
         self.reset_objective()
         self.done = False

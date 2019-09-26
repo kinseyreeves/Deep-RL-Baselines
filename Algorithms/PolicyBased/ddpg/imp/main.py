@@ -14,6 +14,7 @@ MAX_EP_STEPS = 250
 HIDDEN_SIZE = 200
 
 VAR_MIN = 0.08
+VAR_RED = 0.99995
 
 ACTOR_UPDATE = 1
 CRITIC_UPDATE = 1
@@ -56,7 +57,7 @@ def run():
             ddpg_agent.memory.push(state, action, reward, new_state, done)
 
             if len(ddpg_agent.memory) > BATCH_SIZE:
-                var *= 0.99995
+                var *= VAR_RED
                 var = max(VAR_MIN, var)
                 ddpg_agent.update(BATCH_SIZE)
                 if total_steps % ACTOR_UPDATE == 0:

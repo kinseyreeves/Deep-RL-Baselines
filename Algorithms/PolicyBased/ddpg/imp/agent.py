@@ -11,8 +11,8 @@ class Critic(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
         super(Critic, self).__init__()
         self.linear1 = nn.Linear(input_size, hidden_size)
-        self.linear2 = nn.Linear(hidden_size, 10)
-        self.linear3 = nn.Linear(10, 1)
+        self.linear2 = nn.Linear(hidden_size, 100)
+        self.linear3 = nn.Linear(100, 1)
 
         # torch.nn.init.xavier_uniform(self.linear1.weight)
         # torch.nn.init.xavier_uniform(self.linear2.weight)
@@ -26,7 +26,6 @@ class Critic(nn.Module):
         Params state and actions are torch tensors
         """
         x = torch.cat([state, action], 1)
-
         x = F.relu6(self.linear1(x))
         x = F.relu(self.linear2(x))
         x = self.linear3(x)
@@ -42,8 +41,8 @@ class Actor(nn.Module):
         super(Actor, self).__init__()
         self.l1 = nn.Linear(input_size, hidden_size)
         self.l2 = nn.Linear(hidden_size, hidden_size)
-        self.l22 = nn.Linear(hidden_size, 10)
-        self.l3 = nn.Linear(10, output_size)
+        self.l22 = nn.Linear(hidden_size, 100)
+        self.l3 = nn.Linear(100, output_size)
 
         # torch.nn.init.xavier_uniform(self.l1.weight)
         # torch.nn.init.xavier_uniform(self.l2.weight)
