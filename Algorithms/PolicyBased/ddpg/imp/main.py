@@ -7,13 +7,13 @@ import util
 import gym_scalable
 
 BATCH_SIZE = 16
-N_EPISODES = 500
+N_EPISODES = 2000
 
 MAX_EP_STEPS = 250
 
 HIDDEN_SIZE = 200
 
-VAR_MIN = 0.1
+VAR_MIN = 0.08
 
 ACTOR_UPDATE = 1
 CRITIC_UPDATE = 1
@@ -56,7 +56,7 @@ def run():
             ddpg_agent.memory.push(state, action, reward, new_state, done)
 
             if len(ddpg_agent.memory) > BATCH_SIZE:
-                var *= 0.9999
+                var *= 0.99995
                 var = max(VAR_MIN, var)
                 ddpg_agent.update(BATCH_SIZE)
                 if total_steps % ACTOR_UPDATE == 0:
@@ -66,8 +66,9 @@ def run():
 
             state = new_state
             episode_reward += reward
-            if ep_n > 200:
-                env.render()
+            env.render()
+            #if ep_n > 200:
+            #    env.render()
 
             if done or step == MAX_EP_STEPS:
                 print(f"Episode {ep_n}, finished:  {done}, reward : {episode_reward:.2f}, LR : {var:.2f}")
