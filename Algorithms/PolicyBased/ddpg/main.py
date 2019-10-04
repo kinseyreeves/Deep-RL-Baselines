@@ -1,9 +1,6 @@
-import sys
 import gym
 import numpy as np
-import pandas as pd
 import agent
-import util
 import gym_scalable
 
 BATCH_SIZE = 16
@@ -24,8 +21,6 @@ def run():
     rewards = []
     avg_rewards = []
 
-    # env = util.dNormalizedEnv(gym.make("Pendulum-v0"))
-    # env = gym.make("Pendulum-v0")
     extra_j = 1
     env = gym.make('n-joints-v0', extra_joints=extra_j)
 
@@ -52,8 +47,6 @@ def run():
 
             # input()
             new_state, reward, done, _ = env.step(action)
-            # print("here")
-
             ddpg_agent.memory.push(state, action, reward, new_state, done)
 
             if len(ddpg_agent.memory) > BATCH_SIZE:

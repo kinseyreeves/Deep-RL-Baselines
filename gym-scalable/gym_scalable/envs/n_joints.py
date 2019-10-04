@@ -39,6 +39,8 @@ extra_joints = 1
 # Whether or not the arm movements are relative. Read step()
 RELATIVE = False
 
+RESET_ARM_ANGS = True
+
 
 # -------------------ENV PARAMS----------------------######
 
@@ -271,8 +273,9 @@ class NJointArm(gym.Env):
         return state
 
     def reset(self):
-        # for arm in self.arms:
-        #     arm.setAngle(0 + random.uniform(0,0.01))
+        if(RESET_ARM_ANGS):
+            for arm in self.arms:
+                arm.setAngle(0 + random.uniform(0,0.01))
         self.time_pen = TIME_PENALTY
         self.reset_objective()
         self.done = False

@@ -66,7 +66,7 @@ class ActorCritic(nn.Module):
         return action_logprobs, torch.squeeze(state_value), dist_entropy
 
 
-class PPO:
+class PPOAgent:
     def __init__(self, state_dim, action_dim, action_std, lr, betas, gamma, K_epochs, eps_clip):
         self.lr = lr
         self.betas = betas

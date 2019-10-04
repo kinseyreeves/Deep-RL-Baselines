@@ -1,7 +1,6 @@
 import torch.nn as nn
 import torch
 import torch.nn.functional as F
-from collections import deque
 import util
 import torch.optim as optim
 from torch.autograd import Variable
