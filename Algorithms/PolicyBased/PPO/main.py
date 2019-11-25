@@ -2,17 +2,22 @@ import torch
 import gym
 import agent
 import util
+import time
 import numpy as np
+import gym_scalable
+from tensorboardX import SummaryWriter
 
 #from gym.envs.box2d.bipedal_walker import BipedalWalker
 
+MAX_EP_STEPS = 250
+
 def run():
+    writer = SummaryWriter(logdir="../runs/" + "PPO" + time.strftime("%Y%m%d-%H%M%S"))
 
     render = False
     solved_reward = 300  # stop training if avg_reward > solved_reward
     log_interval = 1  # print avg reward in the interval
     max_episodes = 10000  # max training episodes
-    max_timesteps = 1500  # max timesteps in one episode
 
     update_timestep = 4000  # update policy every n timesteps
     action_std = 0.5  # constant std for action distribution (Multivariate Normal)
@@ -22,7 +27,6 @@ def run():
 
     lr = 0.0003  # parameters for Adam optimizer
     betas = (0.9, 0.999)
-    memory_size = 5000
 
     random_seed = None
     #############################################
@@ -57,7 +61,7 @@ def run():
     for i_episode in range(1, max_episodes + 1):
         state = env.reset()
         ep_reward = 0
-        for t in range(max_timesteps):
+        for t in range(MAX_EP_STEPS):
             time_step += 1
             # Running policy_old:
             action = ppo.select_action(state, memory)
@@ -85,6 +89,7 @@ def run():
         if i_episode % log_interval == 0:
             avg_length = int(avg_length / log_interval)
             running_reward = int((running_reward / log_interval))
+            writer.add_scalar("ppo/ep_reward", ep_reward, i_episode)
 
             #print('Episode {} \t Avg length: {} \t Avg reward: {}'.format(i_episode, avg_length, running_reward))
             print(f"Ep : {i_episode}, Reward : {ep_reward} ")

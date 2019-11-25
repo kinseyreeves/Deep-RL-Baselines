@@ -2,6 +2,9 @@ import gym
 import numpy as np
 import agent
 import gym_scalable
+from tensorboardX import SummaryWriter
+import time
+
 
 BATCH_SIZE = 16
 N_EPISODES = 2000
@@ -15,6 +18,8 @@ VAR_RED = 0.99995
 
 ACTOR_UPDATE = 1
 CRITIC_UPDATE = 1
+
+writer = SummaryWriter(logdir="../runs/" + "DDPG" + time.strftime("%Y%m%d-%H%M%S"))
 
 
 def run():
@@ -60,11 +65,12 @@ def run():
 
             state = new_state
             episode_reward += reward
-            env.render()
+            #env.render()
             #if ep_n > 200:
             #    env.render()
 
             if done or step == MAX_EP_STEPS:
+                writer.add_scalar('ddpg/ep_reward', episode_reward, ep_n)
                 print(f"Episode {ep_n}, finished:  {done}, reward : {episode_reward:.2f}, LR : {var:.2f}")
                 break
 

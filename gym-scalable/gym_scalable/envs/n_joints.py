@@ -209,6 +209,9 @@ class NJointArm(gym.Env):
             self.ob_x = mouse_pos[0]
             self.ob_y = mouse_pos[1]
 
+        if(self.steps > MAX_STEPS):
+            self.done = True
+
         return np.array(state), reward, self.done, {}
 
     def calc_reward(self, action, alpha = 0.1, beta = 0.01):

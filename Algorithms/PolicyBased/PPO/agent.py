@@ -1,7 +1,7 @@
 """
 PPO
 Code based on
-https://github.com/nikhilbarhate99/PPO-PyTorch/blob/master/PPO_continuous.py?fbclid=IwAR0RaTsNI4D-r99_dXJTBwddEHBhd4JuTNi-iSWADSgstH311YpDAcM4Ntw#L94
+https://github.com/nikhilbarhate99/PPO-PyTorch/blob/master/PPO_continuous.py.py?fbclid=IwAR0RaTsNI4D-r99_dXJTBwddEHBhd4JuTNi-iSWADSgstH311YpDAcM4Ntw#L94
 
 """
 
@@ -88,30 +88,41 @@ class PPOAgent:
         # Monte Carlo estimate of rewards:
         rewards = []
         discounted_reward = 0
-        for reward, is_terminal in zip(reversed(memory.rewards), reversed(memory.is_terminals)):
+
+        states, actions, logprobs, rewards_, is_terminals = memory.sample()
+        #print(len(rewards))
+
+        for reward, is_terminal in zip(reversed(rewards_), reversed(is_terminals)):
             if is_terminal:
                 discounted_reward = 0
             discounted_reward = reward + (self.gamma * discounted_reward)
+
             rewards.insert(0, discounted_reward)
+
+        #print(len(rewards))
 
         # Normalizing the rewards:
         rewards = torch.tensor(rewards).to(device)
         rewards = (rewards - rewards.mean()) / (rewards.std() + 1e-5)
 
+
         # convert list to tensor
-        old_states = torch.squeeze(torch.stack(memory.states).to(device)).detach()
-        old_actions = torch.squeeze(torch.stack(memory.actions).to(device)).detach()
-        old_logprobs = torch.squeeze(torch.stack(memory.logprobs)).to(device).detach()
+        old_states = torch.squeeze(torch.stack(states).to(device)).detach()
+        old_actions = torch.squeeze(torch.stack(actions).to(device)).detach()
+        old_logprobs = torch.squeeze(torch.stack(logprobs)).to(device).detach()
 
         # Optimize policy for K epochs:
         for _ in range(self.K_epochs):
             # Evaluating old actions and values :
             logprobs, state_values, dist_entropy = self.policy.evaluate(old_states, old_actions)
+            #print(len(logprobs))
 
             # Finding the ratio (pi_theta / pi_theta__old):
             ratios = torch.exp(logprobs - old_logprobs.detach())
 
             # Finding Surrogate Loss:
+            #print(rewards.shape)
+            #print(state_values.shape)
             advantages = rewards - state_values.detach()
             surr1 = ratios * advantages
             surr2 = torch.clamp(ratios, 1 - self.eps_clip, 1 + self.eps_clip) * advantages
