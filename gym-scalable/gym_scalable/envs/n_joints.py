@@ -19,34 +19,42 @@ import itertools
 
 import numpy as np
 
-# Paramaters
+# ----------------------------------------------------#####
 
 # Screen width/height
 S_WIDTH = 400
-S_HEIGHT = 300
+S_HEIGHT = 400
 
-# Arm params
+# --------------------ARM PARAMS-----------------------####
 ARM_ANGLE = 0
-ARM_LENGTH = 60
-
-# Number of joints excluding the middle point
-extra_joints = 2
-
-# Number of objectives, TODO able to change
-N_OBJECTIVES = 1
-
-# Whether or not the arm movements are relative. Read step()
-RELATIVE = True
+ARM_LENGTH = 50
 
 # Radians change per step() action, i.e. [-1,0,1] each change
 # either -.1, 0 or .1 rads of the arm
-ARM_RADS_CHANGE = 0.2
+ARM_RADS_CHANGE = 0.1
+
+# Number of joints excluding the middle point
+extra_joints = 1
+
+# Whether or not the arm movements are relative. Read step()
+RELATIVE = False
+
+RESET_ARM_ANGS = True
+
+
+# -------------------ENV PARAMS----------------------######
+
+#Number of objectives, TODO able to change
+N_OBJECTIVES = 1
+
+#Number of obstacles, set to 0 for jacobian or no obs
+N_OBSTACLES = 0
 
 # Distance before goal is considered reached
-DIST_THRESH = 15
+DIST_THRESH = 10
 
 # Reward for reaching objective
-END_REWARD = 500
+END_REWARD = 10
 
 TIME_PENALTY = 200
 
@@ -62,19 +70,19 @@ CONT_ACTIONS = True
 # should the objective position stay static
 STATIC = False
 
+USE_MOUSE = True
+
 
 class NJointArm(gym.Env):
     '''
     N-Jointed Arm environment. Currently goal is to reach point destinations
         - May update to have destinations moving towards object
-        - 
 
         Action space:
             1 dimension array with of length N_JOINTS^3
         
         Observation space:
             1 dimension array with each angle
-
         Reward function:
 
     '''
@@ -83,9 +91,17 @@ class NJointArm(gym.Env):
 
     action_bound = [-1, 1]
 
-    def __init__(self, extra_joints = 2):
+    def __init__(self, extra_joints = 2, extra_state = False):
+        """
+
+        :param extra_joints: Specify how many extra joints
+        :param extra_state: Adds extra info into the state space such as
+            precise positions
+        """
+        self.extra_state = extra_state
         self.screen = None
         self.extra_joints = extra_joints
+        self.obstacles = []
         # If continuous action space = n, where n in range [-1,1]
         # if discrete action space initialised to [-1,0,1]*joints
         if CONT_ACTIONS:
@@ -131,9 +147,16 @@ class NJointArm(gym.Env):
         h_bounds = np.array([1] + [1] * ((extra_joints + 1) * 2) + [1, 1])
 
         self.observation_space = spaces.Box(l_bounds, h_bounds, dtype=np.float32)
+
+        #setup objectives
+        if (N_OBJECTIVES > 0):
+            for i in range(0,N_OBJECTIVES):
+                self.spawn_obstacle()
+
+
         # print(self.observation_space)
 
-    def step(self, action):
+    def step(self, action, normalize=False):
         '''
         Arms relative angle change or global angle change?
         if RELATIVE is set, an arms global angle will be 
@@ -152,6 +175,10 @@ class NJointArm(gym.Env):
             for i in range(0, len(disc_actions)):
                 if disc_actions[i]:
                     return list(self.non_discrete_actions[i])
+
+
+
+        action = np.clip(action, -1,1)
 
         self.time_pen -= 1
         self.steps += 1
@@ -173,31 +200,51 @@ class NJointArm(gym.Env):
                     arm.move_arm(change)
                     update_arms(action_arms[i + 1:], change)
         # check distance from goal of end arm, if less than thresh episode done
-        reward = self.calc_reward()
+        reward = self.calc_reward(action)
 
         state = self.get_state()
 
+        if (USE_MOUSE and self.screen and pygame.mouse.get_focused()):
+            mouse_pos = pygame.mouse.get_pos()
+            self.ob_x = mouse_pos[0]
+            self.ob_y = mouse_pos[1]
+
+        if(self.steps > MAX_STEPS):
+            self.done = True
+
         return np.array(state), reward, self.done, {}
 
-    def calc_reward(self):
+    def calc_reward(self, action, alpha = 0.1, beta = 0.01):
         """
         Reward is -ve abs distance
         unless pointer is on objective its dist+1
         (therefore positive)
         :return: reward
         """
-        dist = self.get_dist()
-        r = - dist / (S_WIDTH/2)
-        if dist < DIST_THRESH and (not self.done):
-            r += 1.0
-            self.at_objective_n += 1
-            if self.at_objective_n > HOLD_COUNT:
-                r +=10
-                self.done = True
-        elif dist > DIST_THRESH:
-            self.at_objective_n = 0
-            self.done = False
+        dist_pen = -self.get_dist() / (S_WIDTH/2)
 
+        action_pen = sum(-beta*abs(action))
+        h = ((dist_pen ** 2 + alpha ** 2) ** (1 / 2) + alpha)
+
+        r = dist_pen + action_pen
+        #r = (h + action_pen)
+
+        #r = math.sqrt(dist**2 + alpha**2) + alpha + action_pen
+        #print(f"dist: {dist}, action pen {action_pen}, reward {r}")
+        # r = -(dist / (S_WIDTH/2))
+        # if(self.steps > MAX_STEPS):
+        #     self.done=True
+        #     r -= 10
+        #     return r
+        # if dist < DIST_THRESH and (not self.done):
+        #     r += 2.0
+        #     self.at_objective_n += 1
+        #     if self.at_objective_n > HOLD_COUNT:
+        #         r +=END_REWARD
+        #         self.done = True
+        # elif dist > DIST_THRESH:
+        #     self.at_objective_n = 0
+        #     self.done = False
         return r
 
     def get_state(self):
@@ -205,29 +252,33 @@ class NJointArm(gym.Env):
         Gets the state, [at_obj] [jointx-objx, jointy-objy]*N_JOINTS + [dist from centrex, dfcy]
         '''
         #angles = [normalize(arm.angle, 0, 2 * math.pi) for arm in self.arms]
-
-        in_point = 1. if self.at_objective_n > 0. else 0.
         arm_coords = []
-        for arm in self.arms:
-            arm_coords.append(arm.endX - self.ob_x)
-            arm_coords.append(arm.endY - self.ob_y)
+        arm_angs = []
+        if self.extra_state:
 
-        dist = np.asarray([self.centre_x - self.ob_x, self.centre_y - self.ob_y]) / (S_WIDTH/2)
-        arm_coords = np.asarray(arm_coords) / (S_WIDTH/2)
-        # minx = self.centre_x - ARM_LENGTH * (N_EXTRA_JOINTS + 1)
-        # maxx = self.centre_x + ARM_LENGTH * (N_EXTRA_JOINTS + 1)
-        # miny = self.centre_y - ARM_LENGTH * (N_EXTRA_JOINTS + 1)
-        # maxy = self.centre_x + ARM_LENGTH * (N_EXTRA_JOINTS + 1)
-        #
-        # objs = [normalize(self.ob_x, minx, maxx), normalize(self.ob_y, minx, maxx)]
-        #print(in_point, dist, arm_coords)
-        state = np.concatenate([[in_point], dist, arm_coords])
+            for arm in self.arms:
+                arm_coords.append(arm.x)
+                arm_coords.append(arm.y)
+                arm_angs.append(arm.angle)
+            state = np.concatenate([[self.ob_x, self.ob_y], arm_coords + [self.arms[-1].endX, self.arms[-1].endY], arm_angs])
+        else:
+            in_point = 1. if self.at_objective_n > 0. else 0.
+
+            for arm in self.arms:
+                arm_coords.append(arm.endX - self.ob_x)
+                arm_coords.append(arm.endY - self.ob_y)
+
+            dist = np.asarray([self.centre_x - self.ob_x, self.centre_y - self.ob_y]) / (S_WIDTH/2)
+            arm_coords = np.asarray(arm_coords) / (S_WIDTH/2)
+
+            state = np.concatenate([[in_point], dist, arm_coords])
 
         return state
 
     def reset(self):
-        for arm in self.arms:
-            arm.setAngle(0)
+        if(RESET_ARM_ANGS):
+            for arm in self.arms:
+                arm.setAngle(0 + random.uniform(0,0.01))
         self.time_pen = TIME_PENALTY
         self.reset_objective()
         self.done = False
@@ -240,6 +291,7 @@ class NJointArm(gym.Env):
             self.screen = pygame.display.set_mode((S_WIDTH, S_HEIGHT))
             self.screen.fill((255, 255, 255))
             pygame.init()
+        pygame.event.get()
         self.screen.fill((255, 255, 255))
 
         # Draw the objective
@@ -282,6 +334,7 @@ class NJointArm(gym.Env):
             self.ob_x = self.centre_x + round(ARM_LENGTH * math.cos(arcpos))
             self.ob_y = self.centre_y + round(ARM_LENGTH * math.sin(arcpos))
 
+        #make the objective slightly within the screen
         if self.ob_x > S_WIDTH:
             self.ob_x = S_WIDTH-10
         if self.ob_y > S_HEIGHT:
@@ -290,6 +343,10 @@ class NJointArm(gym.Env):
             self.ob_x = 10
         if self.ob_y < 0:
             self.ob_y = 10
+
+    def spawn_obstacle(self):
+        ...
+
 
 
     def get_dist(self):
@@ -308,7 +365,6 @@ class NJointArm(gym.Env):
         perms = [[-1, 0, 1] for _ in range(self.extra_joints + 1)]
         for element in itertools.product(*perms):
             out.append(element)
-
         return out
 
 
@@ -396,7 +452,6 @@ class Arm:
 
     def getEnd(self):
         return self.end
-
 
 def normalize(x, minx, maxx):
     return (x - minx) / (maxx - minx)
