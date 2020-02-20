@@ -17,7 +17,7 @@ env.reset()
 
 while True:
     i+=1
-    #env.render()
+    env.render()
     action = env.action_space.sample()
     #print("evader action ", action)
     state, reward, done, _ = env.step(action)

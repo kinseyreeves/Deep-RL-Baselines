@@ -3,7 +3,7 @@ import gym_scalable
 import random
 import numpy as np
 
-env = gym.make('n-traffic-v0')
+env = gym.make('n-pathing-v0')
 i=0
 
 while True:
@@ -17,7 +17,7 @@ while True:
     #print(action)
     #for i in range
     env.step(1)
-    a = input()
-    print("step")
+    #a = input()
+    #print("step")
     
     
