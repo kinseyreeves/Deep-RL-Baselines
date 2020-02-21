@@ -40,11 +40,11 @@ class GridMap:
         print(f"start : {self.start}")
         print(f"end : {self.goal}")
 
-        path = self.astar_path(self.start[0],self.start[1], self.goal[0],self.goal[1])
-        for n in path:
-            self.marked_blocks.add(n)
-
-        self.marked_blocks.add(self.goal)
+        # path = self.astar_path(self.start[0],self.start[1], self.goal[0],self.goal[1])
+        # for n in path:
+        #     self.marked_blocks.add(n)
+        #
+        # self.marked_blocks.add(self.goal)
 
 
     def render(self, screen):
@@ -63,7 +63,7 @@ class GridMap:
         return abs(x-gX) + abs(y-gY)
 
     def get_astar_move(self, startX, startY, endX, endY):
-        return self.astar_path(startX, startY, endX, endY)[0]
+        return self.astar_path(startX, startY, endX, endY)[1]
 
     def astar_path(self, startX, startY, endX, endY):
         """
@@ -83,13 +83,15 @@ class GridMap:
         open_list = []
         closed_list = []
 
+        path = []
+
         open_list.append(start_node)
 
         while len(open_list) > 0:
             current_node = open_list[0]
             current_index = 0
 
-            print(current_node.position)
+            #print(current_node.position)
 
             #[TODO DO WITH HEAP]
             for index, item in enumerate(open_list):
@@ -102,16 +104,16 @@ class GridMap:
 
 
             if current_node == end_node:
-                print("FOUND GOAL")
-                path = []
+                #print("FOUND GOAL")
+
                 current = current_node
 
                 #track backwards through the path
                 while current:
                     path.append(current.position)
                     current = current.parent
-                print(path)
-                return path[::-1]
+                break
+
 
             children = []
             for new_pos in self.get_neighbours(current_node.position[0], current_node.position[1]):
@@ -134,6 +136,8 @@ class GridMap:
                         continue
 
                 open_list.append(child)
+
+        return path[::-1]
 
 
     def get_bfs_path(self, startX, startY, endX, endY):
@@ -174,11 +178,11 @@ class GridMap:
         out = []
         if self.is_walkable(x+1, y) and (x+1, y) not in self.a_searched:
             out.append((x+1, y))
-        if self.is_walkable(x-1, y)and (x-1, y) not in self.a_searched:
+        if self.is_walkable(x-1, y) and (x-1, y) not in self.a_searched:
             out.append((x-1, y))
-        if self.is_walkable(x, y+1)and (x, y+1) not in self.a_searched:
+        if self.is_walkable(x, y+1) and (x, y+1) not in self.a_searched:
             out.append((x, y+1))
-        if self.is_walkable(x, y-1)and (x, y-1) not in self.a_searched:
+        if self.is_walkable(x, y-1) and (x, y-1) not in self.a_searched:
             out.append((x, y-1))
         return out
 

@@ -42,21 +42,22 @@ CAUGHT_DIST = 10
 
 MAPFILE = "map.txt"
 
+
+
 class MazeEnv(gym.Env):
+
     metadata = {'render.modes': ['human']}
 
     '''
-    Basic single chaser single evader environment
-    Env agent controls the evader, which moves at a fixed speed
-    with action 1 | 0, to change the angle.
-
-    Chaser always moves towards the evader.
+    Basic maze environment, get to the finish
+    full state gives the
+    
     '''
 
-    def __init__(self):
+    def __init__(self, full_state = False, normalize_state = True):
         self.screen = None
         # Action space initialised to [-1,0,1] for each joint
-        self.action_space = spaces.Discrete(2)
+        self.action_space = spaces.Discrete(4)
 
         # TODO should we normalize or use int vals?
         high = np.array([1, 1, 1, 1, 1])
@@ -69,28 +70,37 @@ class MazeEnv(gym.Env):
         self.steps = 0
         self.reward = 0
         self.done = False
+        self.normalize_state = False
         self.gridmap = GridMap(MAPFILE, S_WIDTH)
 
-        self.entity = Entity(self.gridmap.start[0], self.gridmap.start[1])
+        self.entity = Entity(self.gridmap.start[0], self.gridmap.start[1], self.gridmap)
+        print(f"Env starting entity at {self.gridmap.start[0]} {self.gridmap.start[1]}")
 
         self.state = self.reset()
 
         # observation space = [self.x, self.y, enemy.x, enemy.y]
         # self.observation_space = spaces.Box(l_bounds, h_bounds, dtype=np.float32)
 
+        #Action conversion:
+        left = np.asarray([1, 0, 0, 0])
+        right = np.asarray([0,1,0,0])
+        up = np.asarray([0,0,1,0])
+        down = np.asarray([0,0,0,1])
+
+        self.actions_table = {(-1, 0): left, (1, 0) : right, (0,-1) : up, (0,1) : down}
+
     def step(self, action):
-        self.evader.update(action)
+        self.entity.update(action)
 
         self.steps += 1
         self.reward = 1
 
         self.set_state()
 
-        if out_of_bounds((self.evader.x, self.evader.y)) or \
-                self.evader.is_caught((self.chaser.x, self.chaser.y)):
-            # self.reward = -100 + self.reward
+        if self.entity.x == self.gridmap.goal[0] and self.entity.y == self.gridmap.goal[1]:
+            self.reset()
             self.done = True
-            return np.array(self.state), self.reward, self.done, {}
+
 
         if (self.steps >= MAX_SCORE):
             self.done = True
@@ -98,31 +108,21 @@ class MazeEnv(gym.Env):
 
         return np.array(self.state), self.reward, self.done, {}
 
-    def goal_setter(self):
-        """
-        Types of goals:
-            - Catch the evader
-            - Reach the target
-            - Evade the chaser
-        :return:
-        """
 
     def set_state(self):
-
-        self.state = [utils.normalize(self.evader.angle, 0, 2 * math.pi),
-                      utils.normalize(self.evader.x, 0, S_WIDTH),
-                      utils.normalize(self.evader.y, 0, S_WIDTH),
-                      utils.normalize(self.chaser.x, 0, S_WIDTH),
-                      utils.normalize(self.chaser.y, 0, S_WIDTH)]
+        if(self.normalize_state):
+            self.state = [utils.normalize(self.entity.x, 0, self.gridmap.size),
+                          utils.normalize(self.entity.y, 0, self.gridmap.size)]
+        else:
+            self.state = [self.entity.x, self.entity.y]
 
     def reset(self):
+        self.entity.x = self.gridmap.start[0]
+        self.entity.y = self.gridmap.start[1]
 
         self.reward = 0
         self.steps = 0
         self.done = False
-        self.evader = Evader(self.centre_x, self.centre_y)
-        self.chaser = Chaser(random.randrange(0, S_WIDTH), random.randrange(0, S_WIDTH))
-
         self.set_state()
 
         return np.array(self.state)
@@ -137,15 +137,19 @@ class MazeEnv(gym.Env):
         self.screen.fill((255, 255, 255))
 
         self.gridmap.render(self.screen)
+        self.entity.render(self.screen, self.gridmap.block_size)
+
 
         time.sleep(0.1)
         pygame.display.update()
 
-    def reset_objective(self):
-        '''
-        Initialises the objective
-        '''
-        ...
+    def convert_action(self, dir):
+        return self.actions_table[dir]
+
+    def get_astar_action(self, pos):
+        path = self.gridmap.astar_path(pos[0], pos[1], self.gridmap.goal[0], self.gridmap.goal[1])[1]
+        action = self.convert_action((pos[0] - path[0], pos[1] - path[1]))
+        return action
 
 
 def out_of_bounds(pos):
@@ -156,17 +160,25 @@ def out_of_bounds(pos):
 
 class Entity:
     # Basic class for defining circle object
-    def __init__(self, x, y, color=(0,255,0)):
+    def __init__(self, x, y, grid, color=(0,255,0)):
         self.x = x
         self.y = y
         self.color = color
         self.angle = 0
+        self.grid = grid
 
     def update(self, action):
-        ...
+        if action[0] and self.grid.is_walkable(self.x+1, self.y):
+            self.x+=1
+        elif action[1] and self.grid.is_walkable(self.x-1, self.y):
+            self.x-=1
+        elif action[2] and self.grid.is_walkable(self.x, self.y+1):
+            self.y+=1
+        elif action[3] and self.grid.is_walkable(self.x, self.y-1):
+            self.y-=1
 
-    def render(self, screen):
-        pygame.draw.circle(screen, self.color, (round(self.x), round(self.y)), 10)
+    def render(self, screen, block_size):
+        pygame.draw.circle(screen, self.color, (round(self.x*block_size+(block_size/2)), round(self.y*block_size+(block_size/2))), 10)
         # TODO draw vector in direction of entity
         # pygame.draw.line(screen, (255,90,0), )
 
@@ -179,58 +191,58 @@ class Entity:
         ...
 
 
-class Evader(Entity):
-    # evader class, moves away from the chaser
-    def __init__(self, x, y):
-        color = (255, 0, 0)
-        super().__init__(x, y, color)
-
-    def update(self, action):
-
-        if (action):
-            self.angle += DTHETA
-        else:
-            self.angle -= DTHETA
-        dx = math.cos(self.angle) * EVADER_SPEED
-        dy = math.sin(self.angle) * EVADER_SPEED
-
-        self.x += dx
-        self.y += dy
-        self.angle = utils.clamp_angle(self.angle)
-
-    def is_caught(self, chaser_pos):
-        c_x, c_y = chaser_pos
-        dist = math.hypot(c_x - self.x, c_y - self.y)
-        if dist < CAUGHT_DIST:
-            return True
-        return False
-
-
-class Chaser(Entity):
-    '''
-    Chaser class, moves towards the evader
-    TODO replace with trained chaser
-    '''
-
-    def __init__(self, x, y):
-        color = (0, 255, 0)
-        super().__init__(x, y, color)
-
-    def update(self, ev_pos):
-        # clockwise
-
-        ev_x, ev_y = ev_pos
-
-        x_diff = ev_x - self.x
-        y_diff = ev_y - self.y
-
-        self.angle = math.atan2(y_diff, x_diff)
-        # print("evader angle " , self.angle)
-        dx = math.cos(self.angle) * CHASER_SPEED
-        dy = math.sin(self.angle) * CHASER_SPEED
-
-        self.x += dx
-        self.y += dy
+# class Evader(Entity):
+#     # evader class, moves away from the chaser
+#     def __init__(self, x, y):
+#         color = (255, 0, 0)
+#         super().__init__(x, y, color)
+#
+#     def update(self, action):
+#
+#         if (action):
+#             self.angle += DTHETA
+#         else:
+#             self.angle -= DTHETA
+#         dx = math.cos(self.angle) * EVADER_SPEED
+#         dy = math.sin(self.angle) * EVADER_SPEED
+#
+#         self.x += dx
+#         self.y += dy
+#         self.angle = utils.clamp_angle(self.angle)
+#
+#     def is_caught(self, chaser_pos):
+#         c_x, c_y = chaser_pos
+#         dist = math.hypot(c_x - self.x, c_y - self.y)
+#         if dist < CAUGHT_DIST:
+#             return True
+#         return False
+#
+#
+# class Chaser(Entity):
+#     '''
+#     Chaser class, moves towards the evader
+#     TODO replace with trained chaser
+#     '''
+#
+#     def __init__(self, x, y):
+#         color = (0, 255, 0)
+#         super().__init__(x, y, color)
+#
+#     def update(self, ev_pos):
+#         # clockwise
+#
+#         ev_x, ev_y = ev_pos
+#
+#         x_diff = ev_x - self.x
+#         y_diff = ev_y - self.y
+#
+#         self.angle = math.atan2(y_diff, x_diff)
+#         # print("evader angle " , self.angle)
+#         dx = math.cos(self.angle) * CHASER_SPEED
+#         dy = math.sin(self.angle) * CHASER_SPEED
+#
+#         self.x += dx
+#         self.y += dy
 
 
 
