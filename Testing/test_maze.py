@@ -10,7 +10,6 @@ i = 0
 print(env.gridmap)
 goal = env.gridmap.goal
 
-print(   )
 
 while True:
     i += 1
@@ -27,12 +26,9 @@ while True:
     if(done):
         env.reset()
 
-    #
+
     print("current pos")
     print(state)
-    #
-    # print("next move:")
-    # print(next)
 
     print(action)
     time.sleep(1)

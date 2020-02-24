@@ -93,12 +93,13 @@ class MazeEnv(gym.Env):
         self.entity.update(action)
 
         self.steps += 1
-        self.reward = 1
+        self.reward = 0
 
         self.set_state()
 
         if self.entity.x == self.gridmap.goal[0] and self.entity.y == self.gridmap.goal[1]:
             self.reset()
+            self.reward = 1
             self.done = True
 
 
