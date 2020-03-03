@@ -6,10 +6,10 @@ from random import shuffle, randrange
 import pygame
 
 
-def make_maze(w=16, h=8):
+def make_maze(w=25, h=25):
     vis = [[0] * w + [1] for _ in range(h)] + [[1] * (w + 1)]
-    ver = [["|  "] * w + ['|'] for _ in range(h)] + [[]]
-    hor = [["+--"] * w + ['+'] for _ in range(h + 1)]
+    ver = [["| "] * w + ['|'] for _ in range(h)] + [[]]
+    hor = [["+-"] * w + ['+'] for _ in range(h + 1)]
 
     def walk(x, y):
         vis[y][x] = 1
@@ -18,8 +18,8 @@ def make_maze(w=16, h=8):
         shuffle(d)
         for (xx, yy) in d:
             if vis[yy][xx]: continue
-            if xx == x: hor[max(y, yy)][x] = "+  "
-            if yy == y: ver[y][max(x, xx)] = "   "
+            if xx == x: hor[max(y, yy)][x] = "+ "
+            if yy == y: ver[y][max(x, xx)] = "  "
             walk(xx, yy)
 
     walk(randrange(w), randrange(h))
@@ -27,9 +27,26 @@ def make_maze(w=16, h=8):
     s = ""
     print(hor)
     print(ver)
+    f = open("out_big.txt", "w+")
     for (a, b) in zip(hor, ver):
         s += ''.join(a + ['\n'] + b + ['\n'])
         out.append(a)
         out.append(b)
-    #print(s)
+        f.write(''.join(a + ['\n'] + b + ['\n']))
+
     return out
+
+
+class MazeReader:
+
+    def __init__(self, filename):
+        self.maze = self.read_maze(filename)
+
+    def read_maze(self, filename):
+        out = []
+        for line in open(filename).readlines():
+            out.append(list(line.strip("\n")))
+        return out
+
+
+make_maze()

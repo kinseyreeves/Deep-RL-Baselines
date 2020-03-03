@@ -40,8 +40,7 @@ MAX_SCORE = 200
 
 CAUGHT_DIST = 10
 
-MAPFILE = "map.txt"
-
+mapfile = "out_big.txt"
 
 
 class MazeEnv(gym.Env):
@@ -51,10 +50,9 @@ class MazeEnv(gym.Env):
     '''
     Basic maze environment, get to the finish
     full state gives the
-    
     '''
 
-    def __init__(self, full_state = False, normalize_state = True):
+    def __init__(self, mapfile=None, full_state = False, normalize_state = True):
         self.screen = None
         # Action space initialised to [-1,0,1] for each joint
         self.action_space = spaces.Discrete(4)
@@ -71,7 +69,7 @@ class MazeEnv(gym.Env):
         self.reward = 0
         self.done = False
         self.normalize_state = False
-        self.gridmap = GridMap(MAPFILE, S_WIDTH)
+        self.gridmap = GridMap(mapfile, S_WIDTH)
 
         self.entity = Entity(self.gridmap.start[0], self.gridmap.start[1], self.gridmap)
         print(f"Env starting entity at {self.gridmap.start[0]} {self.gridmap.start[1]}")
@@ -87,7 +85,7 @@ class MazeEnv(gym.Env):
         up = np.asarray([0,0,1,0])
         down = np.asarray([0,0,0,1])
 
-        self.actions_table = {(-1, 0): left, (1, 0) : right, (0,-1) : up, (0,1) : down}
+        self.actions_table = {(-2, 0): left, (2, 0) : right, (0,-2) : up, (0,2) : down}
 
     def step(self, action):
         self.entity.update(action)
@@ -138,8 +136,7 @@ class MazeEnv(gym.Env):
         self.screen.fill((255, 255, 255))
 
         self.gridmap.render(self.screen)
-        self.entity.render(self.screen, self.gridmap.block_size)
-
+        self.entity.render(self.screen, self.gridmap.block_width, self.gridmap.block_height)
 
         time.sleep(0.1)
         pygame.display.update()
@@ -148,10 +145,12 @@ class MazeEnv(gym.Env):
         return self.actions_table[dir]
 
     def get_astar_action(self, pos):
-        path = self.gridmap.astar_path(pos[0], pos[1], self.gridmap.goal[0], self.gridmap.goal[1])[1]
+        path = self.gridmap.astar_path(pos[0], pos[1], self.gridmap.goal[0], self.gridmap.goal[1])
+        print(path)
+        path = path[1]
+        print(path)
         action = self.convert_action((pos[0] - path[0], pos[1] - path[1]))
         return action
-
 
 def out_of_bounds(pos):
     x, y = pos
@@ -170,16 +169,18 @@ class Entity:
 
     def update(self, action):
         if action[0] and self.grid.is_walkable(self.x+1, self.y):
-            self.x+=1
+            self.x+=2
         elif action[1] and self.grid.is_walkable(self.x-1, self.y):
-            self.x-=1
+            self.x-=2
         elif action[2] and self.grid.is_walkable(self.x, self.y+1):
-            self.y+=1
+            self.y+=2
         elif action[3] and self.grid.is_walkable(self.x, self.y-1):
-            self.y-=1
+            self.y-=2
 
-    def render(self, screen, block_size):
-        pygame.draw.circle(screen, self.color, (round(self.x*block_size+(block_size/2)), round(self.y*block_size+(block_size/2))), 10)
+    def render(self, screen, block_width, block_height):
+
+        pygame.draw.circle(screen, self.color, ((round(((self.x-1)/2)*block_width+(block_width/2))), round((((self.y-1)/2)*block_height+(block_height/2)))), 10)
+
         # TODO draw vector in direction of entity
         # pygame.draw.line(screen, (255,90,0), )
 

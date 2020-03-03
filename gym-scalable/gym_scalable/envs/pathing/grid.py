@@ -23,7 +23,7 @@ class Node:
 
 class GridMap:
     map = []
-    colours = {'O' : (255,255,255), 'G':(0,255,0), 'X':(0,0,255), 'S':(255,0,0)}
+    colours = {'O' : (255,255,255), 'G':(0,255,0), 'X':(0,0,255), 'S':(255,0,0), '-':(255,0,0), '+':(255,0,0)}
 
     walkable = set()
     a_searched = set()
@@ -34,30 +34,51 @@ class GridMap:
         self.map = self.read_map(mapfile)
         self.screen_width = screen_width
 
-        self.size = len(self.map[0])
+        self.width = len(self.map[0]) // 2
+        self.height = len(self.map) // 2
         self.block_size = screen_width / len(self.map[0])
 
-        print(f"start : {self.start}")
-        print(f"end : {self.goal}")
+        self.block_width = screen_width / self.width
+        self.block_height = screen_width / self.height
 
-        # path = self.astar_path(self.start[0],self.start[1], self.goal[0],self.goal[1])
-        # for n in path:
-        #     self.marked_blocks.add(n)
-        #
-        # self.marked_blocks.add(self.goal)
+        # print(f"start : {self.start}")
+        # print(f"end : {self.goal}")
 
 
     def render(self, screen):
-        for i in range(0,self.size):
-            for j in range(0,self.size):
-                block = self.map[i][j]
-                r = (j*self.block_size,i*self.block_size,self.block_size,self.block_size)
 
-                pygame.draw.rect(screen, self.colours[block], r)
+        for y in range(0,len(self.map)):
+            for x in range(0,len(self.map[0])):
+                #We're at a wall row
+                if y%2==0:
+                    if(self.map[y][x] == '+'):
+                        #pygame.draw.rect(screen, (0, 0, 255), r)
+                        continue
+                    if(self.map[y][x] == '-'):
 
-        for item in self.marked_blocks:
-            r = (self.block_size*item[0], self.block_size*item[1], self.block_size/2, self.block_size/2)
-            pygame.draw.rect(screen, (0,0,0), r)
+                        r = (((x-1)/2) * self.block_width,(y/2) * self.block_height, self.block_width, 10)
+                        pygame.draw.rect(screen, (255, 0, 0), r)
+
+                #Either columns or walls
+                elif x % 2 == 0:
+                    if(self.map[y][x] == '|'):
+
+                        r = ((x / 2) * self.block_width, ((y-1) / 2) * self.block_height, 10, self.block_height)
+                        pygame.draw.rect(screen, (255, 0, 0), r)
+                else:
+                    pass
+                    # print("rest: " + self.map[y][x])
+
+                #Goal and start
+                if(self.map[y][x] == 'G'):
+                    r_start = ((round(((x - 1) / 2) * self.block_width + (self.block_width / 2))),round((((y - 1) / 2) * self.block_height + (self.block_height / 2))), 10, 10)
+                    pygame.draw.rect(screen, (50, 255, 0), r_start)
+                if(self.map[y][x] == 'S'):
+                    r_start = ((round(((x - 1) / 2) * self.block_width + (self.block_width / 2))),
+                               round((((y - 1) / 2) * self.block_height + (self.block_height / 2))), 10, 10)
+                    pygame.draw.rect(screen, (255, 50, 0), r_start)
+
+
 
     def manhatten_dist(self, x, y, gX, gY):
         return abs(x-gX) + abs(y-gY)
@@ -152,20 +173,20 @@ class GridMap:
         self.mark_block(currX, currY)
 
         if((currX, currY) == (endX, endY)):
-            print("found path")
+            #print("found path")
             return
         neighbours = self.get_neighbours(currX, currY, check_searched=True)
         for n in neighbours:
             self.bfs_path(n[0], n[1], endX, endY)
 
 
-
     def mark_block(self, x, y):
         self.marked_blocks.add((x,y))
 
-
     def is_walkable(self, x, y):
-        if self.map[y][x] == 'O' or self.map[y][x] == 'G':
+        if(x >= len(self.map[0]) or y >= len(self.map)):
+            return False
+        if self.map[y][x] == ' ' or self.map[y][x] == 'G':
             return True
         return False
 
@@ -176,14 +197,14 @@ class GridMap:
 
     def get_neighbours(self, x, y, check_searched = False):
         out = []
-        if self.is_walkable(x+1, y) and (x+1, y) not in self.a_searched:
-            out.append((x+1, y))
-        if self.is_walkable(x-1, y) and (x-1, y) not in self.a_searched:
-            out.append((x-1, y))
-        if self.is_walkable(x, y+1) and (x, y+1) not in self.a_searched:
-            out.append((x, y+1))
-        if self.is_walkable(x, y-1) and (x, y-1) not in self.a_searched:
-            out.append((x, y-1))
+        if self.is_walkable(x+1, y) and (x+2, y) not in self.a_searched:
+            out.append((x+2, y))
+        if self.is_walkable(x-1, y) and (x-2, y) not in self.a_searched:
+            out.append((x-2, y))
+        if self.is_walkable(x, y+1) and (x, y+2) not in self.a_searched:
+            out.append((x, y+2))
+        if self.is_walkable(x, y-1) and (x, y-2) not in self.a_searched:
+            out.append((x, y-2))
         return out
 
 
@@ -192,15 +213,13 @@ class GridMap:
         f = open(filename)
         for i in f.readlines():
             out.append(list(i.strip('\n')))
-        if(len(out[0])!=len(out)):
-            print("Map file invalid")
-            exit(0)
+        print(out)
 
-        for x in range(0, len(out)):
-            for y in range(0, len(out[x])):
-                if out[y][x] == 'G':
-                    self.goal = (x, y)
-                if out[y][x] == 'S':
+        for y in range(0,len(out)):
+            for x in range(len(out[0])):
+                if(out[y][x] == 'G'):
+                    self.goal = (x,y)
+                if(out[y][x] == 'S'):
                     self.start = (x,y)
 
         return out
