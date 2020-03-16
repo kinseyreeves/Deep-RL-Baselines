@@ -12,7 +12,10 @@ register(
     entry_point='gym_scalable.envs:EvadersEnv',
 )
 
-
+register(
+    id='n-grid_evaders-v0',
+    entry_point='gym_scalable.envs:GridEvaderEnv',
+)
 
 register(
     id='n-pathing-v0',

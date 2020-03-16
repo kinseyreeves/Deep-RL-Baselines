@@ -41,7 +41,7 @@ CAUGHT_DIST = 10
 mapfile = "out_big.txt"
 
 
-class EvaderEnv(gym.Env):
+class GridEvaderEnv(gym.Env):
 
     metadata = {'render.modes': ['human']}
 
@@ -76,7 +76,6 @@ class EvaderEnv(gym.Env):
 
         # observation space = [self.x, self.y, enemy.x, enemy.y]
         # self.observation_space = spaces.Box(l_bounds, h_bounds, dtype=np.float32)
-
 
 
     def step(self, action):

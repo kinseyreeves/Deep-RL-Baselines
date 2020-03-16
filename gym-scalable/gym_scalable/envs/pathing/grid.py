@@ -1,8 +1,13 @@
 import random
 import pygame
+import numpy as np
+
+
+from gym_scalable.envs.pathing.grid_entity import *
 
 """
-File 
+Grid which serves as the lower level of all pathing environments
+i.e. maze solver, chaser, evader etc
 
 """
 
@@ -29,6 +34,8 @@ class GridMap:
     a_searched = set()
     marked_blocks = set()
 
+    entities = []
+
     def __init__(self, mapfile, screen_width):
 
         self.map = self.read_map(mapfile)
@@ -43,6 +50,18 @@ class GridMap:
 
         # print(f"start : {self.start}")
         # print(f"end : {self.goal}")
+
+        # Action conversion:
+        left = np.asarray([1, 0, 0, 0])
+        right = np.asarray([0, 1, 0, 0])
+        up = np.asarray([0, 0, 1, 0])
+        down = np.asarray([0, 0, 0, 1])
+
+        self.actions_table = {(-2, 0): left, (2, 0): right, (0, -2): up, (0, 2): down}
+
+    def update(self):
+        for entity in self.entities:
+            entity.update()
 
 
     def render(self, screen):
@@ -78,12 +97,37 @@ class GridMap:
                                round((((y - 1) / 2) * self.block_height + (self.block_height / 2))), 10, 10)
                     pygame.draw.rect(screen, (255, 50, 0), r_start)
 
+    def convert_action(self, dir):
+        return self.actions_table[dir]
 
+    def get_astar_action(self, pos, goal):
+        path = self.astar_path(pos[0], pos[1], goal[0], goal[1])
+        #print(path)
+        path = path[1]
+        #print(path)
+        action = self.convert_action((pos[0] - path[0], pos[1] - path[1]))
+        return action
+
+
+    def add_entity(self, entity):
+        self.entities.append(entity)
+
+    def remove_entity(self):
+        #TODO
+        pass
 
     def manhatten_dist(self, x, y, gX, gY):
         return abs(x-gX) + abs(y-gY)
 
     def get_astar_move(self, startX, startY, endX, endY):
+        """
+        Gets the single move from A*
+        :param startX:
+        :param startY:
+        :param endX:
+        :param endY:
+        :return:
+        """
         return self.astar_path(startX, startY, endX, endY)[1]
 
     def astar_path(self, startX, startY, endX, endY):
@@ -161,26 +205,15 @@ class GridMap:
         return path[::-1]
 
 
-    def get_bfs_path(self, startX, startY, endX, endY):
-        neighbours = self.get_neighbours(startX, startY)
-        self.a_searched.add((startX, startY))
-        self.marked_blocks.add((startX, startY))
-        curr = random.choice(neighbours)
-        self.astar_search(curr[0], curr[1], endX, endY)
-
-    def bfs_path(self, currX, currY, endX, endY):
-        self.a_searched.add((currX, currY))
-        self.mark_block(currX, currY)
-
-        if((currX, currY) == (endX, endY)):
-            #print("found path")
-            return
-        neighbours = self.get_neighbours(currX, currY, check_searched=True)
-        for n in neighbours:
-            self.bfs_path(n[0], n[1], endX, endY)
-
 
     def mark_block(self, x, y):
+        """
+        Marks a block for rendering purposes
+        TODO NOT WORKING
+        :param x:
+        :param y:
+        :return:
+        """
         self.marked_blocks.add((x,y))
 
     def is_walkable(self, x, y):
@@ -221,5 +254,6 @@ class GridMap:
                     self.goal = (x,y)
                 if(out[y][x] == 'S'):
                     self.start = (x,y)
-
         return out
+
+

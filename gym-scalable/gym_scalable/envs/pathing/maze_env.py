@@ -141,110 +141,13 @@ class MazeEnv(gym.Env):
         time.sleep(0.1)
         pygame.display.update()
 
-    def convert_action(self, dir):
-        return self.actions_table[dir]
 
-    def get_astar_action(self, pos):
-        path = self.gridmap.astar_path(pos[0], pos[1], self.gridmap.goal[0], self.gridmap.goal[1])
-        print(path)
-        path = path[1]
-        print(path)
-        action = self.convert_action((pos[0] - path[0], pos[1] - path[1]))
-        return action
 
 def out_of_bounds(pos):
     x, y = pos
     if x < 0 or x > S_WIDTH or y < 0 or y > S_WIDTH:
         return True
     return False
-
-class Entity:
-    # Basic class for defining circle object
-    def __init__(self, x, y, grid, color=(0,255,0)):
-        self.x = x
-        self.y = y
-        self.color = color
-        self.angle = 0
-        self.grid = grid
-
-    def update(self, action):
-        if action[0] and self.grid.is_walkable(self.x+1, self.y):
-            self.x+=2
-        elif action[1] and self.grid.is_walkable(self.x-1, self.y):
-            self.x-=2
-        elif action[2] and self.grid.is_walkable(self.x, self.y+1):
-            self.y+=2
-        elif action[3] and self.grid.is_walkable(self.x, self.y-1):
-            self.y-=2
-
-    def render(self, screen, block_width, block_height):
-
-        pygame.draw.circle(screen, self.color, ((round(((self.x-1)/2)*block_width+(block_width/2))), round((((self.y-1)/2)*block_height+(block_height/2)))), 10)
-
-        # TODO draw vector in direction of entity
-        # pygame.draw.line(screen, (255,90,0), )
-
-
-    def move_towards(self, x, y):
-        ...
-
-    def get_entity_info(self):
-        #Return the location, angle and other info
-        ...
-
-
-# class Evader(Entity):
-#     # evader class, moves away from the chaser
-#     def __init__(self, x, y):
-#         color = (255, 0, 0)
-#         super().__init__(x, y, color)
-#
-#     def update(self, action):
-#
-#         if (action):
-#             self.angle += DTHETA
-#         else:
-#             self.angle -= DTHETA
-#         dx = math.cos(self.angle) * EVADER_SPEED
-#         dy = math.sin(self.angle) * EVADER_SPEED
-#
-#         self.x += dx
-#         self.y += dy
-#         self.angle = utils.clamp_angle(self.angle)
-#
-#     def is_caught(self, chaser_pos):
-#         c_x, c_y = chaser_pos
-#         dist = math.hypot(c_x - self.x, c_y - self.y)
-#         if dist < CAUGHT_DIST:
-#             return True
-#         return False
-#
-#
-# class Chaser(Entity):
-#     '''
-#     Chaser class, moves towards the evader
-#     TODO replace with trained chaser
-#     '''
-#
-#     def __init__(self, x, y):
-#         color = (0, 255, 0)
-#         super().__init__(x, y, color)
-#
-#     def update(self, ev_pos):
-#         # clockwise
-#
-#         ev_x, ev_y = ev_pos
-#
-#         x_diff = ev_x - self.x
-#         y_diff = ev_y - self.y
-#
-#         self.angle = math.atan2(y_diff, x_diff)
-#         # print("evader angle " , self.angle)
-#         dx = math.cos(self.angle) * CHASER_SPEED
-#         dy = math.sin(self.angle) * CHASER_SPEED
-#
-#         self.x += dx
-#         self.y += dy
 
 
 

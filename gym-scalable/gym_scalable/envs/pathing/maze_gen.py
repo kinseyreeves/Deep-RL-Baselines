@@ -1,12 +1,13 @@
 """
 Script to generaze mazes of differing complexity
+
 """
 
 from random import shuffle, randrange
 import pygame
 
 
-def make_maze(w=25, h=25):
+def make_maze(w=5, h=5):
     vis = [[0] * w + [1] for _ in range(h)] + [[1] * (w + 1)]
     ver = [["| "] * w + ['|'] for _ in range(h)] + [[]]
     hor = [["+-"] * w + ['+'] for _ in range(h + 1)]
@@ -25,9 +26,8 @@ def make_maze(w=25, h=25):
     walk(randrange(w), randrange(h))
     out = []
     s = ""
-    print(hor)
-    print(ver)
-    f = open("out_big.txt", "w+")
+
+    f = open("out_5x5.txt", "w+")
     for (a, b) in zip(hor, ver):
         s += ''.join(a + ['\n'] + b + ['\n'])
         out.append(a)
