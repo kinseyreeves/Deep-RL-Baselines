@@ -77,12 +77,14 @@ class GridEvaderEnv(gym.Env):
         self.chaser = Chaser(self.gridmap.start[0], self.gridmap.start[1], self.gridmap, self.evader, env_controlled=False)
         self.controlled_entity = self.evader
 
+        self.chaser.set_chasing(self.evader)
+
         self.entities = [self.evader, self.chaser]
 
 
     def step(self, action):
-        self.controlled_entity.update(action)
-
+        for e in self.entities:
+            e.update(action)
         self.steps += 1
         self.reward = 0
 

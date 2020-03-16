@@ -59,8 +59,11 @@ class Chaser(Entity):
         if self.env_controlled:
             # TODO
             pass
+        else:
+            action = self.grid.get_astar_move(self.x, self.y, *self.chasing.get_pos())
+            super().update(action)
 
-    def set_evading(self, entity):
+    def set_chasing(self, entity):
         self.chasing = entity
 
 
