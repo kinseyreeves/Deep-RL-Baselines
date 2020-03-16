@@ -5,6 +5,7 @@ Single agent
 Author : Kinsey Reeves
 Goal:
     evade the chaser as long as possible
+    Chaser uses A* with some level of randomness
 
 Map is made up of:
 X - boundary
@@ -42,7 +43,6 @@ mapfile = "out_big.txt"
 
 
 class GridEvaderEnv(gym.Env):
-
     metadata = {'render.modes': ['human']}
 
     '''
@@ -50,7 +50,7 @@ class GridEvaderEnv(gym.Env):
     full state gives the
     '''
 
-    def __init__(self, mapfile=None, full_state = False, normalize_state = True):
+    def __init__(self, mapfile=None, full_state=False, normalize_state=True):
         self.screen = None
         # Action space initialised to [-1,0,1] for each joint
         self.action_space = spaces.Discrete(4)
@@ -60,7 +60,6 @@ class GridEvaderEnv(gym.Env):
         low = np.array([0, 0, 0, 0, 0])
 
         self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
-
         self.centre_x = round(S_WIDTH / 2)
         self.centre_y = round(S_WIDTH / 2)
         self.steps = 0
@@ -69,45 +68,43 @@ class GridEvaderEnv(gym.Env):
         self.normalize_state = False
         self.gridmap = GridMap(mapfile, S_WIDTH)
 
-        self.entity = Entity(self.gridmap.start[0], self.gridmap.start[1], self.gridmap)
-        print(f"Env starting entity at {self.gridmap.start[0]} {self.gridmap.start[1]}")
-
         self.state = self.reset()
 
-        # observation space = [self.x, self.y, enemy.x, enemy.y]
-        # self.observation_space = spaces.Box(l_bounds, h_bounds, dtype=np.float32)
+        #Initialize Entities
+
+        self.evader = Evader(self.gridmap.goal[0], self.gridmap.goal[1], self.gridmap)
+
+        self.chaser = Chaser(self.gridmap.start[0], self.gridmap.start[1], self.gridmap, self.evader, env_controlled=False)
+        self.controlled_entity = self.evader
+
+        self.entities = [self.evader, self.chaser]
 
 
     def step(self, action):
-        self.entity.update(action)
+        self.controlled_entity.update(action)
 
         self.steps += 1
         self.reward = 0
 
         self.set_state()
 
-        if self.entity.x == self.gridmap.goal[0] and self.entity.y == self.gridmap.goal[1]:
-            self.reset()
-            self.reward = 1
-            self.done = True
-
-        if (self.steps >= MAX_SCORE):
+        if self.steps >= MAX_SCORE:
             self.done = True
             return np.array(self.state), self.reward, self.done, {}
 
         return np.array(self.state), self.reward, self.done, {}
 
-
     def set_state(self):
-        if(self.normalize_state):
-            self.state = [utils.normalize(self.entity.x, 0, self.gridmap.size),
-                          utils.normalize(self.entity.y, 0, self.gridmap.size)]
-        else:
-            self.state = [self.entity.x, self.entity.y]
+        self.state = []
+        pass
+        # TODO
+        # if(self.normalize_state):
+        #     self.state = [utils.normalize(self.entity.x, 0, self.gridmap.size),
+        #                   utils.normalize(self.entity.y, 0, self.gridmap.size)]
+        # else:
+        #     self.state = [self.entity.x, self.entity.y]
 
     def reset(self):
-        self.entity.x = self.gridmap.start[0]
-        self.entity.y = self.gridmap.start[1]
 
         self.reward = 0
         self.steps = 0
@@ -125,8 +122,10 @@ class GridEvaderEnv(gym.Env):
             pygame.init()
         self.screen.fill((255, 255, 255))
 
+        for e in self.entities:
+            e.render(self.screen, self.gridmap.block_width, self.gridmap.block_height)
         self.gridmap.render(self.screen)
-        self.entity.render(self.screen, self.gridmap.block_width, self.gridmap.block_height)
+        # self.entity.render(self.screen, self.gridmap.block_width, self.gridmap.block_height)
 
         time.sleep(0.1)
         pygame.display.update()
@@ -137,7 +136,3 @@ def out_of_bounds(pos):
     if x < 0 or x > S_WIDTH or y < 0 or y > S_WIDTH:
         return True
     return False
-
-
-
-

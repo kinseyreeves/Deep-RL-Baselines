@@ -4,7 +4,7 @@ import random
 import numpy as np
 import time
 
-env = gym.make('n-maze-v0', mapfile = "out_big.txt", full_state = False, normalize_state = False)
+env = gym.make('n-maze-v0', mapfile = "out_5x5.txt", full_state = False, normalize_state = False)
 
 state = env.reset()
 i = 0
@@ -16,8 +16,9 @@ while True:
     i += 1
     env.render()
     action_ = env.gridmap.get_astar_action(state, env.gridmap.goal)
-    print(action_)
-
+    #print(action_)
+    print(env.action_space.sample())
+    exit(0)
     action_size = env.action_space.n
     action = np.zeros(action_size)
     #action[0] = 1

@@ -101,13 +101,14 @@ class GridMap:
         return self.actions_table[dir]
 
     def get_astar_action(self, pos, goal):
+        print(pos)
+        print(goal)
         path = self.astar_path(pos[0], pos[1], goal[0], goal[1])
-        #print(path)
+        print(path)
         path = path[1]
         #print(path)
         action = self.convert_action((pos[0] - path[0], pos[1] - path[1]))
         return action
-
 
     def add_entity(self, entity):
         self.entities.append(entity)

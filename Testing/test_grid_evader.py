@@ -5,20 +5,22 @@ import numpy as np
 import time
 
 
-
 env = gym.make('n-grid_evaders-v0', mapfile = "out_5x5.txt", full_state = False, normalize_state = False)
 
 state = env.reset()
 i = 0
 print(env.gridmap)
 goal = env.gridmap.goal
-
+print(env.action_space.n)
 
 while True:
     i += 1
     env.render()
-    action_ = env.gridmap.get_astar_action(state, env.gridmap.goal)
-    print(action_)
+
+    action_ = np.zeros(env.action_space.n)
+    action_[env.action_space.sample()] = 1
+    #print("here")
+    #print(action_)
 
     action_size = env.action_space.n
     action = np.zeros(action_size)
