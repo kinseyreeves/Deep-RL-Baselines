@@ -3,9 +3,8 @@ import gym_scalable
 import random
 import numpy as np
 
-env = gym.make('n-joints-v0')
+env = gym.make('n-joints-v0',  config = {"extra_joints": 8, "extra_state": False})
 i = 0
-
 
 print(env.action_space)
 print(env.action_space.sample())
@@ -22,7 +21,6 @@ while True:
     # print(action_size)
     # print(env.action_space)
     action = env.action_space.sample()
-
     #print(env.action_space.sample())
     #a = input()
     print(action)

@@ -22,8 +22,8 @@ import numpy as np
 # ----------------------------------------------------#####
 
 # Screen width/height
-S_WIDTH = 400
-S_HEIGHT = 400
+S_WIDTH = 800
+S_HEIGHT = 800
 
 # --------------------ARM PARAMS-----------------------####
 ARM_ANGLE = 0
@@ -33,8 +33,6 @@ ARM_LENGTH = 50
 # either -.1, 0 or .1 rads of the arm
 ARM_RADS_CHANGE = 0.1
 
-# Number of joints excluding the middle point
-extra_joints = 1
 
 # Whether or not the arm movements are relative. Read step()
 RELATIVE = False
@@ -91,7 +89,7 @@ class NJointArm(gym.Env):
 
     action_bound = [-1, 1]
 
-    def __init__(self, config, extra_joints = 2, extra_state = False):
+    def __init__(self, config = {"extra_joints": 1, "extra_state": False}):
         """
 
         :param extra_joints: Specify how many extra joints
@@ -99,20 +97,19 @@ class NJointArm(gym.Env):
             precise positions
         """
         
-        self.extra_state = extra_state
         self.screen = None
-        self.extra_joints = extra_joints
-        config["extra_joints"] = extra_joints
-        config["extra_state"] = extra_state
+        self.extra_joints = config["extra_joints"]
+        self.extra_state = config["extra_state"]
+
         self.obstacles = []
         # If continuous action space = n, where n in range [-1,1]
         # if discrete action space initialised to [-1,0,1]*joints
         if CONT_ACTIONS:
-            l_bound = np.array((extra_joints + 1) * [-1])
-            h_bound = np.array((extra_joints + 1) * [1])
+            l_bound = np.array((self.extra_joints + 1) * [-1])
+            h_bound = np.array((self.extra_joints + 1) * [1])
             self.action_space = spaces.Box(l_bound, h_bound, dtype=np.float32)
         else:
-            self.action_space = spaces.Discrete(3 ** (extra_joints + 1))
+            self.action_space = spaces.Discrete(3 ** (self.extra_joints + 1))
         # self.observation_space = spaces.
 
         self.time_pen = TIME_PENALTY
@@ -134,7 +131,7 @@ class NJointArm(gym.Env):
         # self.max_radius = (N_JOINTS)*ARM_LENGTH
 
         # Intialise the extra arms
-        for i in range(1, extra_joints + 1):
+        for i in range(1, self.extra_joints + 1):
             prev_arm = self.arms[i - 1]
             (p_x, p_y) = prev_arm.getEnd()
             new_arm = Arm(p_x, p_y, 0, ARM_LENGTH, prev_arm)
@@ -146,8 +143,8 @@ class NJointArm(gym.Env):
 
         # Observation space [Joint angles ... , objective1x, ob1y] #TODO update below
 
-        l_bounds = np.array([0] + [-1] * ((extra_joints + 1) * 2) + [-1, -1])
-        h_bounds = np.array([1] + [1] * ((extra_joints + 1) * 2) + [1, 1])
+        l_bounds = np.array([0] + [-1] * ((self.extra_joints + 1) * 2) + [-1, -1])
+        h_bounds = np.array([1] + [1] * ((self.extra_joints + 1) * 2) + [1, 1])
 
         self.observation_space = spaces.Box(l_bounds, h_bounds, dtype=np.float32)
 
@@ -178,8 +175,6 @@ class NJointArm(gym.Env):
             for i in range(0, len(disc_actions)):
                 if disc_actions[i]:
                     return list(self.non_discrete_actions[i])
-
-
 
         action = np.clip(action, -1,1)
 
@@ -239,6 +234,8 @@ class NJointArm(gym.Env):
         #angles = [normalize(arm.angle, 0, 2 * math.pi) for arm in self.arms]
         arm_coords = []
         arm_angs = []
+
+        #Returns more state info for the jacobian matrix
         if self.extra_state:
 
             for arm in self.arms:
@@ -253,8 +250,9 @@ class NJointArm(gym.Env):
                 arm_coords.append(arm.endX - self.ob_x)
                 arm_coords.append(arm.endY - self.ob_y)
 
-            dist = np.asarray([self.centre_x - self.ob_x, self.centre_y - self.ob_y]) / (S_WIDTH/2)
-            arm_coords = np.asarray(arm_coords) / (S_WIDTH/2)
+            dist = np.asarray([self.centre_x - self.ob_x, self.centre_y - self.ob_y]) / S_WIDTH
+            arm_coords = np.asarray(arm_coords) / S_WIDTH
+            #print(arm_coords)
 
             state = np.concatenate([[in_point], dist, arm_coords])
 
@@ -331,8 +329,6 @@ class NJointArm(gym.Env):
 
     def spawn_obstacle(self):
         ...
-
-
 
     def get_dist(self):
         '''
