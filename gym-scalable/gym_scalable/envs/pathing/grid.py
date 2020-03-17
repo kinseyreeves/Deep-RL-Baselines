@@ -27,6 +27,10 @@ class Node:
         return self.position == other.position
 
 class GridMap:
+    """
+    Gridmap containing low level functionality for the grid.
+
+    """
     map = []
     colours = {'O' : (255,255,255), 'G':(0,255,0), 'X':(0,0,255), 'S':(255,0,0), '-':(255,0,0), '+':(255,0,0)}
 
@@ -48,16 +52,14 @@ class GridMap:
         self.block_width = screen_width / self.width
         self.block_height = screen_width / self.height
 
-        # print(f"start : {self.start}")
-        # print(f"end : {self.goal}")
-
         # Action conversion:
-        left = np.asarray([1, 0, 0, 0])
-        right = np.asarray([0, 1, 0, 0])
+        left = np.asarray([1, 0, 0, 0,0])
+        right = np.asarray([0, 1, 0, 0,0])
         up = np.asarray([0, 0, 1, 0])
-        down = np.asarray([0, 0, 0, 1])
+        down = np.asarray([0, 0, 0, 1,0])
+        stay = np.asarray([0,0,0,0,1])
 
-        self.actions_table = {(-2, 0): left, (2, 0): right, (0, -2): up, (0, 2): down}
+        self.actions_table = {(-2, 0): left, (2, 0): right, (0, -2): up, (0, 2): down, (0,0) : stay}
 
     def update(self):
         for entity in self.entities:
@@ -86,7 +88,6 @@ class GridMap:
                         pygame.draw.rect(screen, (255, 0, 0), r)
                 else:
                     pass
-                    # print("rest: " + self.map[y][x])
 
                 #Goal and start
                 if(self.map[y][x] == 'G'):
@@ -101,13 +102,16 @@ class GridMap:
         return self.actions_table[dir]
 
     def get_astar_action(self, pos, goal):
-        print(pos)
-        print(goal)
+        """
+        Gets the converted action in one hot vector format
+        """
         path = self.astar_path(pos[0], pos[1], goal[0], goal[1])
-        print(path)
+        if len(path) <= 1:
+            return self.convert_action((0,0))
+
         path = path[1]
-        #print(path)
         action = self.convert_action((pos[0] - path[0], pos[1] - path[1]))
+
         return action
 
     def add_entity(self, entity):
@@ -157,8 +161,6 @@ class GridMap:
             current_node = open_list[0]
             current_index = 0
 
-            #print(current_node.position)
-
             #[TODO DO WITH HEAP]
             for index, item in enumerate(open_list):
                 if(item.f < current_node.f):
@@ -170,7 +172,6 @@ class GridMap:
 
 
             if current_node == end_node:
-                #print("FOUND GOAL")
 
                 current = current_node
 
@@ -185,7 +186,6 @@ class GridMap:
             for new_pos in self.get_neighbours(current_node.position[0], current_node.position[1]):
                 new_node = Node(current_node, new_pos)
                 children.append(new_node)
-                #print("here")
 
             for child in children:
                 if child in closed_list:
@@ -245,16 +245,26 @@ class GridMap:
     def read_map(self, filename):
         out = []
         f = open(filename)
+        
         for i in f.readlines():
             out.append(list(i.strip('\n')))
-        print(out)
 
+        self.size = len(out[0])
         for y in range(0,len(out)):
+            
             for x in range(len(out[0])):
+                if  y % 2 != 0 and x%2 != 0:
+                    if out[y][x] == ' ':
+                        self.walkable.add((x,y))
+                        
                 if(out[y][x] == 'G'):
+                    self.walkable.add((x,y))
                     self.goal = (x,y)
                 if(out[y][x] == 'S'):
+                    self.walkable.add((x,y))
                     self.start = (x,y)
+                
+
         return out
 
 

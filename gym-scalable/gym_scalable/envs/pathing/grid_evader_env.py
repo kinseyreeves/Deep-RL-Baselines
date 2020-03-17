@@ -15,19 +15,19 @@ G - goal tile
 
 '''
 
-import gym
-from gym import error, spaces, utils
-from gym.utils import seeding
-
 import pygame
 import math
 import random
 import time
-from gym_scalable.envs import utils
-import numpy as np
+import gym
 import os
-import math
+import numpy as np
+
+from gym import error, spaces, utils
+from gym.utils import seeding
+from gym_scalable.envs import utils
 from gym_scalable.envs.pathing.grid import *
+from gym_scalable.envs.pathing.grid_entity import *
 
 S_WIDTH = 500
 
@@ -53,7 +53,7 @@ class GridEvaderEnv(gym.Env):
     def __init__(self, mapfile=None, full_state=False, normalize_state=True):
         self.screen = None
         # Action space initialised to [-1,0,1] for each joint
-        self.action_space = spaces.Discrete(4)
+        self.action_space = spaces.Discrete(5)
 
         # TODO should we normalize or use int vals?
         high = np.array([1, 1, 1, 1, 1])
@@ -65,46 +65,47 @@ class GridEvaderEnv(gym.Env):
         self.steps = 0
         self.reward = 0
         self.done = False
-        self.normalize_state = False
+        self.normalize_state = normalize_state
         self.gridmap = GridMap(mapfile, S_WIDTH)
-
-        self.state = self.reset()
 
         #Initialize Entities
 
         self.evader = Evader(self.gridmap.goal[0], self.gridmap.goal[1], self.gridmap)
-
         self.chaser = Chaser(self.gridmap.start[0], self.gridmap.start[1], self.gridmap, self.evader, env_controlled=False)
         self.controlled_entity = self.evader
-
         self.chaser.set_chasing(self.evader)
-
         self.entities = [self.evader, self.chaser]
+        self.state = self.reset()
 
 
     def step(self, action):
         for e in self.entities:
             e.update(action)
         self.steps += 1
-        self.reward = 0
+        self.reward = 1
 
         self.set_state()
 
         if self.steps >= MAX_SCORE:
             self.done = True
+            self.reward = -1
             return np.array(self.state), self.reward, self.done, {}
+
+        if self.chaser.get_pos() == self.evader.get_pos():
+            self.done = True
+            self.reward = -1
 
         return np.array(self.state), self.reward, self.done, {}
 
     def set_state(self):
-        self.state = []
-        pass
-        # TODO
-        # if(self.normalize_state):
-        #     self.state = [utils.normalize(self.entity.x, 0, self.gridmap.size),
-        #                   utils.normalize(self.entity.y, 0, self.gridmap.size)]
-        # else:
-        #     self.state = [self.entity.x, self.entity.y]
+        
+        if(self.normalize_state):
+            self.state = [utils.normalize(self.evader.x, 0, self.gridmap.size),
+                          utils.normalize(self.evader.y, 0, self.gridmap.size),
+                          utils.normalize(self.chaser.x, 0, self.gridmap.size),
+                          utils.normalize(self.chaser.y, 0, self.gridmap.size),]
+        else:
+            self.state = [self.evader.x, self.evader.y, self.chaser.x, self.chaser.y]
 
     def reset(self):
 
@@ -112,6 +113,10 @@ class GridEvaderEnv(gym.Env):
         self.steps = 0
         self.done = False
         self.set_state()
+
+        #reset positions
+        self.evader.set_pos(self.gridmap.start)
+        self.chaser.set_pos(self.gridmap.goal)
 
         return np.array(self.state)
 
