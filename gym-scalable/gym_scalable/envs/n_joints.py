@@ -91,16 +91,19 @@ class NJointArm(gym.Env):
 
     action_bound = [-1, 1]
 
-    def __init__(self, extra_joints = 2, extra_state = False):
+    def __init__(self, config, extra_joints = 2, extra_state = False):
         """
 
         :param extra_joints: Specify how many extra joints
         :param extra_state: Adds extra info into the state space such as
             precise positions
         """
+        
         self.extra_state = extra_state
         self.screen = None
         self.extra_joints = extra_joints
+        config["extra_joints"] = extra_joints
+        config["extra_state"] = extra_state
         self.obstacles = []
         # If continuous action space = n, where n in range [-1,1]
         # if discrete action space initialised to [-1,0,1]*joints
@@ -227,24 +230,6 @@ class NJointArm(gym.Env):
         h = ((dist_pen ** 2 + alpha ** 2) ** (1 / 2) + alpha)
 
         r = dist_pen + action_pen
-        #r = (h + action_pen)
-
-        #r = math.sqrt(dist**2 + alpha**2) + alpha + action_pen
-        #print(f"dist: {dist}, action pen {action_pen}, reward {r}")
-        # r = -(dist / (S_WIDTH/2))
-        # if(self.steps > MAX_STEPS):
-        #     self.done=True
-        #     r -= 10
-        #     return r
-        # if dist < DIST_THRESH and (not self.done):
-        #     r += 2.0
-        #     self.at_objective_n += 1
-        #     if self.at_objective_n > HOLD_COUNT:
-        #         r +=END_REWARD
-        #         self.done = True
-        # elif dist > DIST_THRESH:
-        #     self.at_objective_n = 0
-        #     self.done = False
         return r
 
     def get_state(self):

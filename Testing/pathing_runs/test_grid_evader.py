@@ -3,31 +3,32 @@ import gym_scalable
 import random
 import numpy as np
 import time
+import os
 
-env = gym.make('n-maze-v0', mapfile = "out_5x5.txt", full_state = False, normalize_state = False)
+print(os.getcwd())
+env = gym.make('n-grid_evaders-v0', mapfile = "maps/map_5x5.txt", full_state = False, normalize_state = True)
 
 state = env.reset()
 i = 0
-print(env.gridmap)
 goal = env.gridmap.goal
-
 
 while True:
     i += 1
     env.render()
-    action_ = env.gridmap.get_astar_action(state, env.gridmap.goal)
-    #print(action_)
-    print(env.action_space.sample())
-    exit(0)
+
+    action_ = np.zeros(env.action_space.n)
+    action_[env.action_space.sample()] = 1
+
     action_size = env.action_space.n
     action = np.zeros(action_size)
-    #action[0] = 1
 
     action[env.action_space.sample()] = 1
     state, reward, done, _ = env.step(action_)
-
+    print(f"state :  {state}")
+    print(f"reward : {reward}" )
+    print(f"done : {done}")
+    print(env.normalize_state)
     if(done):
         env.reset()
-
 
     #time.sleep(0.1)

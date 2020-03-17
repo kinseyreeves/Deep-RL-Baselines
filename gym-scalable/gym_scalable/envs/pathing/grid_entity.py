@@ -18,6 +18,8 @@ class Entity:
             self.y += 2
         elif action[3] and self.grid.is_walkable(self.x, self.y - 1):
             self.y -= 2
+        elif action[4]:
+            pass
 
     def render(self, screen, block_width, block_height):
         pygame.draw.circle(screen, self.color, ((round(((self.x - 1) / 2) * block_width + (block_width / 2))),
@@ -28,6 +30,10 @@ class Entity:
 
     def get_pos(self):
         return (self.x, self.y)
+
+    def set_pos(self, pos):
+        self.x = pos[0]
+        self.y = pos[1]
 
 
 class Chaser(Entity):
@@ -56,11 +62,13 @@ class Chaser(Entity):
             super().update(action)
 
     def update(self, action):
+
+        #If the entity is controlled by the environment
         if self.env_controlled:
             # TODO
             pass
         else:
-            action = self.grid.get_astar_move(self.x, self.y, *self.chasing.get_pos())
+            action = self.grid.get_astar_action((self.x, self.y), self.chasing.get_pos())
             super().update(action)
 
     def set_chasing(self, entity):
