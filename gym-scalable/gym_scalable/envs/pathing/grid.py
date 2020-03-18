@@ -41,7 +41,7 @@ class GridMap:
     entities = []
 
     def __init__(self, mapfile, screen_width):
-
+        print(mapfile)
         self.map = self.read_map(mapfile)
         self.screen_width = screen_width
 
@@ -248,16 +248,19 @@ class GridMap:
         
         for i in f.readlines():
             out.append(list(i.strip('\n')))
-
+        print(out)
         self.size = len(out[0])
+        print(len(out))
+        print(len(out[0]))
+
         for y in range(0,len(out)):
-            
             for x in range(len(out[0])):
                 if  y % 2 != 0 and x%2 != 0:
                     if out[y][x] == ' ':
                         self.walkable.add((x,y))
-                        
+
                 if(out[y][x] == 'G'):
+
                     self.walkable.add((x,y))
                     self.goal = (x,y)
                 if(out[y][x] == 'S'):

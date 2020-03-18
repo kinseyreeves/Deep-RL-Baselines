@@ -10,6 +10,7 @@ class Entity:
         self.grid = grid
 
     def update(self, action):
+
         if action[0] and self.grid.is_walkable(self.x + 1, self.y):
             self.x += 2
         elif action[1] and self.grid.is_walkable(self.x - 1, self.y):

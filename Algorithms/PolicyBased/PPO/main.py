@@ -34,7 +34,7 @@ def run():
     # creating environment
     #env = gym.make('BipedalWalker-v2')
     extra_j = 1
-    env = gym.make('n-joints-v0', extra_joints=extra_j)
+    env = gym.make('n-joints-v0')
 
     state_dim = env.observation_space.shape[0]
     action_dim = env.action_space.shape[0]

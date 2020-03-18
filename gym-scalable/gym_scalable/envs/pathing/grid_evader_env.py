@@ -39,6 +39,8 @@ MAX_SCORE = 200
 
 CAUGHT_DIST = 10
 
+INT_ACTION = True
+
 mapfile = "out_big.txt"
 
 
@@ -50,14 +52,14 @@ class GridEvaderEnv(gym.Env):
     full state gives the
     '''
 
-    def __init__(self, mapfile=None, full_state=False, normalize_state=True):
+    def __init__(self, config = {"mapfile" : "out_5x5.txt", "full_state":False, "normalize_state":True}):
         self.screen = None
         # Action space initialised to [-1,0,1] for each joint
         self.action_space = spaces.Discrete(5)
 
         # TODO should we normalize or use int vals?
-        high = np.array([1, 1, 1, 1, 1])
-        low = np.array([0, 0, 0, 0, 0])
+        high = np.array([1, 1, 1, 1])
+        low = np.array([0, 0, 0, 0])
 
         self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
         self.centre_x = round(S_WIDTH / 2)
@@ -65,8 +67,8 @@ class GridEvaderEnv(gym.Env):
         self.steps = 0
         self.reward = 0
         self.done = False
-        self.normalize_state = normalize_state
-        self.gridmap = GridMap(mapfile, S_WIDTH)
+        self.normalize_state = config["normalize_state"]
+        self.gridmap = GridMap(config["mapfile"], S_WIDTH)
 
         #Initialize Entities
 
@@ -79,11 +81,14 @@ class GridEvaderEnv(gym.Env):
 
 
     def step(self, action):
+        if (INT_ACTION):
+            z_arr = np.zeros(self.action_space.n)
+            z_arr[action] = 1
+            action = z_arr
         for e in self.entities:
             e.update(action)
         self.steps += 1
         self.reward = 1
-
         self.set_state()
 
         if self.steps >= MAX_SCORE:

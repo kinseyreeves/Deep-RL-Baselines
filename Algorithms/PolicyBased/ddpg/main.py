@@ -27,7 +27,7 @@ def run():
     avg_rewards = []
 
     extra_j = 1
-    env = gym.make('n-joints-v0', extra_joints=extra_j)
+    env = gym.make('n-joints-v0')
 
     # action_size = env.action_space.shape[0]
     # state_size = env.observation_space.shape[0]
