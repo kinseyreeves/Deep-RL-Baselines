@@ -144,7 +144,7 @@ def out_of_bounds(pos):
 
 class Entity:
     #Basic class for defining circle object
-    def __init__(self, x, y,color):
+    def __init__(self, x, y, color):
 
         self.x = x
         self.y = y
@@ -161,12 +161,11 @@ class Evader(Entity):
     #evader class, moves away from the chaser
     def __init__(self, x, y):
         color = (255,0,0)
-        super().__init__(x,y,color)
+        super().__init__(x, y, color)
     
     def update(self,action):
-        #clockwise
-        #print(self.angle)
-        if(action):
+
+        if action:
             self.angle += DTHETA
         else:
             self.angle -= DTHETA
@@ -177,7 +176,7 @@ class Evader(Entity):
         self.y += dy
         self.angle = utils.clamp_angle(self.angle)
 
-    def is_caught(self,chaser_pos):
+    def is_caught(self, chaser_pos):
         c_x, c_y = chaser_pos
         dist = math.hypot(c_x - self.x, c_y - self.y)
         if dist < CAUGHT_DIST:

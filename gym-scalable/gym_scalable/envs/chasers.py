@@ -19,8 +19,7 @@ class Chasers(gym.Env):
     For simplicity we will start with 1 chaser and 1 simple evader.
     The evader will have evade by going towards a distance maximising
     position.
-    
-        - 
+
 
         Action space:
             N-Chasers * 3

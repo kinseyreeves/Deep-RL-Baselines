@@ -2,3 +2,5 @@ venv/
 .idea/
 *.pyc
 gym-scalable/gym_scalable.egg-info/
+*.KRXPS
+*.dat
