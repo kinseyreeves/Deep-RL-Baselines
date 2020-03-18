@@ -7,7 +7,7 @@ These environments are designed to have scalable action and state space complexi
 Kinsey Reeves
 kreeves@student.unimelb.edu.au
 
-Environments implemented:
+**Environments:**
 
 - N-jointed arm
 - Environment consists of an arm of N-joints which must configure itself    to touch an objective
@@ -22,19 +22,20 @@ Environments implemented:
         
     e.g. 2 joints will consist of array of size 7
 
-- N-Evaders
+- N-Grid-Evaders
     - Action space : discrete (scalable)
-    - State space : continuous (joints + objective placement)
+    - State space : discrete (grid coordinates of evader and chaser)
 
-- Evader environment
+- N-Maze solver
 
 TODO
-- Traffic Lights
-    - Action space : discrete (scalable)
-    - State space : continuous ()
+- N-Grid-Chasers
+- N-Grid-Competition (multiagent)
+- N-Cont-Evaders
+
 
 Algorithms implemented:
-
+NOTE - testing now using RLLIB
 - DQN
 - Monte Carlo Policy Gradients
 - DDPG
