@@ -16,19 +16,21 @@ while True:
     i += 1
     env.render()
 
-    action_ = np.zeros(env.action_space.n)
-    action_[env.action_space.sample()] = 1
+    #action_ = np.zeros(env.action_space.n)
+    action_ = env.action_space.sample()
 
     action_size = env.action_space.n
-    action = np.zeros(action_size)
+    #action = np.zeros(action_size)
 
-    action[env.action_space.sample()] = 1
+    #action[env.action_space.sample()] = 1
     state, reward, done, _ = env.step(action_)
     print(f"state :  {state}")
     print(f"reward : {reward}" )
     print(f"done : {done}")
+
+
     print(env.normalize_state)
     if(done):
         env.reset()
-
+    input()
     #time.sleep(0.1)

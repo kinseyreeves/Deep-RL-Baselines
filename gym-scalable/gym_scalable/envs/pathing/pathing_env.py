@@ -66,7 +66,7 @@ class PathingEnv(gym.Env):
         self.done = False
         self.gridmap = GridMap(MAPFILE, S_WIDTH)
         self.evader = Evader(self.centre_x, self.centre_y)
-        self.chaser = Chaser(random.randrange(0, S_WIDTH), random.randrange(0, S_WIDTH))
+        self.chaser = AStarChaser(random.randrange(0, S_WIDTH), random.randrange(0, S_WIDTH))
 
         self.state = self.reset()
 
@@ -117,7 +117,7 @@ class PathingEnv(gym.Env):
         self.steps = 0
         self.done = False
         self.evader = Evader(self.centre_x, self.centre_y)
-        self.chaser = Chaser(random.randrange(0, S_WIDTH), random.randrange(0, S_WIDTH))
+        self.chaser = AStarChaser(random.randrange(0, S_WIDTH), random.randrange(0, S_WIDTH))
 
         self.set_state()
 

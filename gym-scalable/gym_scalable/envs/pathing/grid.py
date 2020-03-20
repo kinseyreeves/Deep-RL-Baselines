@@ -11,6 +11,11 @@ i.e. maze solver, chaser, evader etc
 
 """
 
+WALL_WIDTH = 10
+
+WALL_COLOUR = (100,100,100)
+BACKGROUND_COLOUR = ()
+
 class Node:
     """
     Node for A*
@@ -34,14 +39,17 @@ class GridMap:
     map = []
     colours = {'O' : (255,255,255), 'G':(0,255,0), 'X':(0,0,255), 'S':(255,0,0), '-':(255,0,0), '+':(255,0,0)}
 
+    #All walkable positions
     walkable = set()
     a_searched = set()
     marked_blocks = set()
 
     entities = []
 
+    render_goals = False
+
     def __init__(self, mapfile, screen_width):
-        print(mapfile)
+        #print(mapfile)
         self.map = self.read_map(mapfile)
         self.screen_width = screen_width
 
@@ -61,10 +69,6 @@ class GridMap:
 
         self.actions_table = {(-2, 0): left, (2, 0): right, (0, -2): up, (0, 2): down, (0,0) : stay}
 
-    def update(self):
-        for entity in self.entities:
-            entity.update()
-
 
     def render(self, screen):
 
@@ -73,30 +77,33 @@ class GridMap:
                 #We're at a wall row
                 if y%2==0:
                     if(self.map[y][x] == '+'):
-                        #pygame.draw.rect(screen, (0, 0, 255), r)
+                        #maybe do something here
                         continue
                     if(self.map[y][x] == '-'):
 
-                        r = (((x-1)/2) * self.block_width,(y/2) * self.block_height, self.block_width, 10)
-                        pygame.draw.rect(screen, (255, 0, 0), r)
+                        r = (((x-1)/2) * self.block_width-WALL_WIDTH/2, (y/2) * self.block_height-WALL_WIDTH/2,
+                             self.block_width + WALL_WIDTH/2, WALL_WIDTH)
+                        pygame.draw.rect(screen, WALL_COLOUR, r)
 
                 #Either columns or walls
                 elif x % 2 == 0:
                     if(self.map[y][x] == '|'):
-
-                        r = ((x / 2) * self.block_width, ((y-1) / 2) * self.block_height, 10, self.block_height)
-                        pygame.draw.rect(screen, (255, 0, 0), r)
+                        r = ((x / 2) * self.block_width - WALL_WIDTH/2, ((y-1) / 2) * self.block_height - WALL_WIDTH/2,
+                             WALL_WIDTH, self.block_height + WALL_WIDTH/2)
+                        pygame.draw.rect(screen, WALL_COLOUR, r)
                 else:
                     pass
 
                 #Goal and start
-                if(self.map[y][x] == 'G'):
-                    r_start = ((round(((x - 1) / 2) * self.block_width + (self.block_width / 2))),round((((y - 1) / 2) * self.block_height + (self.block_height / 2))), 10, 10)
-                    pygame.draw.rect(screen, (50, 255, 0), r_start)
-                if(self.map[y][x] == 'S'):
-                    r_start = ((round(((x - 1) / 2) * self.block_width + (self.block_width / 2))),
-                               round((((y - 1) / 2) * self.block_height + (self.block_height / 2))), 10, 10)
-                    pygame.draw.rect(screen, (255, 50, 0), r_start)
+                if(self.render_goals):
+                    if(self.map[y][x] == 'G'):
+                        r_start = ((round(((x - 1) / 2) * self.block_width + (self.block_width / 2))),
+                                   round((((y - 1) / 2) * self.block_height + (self.block_height / 2))), 10, 10)
+                        pygame.draw.rect(screen, (50, 255, 0), r_start)
+                    if(self.map[y][x] == 'S'):
+                        r_start = ((round(((x - 1) / 2) * self.block_width + (self.block_width / 2))),
+                                   round((((y - 1) / 2) * self.block_height + (self.block_height / 2))), 10, 10)
+                        pygame.draw.rect(screen, (255, 50, 0), r_start)
 
     def convert_action(self, dir):
         return self.actions_table[dir]
@@ -106,6 +113,7 @@ class GridMap:
         Gets the converted action in one hot vector format
         """
         path = self.astar_path(pos[0], pos[1], goal[0], goal[1])
+
         if len(path) <= 1:
             return self.convert_action((0,0))
 
@@ -113,6 +121,11 @@ class GridMap:
         action = self.convert_action((pos[0] - path[0], pos[1] - path[1]))
 
         return action
+
+    def get_astar_distance(self, pos, end):
+
+        path = self.astar_path(pos[0], pos[1], end[0], end[1])
+        return len(path)
 
     def add_entity(self, entity):
         self.entities.append(entity)
@@ -181,7 +194,6 @@ class GridMap:
                     current = current.parent
                 break
 
-
             children = []
             for new_pos in self.get_neighbours(current_node.position[0], current_node.position[1]):
                 new_node = Node(current_node, new_pos)
@@ -205,7 +217,8 @@ class GridMap:
 
         return path[::-1]
 
-
+    def set_render_goals(self, val):
+        self.render_goals = val
 
     def mark_block(self, x, y):
         """
@@ -258,9 +271,7 @@ class GridMap:
                 if  y % 2 != 0 and x%2 != 0:
                     if out[y][x] == ' ':
                         self.walkable.add((x,y))
-
                 if(out[y][x] == 'G'):
-
                     self.walkable.add((x,y))
                     self.goal = (x,y)
                 if(out[y][x] == 'S'):

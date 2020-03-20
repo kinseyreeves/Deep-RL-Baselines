@@ -37,7 +37,7 @@ class Entity:
         self.y = pos[1]
 
 
-class Chaser(Entity):
+class AStarChaser(Entity):
     """
     Chaser using A*
     Note: the evader must be initialized first
@@ -49,34 +49,30 @@ class Chaser(Entity):
         :param y:
         :param grid:
         :param chasing:
-        :param randomness: Probability a random action will be taken
+        :param randomness: Probability a random action will be taken #TODO
         :return:
         """
         super().__init__(x, y, grid, color=(255, 0, 0))
-
-        self.env_controlled = env_controlled
         self.evading = None
+        self.chased_entities = None
 
     def update_auto(self):
-        if self.chasing:
-            action = self.grid.get_astar_move(self.x, self.y, *self.chasing.get_pos())
-            super().update(action)
+        """
 
-    def update(self, action):
-
-        #If the entity is controlled by the environment
-        if self.env_controlled:
-            # TODO
-            pass
-        else:
-            action = self.grid.get_astar_action((self.x, self.y), self.chasing.get_pos())
-            super().update(action)
+        :param action:
+        :return:
+        """
+        action = self.grid.get_astar_action((self.x, self.y), self.chasing.get_pos())
+        super().update(action)
 
     def set_chasing(self, entity):
         self.chasing = entity
 
+    def set_chased(self, entities):
+        self.chased_entities = entities
 
-class Evader(Entity):
+
+class AStarEvader(Entity):
     def __init__(self, x, y, grid, randomness=0.0):
         """
 
@@ -90,9 +86,13 @@ class Evader(Entity):
         super().__init__(x, y, grid, color=(255, 0, 255))
         self.chasing = None
 
+
+
     def update_auto(self):
-        pass
-        # action = self.grid.get_astar_move(self.x, self.y, *self.chasing.get_pos())
-        # super().update(action)
+        print(self.evading.pos)
+
+    def set_evading(self, entity):
+        self.evading = entity
+
 
 
