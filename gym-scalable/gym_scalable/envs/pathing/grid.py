@@ -113,13 +113,15 @@ class GridMap:
         Gets the converted action in one hot vector format
         """
         path = self.astar_path(pos[0], pos[1], goal[0], goal[1])
-
+        #print(path)
         if len(path) <= 1:
             return self.convert_action((0,0))
-
+        print(f"Path : {path}")
         path = path[1]
+        print(f"pos: {pos}, goal: {goal}")
+        print(f"diff: {(path[0] - pos[0], path[1] - pos[1])}")
         action = self.convert_action((pos[0] - path[0], pos[1] - path[1]))
-
+        
         return action
 
     def get_astar_distance(self, pos, end):
@@ -135,7 +137,7 @@ class GridMap:
         pass
 
     def manhatten_dist(self, x, y, gX, gY):
-        return abs(x-gX) + abs(y-gY)
+        return (abs(x-gX) + abs(y-gY))/2
 
     def get_astar_move(self, startX, startY, endX, endY):
         """
@@ -280,5 +282,8 @@ class GridMap:
                 
 
         return out
+
+    def get_walkable_positions(self):
+        return self.walkable
 
 

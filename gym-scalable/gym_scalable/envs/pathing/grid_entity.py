@@ -1,5 +1,6 @@
 import pygame
-
+import random
+import numpy as np
 
 class Entity:
     # Basic class for defining circle object
@@ -8,9 +9,9 @@ class Entity:
         self.y = y
         self.color = color
         self.grid = grid
+        #self.pos = (x,y)
 
     def update(self, action):
-
         if action[0] and self.grid.is_walkable(self.x + 1, self.y):
             self.x += 2
         elif action[1] and self.grid.is_walkable(self.x - 1, self.y):
@@ -35,6 +36,12 @@ class Entity:
     def set_pos(self, pos):
         self.x = pos[0]
         self.y = pos[1]
+    
+    def get_random_action(self):
+        neighbours = self.grid.get_neighbours(self.x, self.y)
+        new_pos = random.choice(neighbours)
+        action = self.grid.convert_action((self.x - new_pos[0], self.y - new_pos[1]))
+        return action
 
 
 class AStarChaser(Entity):
@@ -43,7 +50,7 @@ class AStarChaser(Entity):
     Note: the evader must be initialized first
     """
 
-    def __init__(self, x, y, grid, randomness=0.0, env_controlled=False):
+    def __init__(self, x, y, grid, randomness=0.2, env_controlled=False):
         """
         :param x:
         :param y:
@@ -55,6 +62,7 @@ class AStarChaser(Entity):
         super().__init__(x, y, grid, color=(255, 0, 0))
         self.evading = None
         self.chased_entities = None
+        self.randomness = randomness
 
     def update_auto(self):
         """
@@ -62,8 +70,13 @@ class AStarChaser(Entity):
         :param action:
         :return:
         """
-        action = self.grid.get_astar_action((self.x, self.y), self.chasing.get_pos())
+        if(random.random() < self.randomness):
+            action = self.grid.get_astar_action((self.x, self.y), self.chasing.get_pos())
+        else:
+            action = self.get_random_action()
+
         super().update(action)
+        
 
     def set_chasing(self, entity):
         self.chasing = entity
@@ -73,7 +86,9 @@ class AStarChaser(Entity):
 
 
 class AStarEvader(Entity):
-    def __init__(self, x, y, grid, randomness=0.0):
+    evader_thresh = 4
+
+    def __init__(self, x, y, grid, randomness=0.2):
         """
 
         :param x:
@@ -84,12 +99,43 @@ class AStarEvader(Entity):
         :return:
         """
         super().__init__(x, y, grid, color=(255, 0, 255))
-        self.chasing = None
-
+        self.evading = None
+        self.randomness = randomness
 
 
     def update_auto(self):
-        print(self.evading.pos)
+
+        if random.random() < self.randomness:
+            action = self.get_random_action()
+        else:
+            best_pos = (self.x, self.y)
+            best_dist = 0
+
+            if(self.grid.manhatten_dist(self.x, self.y,self.evading.x, self.evading.y) < self.evader_thresh):
+                
+                rad_pos = self.get_radius_positions(self.x, self.y, self.evader_thresh)
+                walkable = self.grid.get_walkable_positions().intersection(rad_pos)
+                # print("Own position: ")
+                
+                for pos in walkable:
+                    chase_dist = self.grid.manhatten_dist(pos[0], pos[1], self.evading.x, self.evading.y)
+                    
+                    if(chase_dist > best_dist):
+                        best_dist = chase_dist
+                        best_pos = pos
+
+            action = self.grid.get_astar_action((self.x, self.y), best_pos)
+
+        super().update(action)
+
+    def get_radius_positions(self, x, y, r):
+        out = set()
+        for i in range(x-r, x+r):
+            for j in range(y-r, y+r):
+                out.add((i,j))
+        
+        return out
+
 
     def set_evading(self, entity):
         self.evading = entity
