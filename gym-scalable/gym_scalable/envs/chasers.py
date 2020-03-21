@@ -20,7 +20,6 @@ class Chasers(gym.Env):
     The evader will have evade by going towards a distance maximising
     position.
 
-
         Action space:
             N-Chasers * 3
                 Turn clockw, anticw, and dont turn

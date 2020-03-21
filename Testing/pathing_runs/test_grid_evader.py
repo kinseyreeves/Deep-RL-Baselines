@@ -6,29 +6,43 @@ import time
 import os
 
 print(os.getcwd())
-env = gym.make('n-grid_evaders-v0', config= {"mapfile" : "maps/map_5x5.txt", "full_state" : False, "normalize_state" : True})
+env = gym.make('n-grid_evaders-v0', config= {"mapfile" : "maps/map_8x8.txt", "RL_evader":False, "full_state" : False, "normalize_state" : True})
 
 state = env.reset()
 i = 0
-goal = env.gridmap.goal
+goal = env.grid.goal
 
 while True:
     i += 1
     env.render()
 
-    action_ = np.zeros(env.action_space.n)
-    action_[env.action_space.sample()] = 1
-
+    #action_ = np.zeros(env.action_space.n)
+    action_ = env.action_space.sample()
+    #print(action_)
     action_size = env.action_space.n
-    action = np.zeros(action_size)
+    #action = np.zeros(action_size)
 
-    action[env.action_space.sample()] = 1
+    #action[env.action_space.sample()] = 1
+
+
+
+    action_ = env.grid.get_astar_action((env.controlled_entity.x, env.controlled_entity.y), (env.evader.x, env.evader.y))
+    #print(env.controlled_entity.pos)
+    #print(env.evader.pos)
+    #path = env.grid.astar_path(*env.controlled_entity.pos, *env.evader.pos)
+    #print(path)
+    #print(action_)
+    action_ = np.nonzero(action_)[0][0]
+    print(action_)
+    # action = 1
+
     state, reward, done, _ = env.step(action_)
     print(f"state :  {state}")
     print(f"reward : {reward}" )
     print(f"done : {done}")
-    print(env.normalize_state)
+
+    #print(env.normalize_state)
     if(done):
         env.reset()
-
-    #time.sleep(0.1)
+    input()
+    #time.sleep(0.3)

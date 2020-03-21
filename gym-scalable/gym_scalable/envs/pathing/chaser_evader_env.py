@@ -52,7 +52,7 @@ class GridEvaderEnv(gym.Env):
     full state gives the
     '''
 
-    def __init__(self, config = {"mapfile" : "out_5x5.txt", "full_state":False, "normalize_state":True}):
+    def __init__(self, config = {"mapfile" : "out_5x5.txt", "RL_evader" : True, "full_state":False, "normalize_state":True}):
         self.screen = None
         # Action space initialised to [-1,0,1] for each joint
         self.action_space = spaces.Discrete(5)
@@ -67,49 +67,78 @@ class GridEvaderEnv(gym.Env):
         self.steps = 0
         self.reward = 0
         self.done = False
+
+        #TODO Set Defaults for config:
         self.normalize_state = config["normalize_state"]
-        self.gridmap = GridMap(config["mapfile"], S_WIDTH)
+        self.grid = GridMap(config["mapfile"], S_WIDTH)
+        self.grid.set_render_goals(False)
+        self.RL_evader = config["RL_evader"]
 
         #Initialize Entities
+        if(self.RL_evader):
+            self.evader = Entity(self.grid.goal[0], self.grid.goal[1], self.grid)
+            self.chaser = AStarChaser(self.grid.start[0], self.grid.start[1], self.grid)
+            self.controlled_entity = self.evader
+            self.chaser.set_chasing(self.evader)
+            self.ai_entity = self.chaser
+        else:
+            self.chaser = Entity(self.grid.goal[0], self.grid.goal[1], self.grid)
+            self.evader = AStarEvader(self.grid.start[0], self.grid.start[1], self.grid)
+            self.controlled_entity = self.chaser
+            self.evader.set_evading(self.chaser)
+            self.ai_entity = self.evader
 
-        self.evader = Evader(self.gridmap.goal[0], self.gridmap.goal[1], self.gridmap)
-        self.chaser = Chaser(self.gridmap.start[0], self.gridmap.start[1], self.gridmap, self.evader, env_controlled=False)
-        self.controlled_entity = self.evader
-        self.chaser.set_chasing(self.evader)
         self.entities = [self.evader, self.chaser]
         self.state = self.reset()
 
 
     def step(self, action):
-        if (INT_ACTION):
+        
+        #If the action is an arr or 1-hot vector
+        if INT_ACTION:
             z_arr = np.zeros(self.action_space.n)
             z_arr[action] = 1
             action = z_arr
-        for e in self.entities:
-            e.update(action)
+
+        #if the evader is RL controlled, update with the action
+        #Otherwise chaser updates with the action
+        if(self.RL_evader):
+            #Reward is 1 for each step NOT caught
+            self.controlled_entity.update(action)
+            # self.chaser.update_auto()
+            self.reward = 1
+        else:
+            self.controlled_entity.update(action)
+            # self.evader.update_auto()
+            self.reward = 0
+
         self.steps += 1
-        self.reward = 1
         self.set_state()
 
         if self.steps >= MAX_SCORE:
             self.done = True
-            self.reward = -1
             return np.array(self.state), self.reward, self.done, {}
 
         if self.chaser.get_pos() == self.evader.get_pos():
             self.done = True
-            self.reward = -1
+            
+            if(self.RL_evader):
+                self.reward = -1
+            else:
+                self.reward = 1
+        
+        self.ai_entity.update_auto()
 
         return np.array(self.state), self.reward, self.done, {}
 
     def set_state(self):
         
-        if(self.normalize_state):
-            self.state = [utils.normalize(self.evader.x, 0, self.gridmap.size),
-                          utils.normalize(self.evader.y, 0, self.gridmap.size),
-                          utils.normalize(self.chaser.x, 0, self.gridmap.size),
-                          utils.normalize(self.chaser.y, 0, self.gridmap.size),]
-        else:
+        if self.normalize_state:
+            self.state = [utils.normalize(self.evader.x, 0, self.grid.size),
+                          utils.normalize(self.evader.y, 0, self.grid.size),
+                          utils.normalize(self.chaser.x, 0, self.grid.size),
+                          utils.normalize(self.chaser.y, 0, self.grid.size)]
+        else:   
             self.state = [self.evader.x, self.evader.y, self.chaser.x, self.chaser.y]
 
     def reset(self):
@@ -120,31 +149,23 @@ class GridEvaderEnv(gym.Env):
         self.set_state()
 
         #reset positions
-        self.evader.set_pos(self.gridmap.start)
-        self.chaser.set_pos(self.gridmap.goal)
+        self.evader.set_pos(self.grid.start)
+        self.chaser.set_pos(self.grid.goal)
 
         return np.array(self.state)
 
     def render(self, mode='human', close=False):
 
-        # If screen isnt initiated, initiate it, fill it white
         if (self.screen is None):
             self.screen = pygame.display.set_mode((S_WIDTH, S_WIDTH))
             self.screen.fill((255, 255, 255))
             pygame.init()
         self.screen.fill((255, 255, 255))
-
+        self.grid.render(self.screen)
         for e in self.entities:
-            e.render(self.screen, self.gridmap.block_width, self.gridmap.block_height)
-        self.gridmap.render(self.screen)
-        # self.entity.render(self.screen, self.gridmap.block_width, self.gridmap.block_height)
+            e.render(self.screen, self.grid.block_width, self.grid.block_height)
 
-        time.sleep(0.1)
+        # self.entity.render(self.screen, self.grid.block_width, self.grid.block_height)
+
+        # time.sleep(0.1)
         pygame.display.update()
-
-
-def out_of_bounds(pos):
-    x, y = pos
-    if x < 0 or x > S_WIDTH or y < 0 or y > S_WIDTH:
-        return True
-    return False
