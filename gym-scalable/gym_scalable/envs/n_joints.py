@@ -96,11 +96,12 @@ class NJointArm(gym.Env):
         :param extra_state: Adds extra info into the state space such as
             precise positions
         """
-        
+
+
         self.screen = None
         self.extra_joints = config["extra_joints"]
         self.extra_state = config["extra_state"]
-
+        print(f"N-Joint arm environment started with : {self.extra_joints} joints.")
         self.obstacles = []
         # If continuous action space = n, where n in range [-1,1]
         # if discrete action space initialised to [-1,0,1]*joints

@@ -28,9 +28,3 @@ register(
     entry_point='gym_scalable.envs:MazeEnv',
 )
 
-
-# register(
-#     id='n-chasers-v0',
-#     entry_point='gym_scalable.envs:Chasers',
-# )
-
