@@ -89,20 +89,28 @@ class NJointArm(gym.Env):
 
     action_bound = [-1, 1]
 
-    def __init__(self, config = {"extra_joints": 1, "extra_state": False}):
+    def __init__(self, config):
         """
 
         :param extra_joints: Specify how many extra joints
         :param extra_state: Adds extra info into the state space such as
             precise positions
+            config
+            {
+                extra_joints :
+                extra_state :
+                normalize_state :
+            }
         """
 
 
         self.screen = None
-        self.extra_joints = config["extra_joints"]
-        self.extra_state = config["extra_state"]
+        self.extra_joints = config["extra_joints"] if "extra_joints " in config else 1
+        self.extra_state = config["extra_state"] if "extra_state" in config else 1
+
+
         print(f"N-Joint arm environment started with : {self.extra_joints} joints.")
-        self.obstacles = []
+
         # If continuous action space = n, where n in range [-1,1]
         # if discrete action space initialised to [-1,0,1]*joints
         if CONT_ACTIONS:
@@ -113,21 +121,21 @@ class NJointArm(gym.Env):
             self.action_space = spaces.Discrete(3 ** (self.extra_joints + 1))
         # self.observation_space = spaces.
 
+        self.obstacles = []
         self.time_pen = TIME_PENALTY
         self.steps = 0
         self.done = False
 
         # Steps the pointer has been at the target
         self.at_objective_n = 0
-
         self.non_discrete_actions = self.action_one_hot()
-
         self.centre_x = round(S_WIDTH / 2)
         self.centre_y = round(S_HEIGHT / 2)
-
         # Initialise the default single arm
         self.arm = Arm(self.centre_x, S_HEIGHT / 2, ARM_ANGLE, ARM_LENGTH, None)
         self.arms = [self.arm]
+        self.end_arm = self.arms[-1]
+
 
         # self.max_radius = (N_JOINTS)*ARM_LENGTH
 
@@ -138,7 +146,6 @@ class NJointArm(gym.Env):
             new_arm = Arm(p_x, p_y, 0, ARM_LENGTH, prev_arm)
             self.arms.append(new_arm)
 
-        self.end_arm = self.arms[-1]
 
         self.reset_objective(static = True)
 

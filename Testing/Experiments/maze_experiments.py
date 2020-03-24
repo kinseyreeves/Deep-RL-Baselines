@@ -5,6 +5,7 @@ from ray.rllib.models.tf.tf_modelv2 import TFModelV2
 from ray.rllib.models.tf.fcnet_v2 import FullyConnectedNetwork
 from gym.spaces import Discrete, Box
 from gym_scalable.envs.pathing.chaser_evader_env import GridEvaderEnv
+from gym_scalable.envs.pathing.maze_env import MazeEnv
 
 import ray
 from ray import tune
@@ -14,27 +15,85 @@ from ray.rllib.agents import ppo, ddpg, a3c, dqn
 import gym
 import os
 print(os.getcwd())
+from ray import tune
+from ray.tune.registry import register_env
+from gym_scalable.envs.pathing.maze_env import MazeEnv
+
+register_env("maze-env-v0", lambda _: MazeEnv())
+
+logdir = "~/ray_results/maze"
+total_steps = 100000
+
+def tune_runner(trainer, mapfile, total_steps, name, mapsize):
+    print(mapfile)
+    tune.run(trainer,
+             config={"env": MazeEnv, "env_config": {"mapfile": os.getcwd() + mapfile,
+                                                                       "full_state": False, "normalize_state": True,
+                                                                       "randomize_start":False, "randomize_goal": True}},
+             checkpoint_freq=10, checkpoint_at_end=True, stop={"timesteps_total": total_steps},
+             name=f"{mapsize}-{name}")
 
 
-#trainer = ddpg.DDPGTrainer(env=MazeEnv(), config={"env_config": {"extra_joints": 1, "extra_state": False}})
+# ################################################### #
+# -----------------##PPO##--------------------------- #
+# ################################################### #
+name = "PPO"
+mapfile = "/maps/map_3x3.txt"
+mapsize = 3
+trainer = ppo.PPOTrainer
 
+tune_runner(trainer, mapfile, total_steps, name, mapsize)
 #
-# def generate_trainer():
-#     #trainer = dqn.DQNTrainer(env = GridEvaderEnv, config = {"env_config": {"mapfile" : "map_5x5.txt", "full_state":False, "normalize_state":True}})
+# mapfile = "/maps/map_5x5.txt"
+# mapsize = 5
 #
-#     #trainer = ppo.PPOTrainer(env=GridEvaderEnv, config={"env_config": {"mapfile" : "map_5x5.txt", "full_state":False, "normalize_state":True}})
+# tune_runner(trainer, mapfile, total_steps, name, mapsize)
 #
-#     #trainer = ddpg.DDPGTrainer(env=GridEvaderEnv, config={"env_config": {"mapfile" : "map_5x5.txt", "full_state":False, "normalize_state":True}})
+# mapfile = "/maps/map_8x8.txt"
+# mapsize = 8
 #
-#     #trainer = a3c.A3CTrainer(env=GridEvaderEnv, config={"env_config": {"mapfile" : "map_5x5.txt", "full_state":False, "normalize_state":True}})
+# tune_runner(trainer, mapfile, total_steps, name, mapsize)
 #
-#     return trainer
+# # ################################################### #
+# # -----------------##DQN##--------------------------- #
+# # ################################################### #
+# name = "DQN"
+# mapfile = "maps/map_3x3.txt"
+# mapsize = 3
+# trainer = dqn.DQNTrainer
 #
-
-
-
-
-
-
-
+# tune_runner(trainer, mapfile, total_steps, name, mapsize)
+#
+# mapfile = "maps/map_5x5.txt"
+# mapsize = 5
+#
+# tune_runner(trainer, mapfile, total_steps, name, mapsize)
+#
+# mapfile = "maps/map_8x8.txt"
+# mapsize = 8
+#
+# tune_runner(trainer, mapfile, total_steps, name, mapsize)
+#
+#
+# # ################################################### #
+# # -----------------##A3C##--------------------------- #
+# # ################################################### #
+#
+# name = "A3C"
+# mapfile = "maps/map_3x3.txt"
+# mapsize = 3
+# trainer = ppo.PPOTrainer
+#
+# tune_runner(trainer, mapfile, total_steps, name, mapsize)
+#
+# mapfile = "maps/map_5x5.txt"
+# mapsize = 5
+#
+# tune_runner(trainer, mapfile, total_steps, name, mapsize)
+#
+# mapfile = "maps/map_8x8.txt"
+# mapsize = 8
+#
+# tune_runner(trainer, mapfile, total_steps, name, mapsize)
+#
 

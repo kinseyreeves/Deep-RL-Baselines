@@ -33,18 +33,12 @@ N_EVADERS = 1
 # minimum chaser/evader angle change
 DTHETA = 0.2
 
-CHASER_SPEED = 3
+MAX_STEPS = 200
 
-EVADER_SPEED = 6
-MAX_SCORE = 200
-
-CAUGHT_DIST = 10
-
-mapfile = "out_big.txt"
+INT_ACTION = True
 
 
 class MazeEnv(gym.Env):
-
     metadata = {'render.modes': ['human']}
 
     '''
@@ -52,15 +46,29 @@ class MazeEnv(gym.Env):
     full state gives the
     '''
 
-    def __init__(self, config = {"mapfile" : "out_5x5.txt", "full_state":False, "normalize_state":True}):
+    def __init__(self, config):
+
+        print(f"Starting with config {config}")
         self.screen = None
         # Action space initialised to [-1,0,1] for each joint
-        self.action_space = spaces.Discrete(4)
 
-        # TODO should we normalize or use int vals?
-        high = np.array([1, 1, 1, 1, 1])
-        low = np.array([0, 0, 0, 0, 0])
+        #Checking config otherwise use defaults
+        if "mapfile" in config:
+            self.map_file = config["mapfile"]
+        else:
+            print("Error : Please enter a mapfile")
+            exit(1)
 
+        self.randomize_goal = config["randomize_goal"] if "randomize_goal" in config else False
+        self.randomize_start = config["randomize_start"] if "randomize_start" in config else False
+        self.normalize_state = config["normalize_state"] if "normalize_state" in config else False
+
+
+
+        # Observation space boundaries
+        high = np.array([1, 1, 1, 1])
+        low = np.array([0, 0, 0, 0])
+        self.action_space = spaces.Discrete(5)
         self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
 
         self.centre_x = round(S_WIDTH / 2)
@@ -68,30 +76,22 @@ class MazeEnv(gym.Env):
         self.steps = 0
         self.reward = 0
         self.done = False
-        self.normalize_state = False
-        self.grid = GridMap(config["mapfile"], S_WIDTH)
-        self.normalize_state = config["normalize_state"]
+        self.grid = GridMap(self.map_file, S_WIDTH)
 
         self.grid.set_render_goals(True)
 
-
         self.entity = Entity(self.grid.start[0], self.grid.start[1], self.grid)
-        print(f"Env starting entity at {self.grid.start[0]} {self.grid.start[1]}")
-
         self.state = self.reset()
 
         # observation space = [self.x, self.y, enemy.x, enemy.y]
         # self.observation_space = spaces.Box(l_bounds, h_bounds, dtype=np.float32)
 
-        #Action conversion:
-        left = np.asarray([1, 0, 0, 0])
-        right = np.asarray([0,1,0,0])
-        up = np.asarray([0,0,1,0])
-        down = np.asarray([0,0,0,1])
-
-        self.actions_table = {(-2, 0): left, (2, 0) : right, (0,-2) : up, (0,2) : down}
-
     def step(self, action):
+        if INT_ACTION:
+            z_arr = np.zeros(self.action_space.n)
+            z_arr[action] = 1
+            action = z_arr
+
         self.entity.update(action)
 
         self.steps += 1
@@ -100,33 +100,38 @@ class MazeEnv(gym.Env):
         self.set_state()
 
         if self.entity.x == self.grid.goal[0] and self.entity.y == self.grid.goal[1]:
-            self.reset()
             self.reward = 1
             self.done = True
 
-
-        if (self.steps >= MAX_SCORE):
+        if self.steps >= MAX_STEPS:
             self.done = True
             return np.array(self.state), self.reward, self.done, {}
 
         return np.array(self.state), self.reward, self.done, {}
 
-
     def set_state(self):
-        if(self.normalize_state):
+        if (self.normalize_state):
             self.state = [utils.normalize(self.entity.x, 0, self.grid.size),
-                          utils.normalize(self.entity.y, 0, self.grid.size)]
+                          utils.normalize(self.entity.y, 0, self.grid.size),
+                          utils.normalize(self.grid.goal[0], 0, self.grid.size),
+                          utils.normalize(self.grid.goal[1], 0, self.grid.size)]
         else:
-            self.state = [self.entity.x, self.entity.y]
+            self.state = [self.entity.x, self.entity.y, self.grid.goal[0], self.grid.goal[1]]
 
     def reset(self):
-        self.entity.x = self.grid.start[0]
-        self.entity.y = self.grid.start[1]
 
         self.reward = 0
         self.steps = 0
         self.done = False
         self.set_state()
+
+        if(self.randomize_goal):
+            self.grid.set_random_goal()
+        if(self.randomize_start):
+            self.grid.set_random_start()
+
+        self.entity.x = self.grid.start[0]
+        self.entity.y = self.grid.start[1]
 
         return np.array(self.state)
 
@@ -146,13 +151,8 @@ class MazeEnv(gym.Env):
         pygame.display.update()
 
 
-
 def out_of_bounds(pos):
     x, y = pos
     if x < 0 or x > S_WIDTH or y < 0 or y > S_WIDTH:
         return True
     return False
-
-
-
-

@@ -53,7 +53,7 @@ class GridEvaderEnv(gym.Env):
     '''
 
     def __init__(self,
-                 config={"mapfile": "out_5x5.txt", "RL_evader": True, "full_state": False, "normalize_state": True}):
+                 config={"mapfile": "map_5x5.txt", "RL_evader": True, "full_state": False, "normalize_state": True}):
         self.screen = None
         # Action space initialised to [-1,0,1] for each joint
         self.action_space = spaces.Discrete(5)

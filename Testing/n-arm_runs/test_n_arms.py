@@ -21,8 +21,7 @@ while True:
     # print(action_size)
     # print(env.action_space)
     action = env.action_space.sample()
-    #print(env.action_space.sample())
-    #a = input()
+
     print(action)
     #action[1] = 0
     # print(action)
@@ -34,6 +33,7 @@ while True:
     # print(reward)
     # print(state)
     # a = input()
+    print(i)
     print("reward : ", reward)
     # print(state)
     if (done):

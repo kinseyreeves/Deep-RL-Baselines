@@ -67,7 +67,7 @@ class GridMap:
         # Action conversion:
         left = np.asarray([1, 0, 0, 0,0])
         right = np.asarray([0, 1, 0, 0,0])
-        up = np.asarray([0, 0, 1, 0])
+        up = np.asarray([0, 0, 1, 0,0])
         down = np.asarray([0, 0, 0, 1,0])
         stay = np.asarray([0,0,0,0,1])
 
@@ -173,15 +173,12 @@ class GridMap:
         closed_list = set()
 
         path = []
-
         open_list.add(start_node)
 
         while len(open_list) > 0:
             current_node = e = next(iter(open_list))
             current_index = 0
 
-            #[TODO DO WITH HEAP]
-            #FIND LOWEST FSCORE
             for index, item in enumerate(open_list):
                 if(item.f < current_node.f):
                     current_node = item
@@ -250,6 +247,24 @@ class GridMap:
         if self.is_walkable(x, y-1) and (x, y-2) not in self.a_searched:
             out.append((x, y-2))
         return out
+
+    def set_random_goal(self):
+        # print(self.map)
+        #
+        # print(self.goal)
+        self.map[self.goal[1]][self.goal[0]] = ' '
+        goal_start = {self.goal, self.start}
+        self.goal = random.choice(list(self.walkable.difference(goal_start)))
+        self.map[self.goal[1]][self.goal[0]] = 'G'
+        # print(self.goal)
+        # input()
+
+    def set_random_start(self):
+        self.map[self.start[1]][self.start[0]] = ' '
+        goal_start = {self.goal, self.start}
+        self.start = random.choice(list(self.walkable.difference(goal_start)))
+        self.map[self.start[1]][self.start[0]] = 'S'
+        #input()
 
 
     def read_map(self, filename):
