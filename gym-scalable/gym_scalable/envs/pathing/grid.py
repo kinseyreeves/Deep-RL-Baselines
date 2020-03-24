@@ -1,9 +1,10 @@
 import random
 import pygame
 import numpy as np
-
+import collections
 
 from gym_scalable.envs.pathing.grid_entity import *
+
 
 """
 Grid which serves as the lower level of all pathing environments
@@ -30,6 +31,9 @@ class Node:
 
     def __eq__(self, other):
         return self.position == other.position
+
+    def __hash__(self):
+        return hash(self.position)
 
 class GridMap:
     """
@@ -116,10 +120,10 @@ class GridMap:
         #print(path)
         if len(path) <= 1:
             return self.convert_action((0,0))
-        print(f"Path : {path}")
+        #print(f"Path : {path}")
         path = path[1]
-        print(f"pos: {pos}, goal: {goal}")
-        print(f"diff: {(path[0] - pos[0], path[1] - pos[1])}")
+        #print(f"pos: {pos}, goal: {goal}")
+        #print(f"diff: {(path[0] - pos[0], path[1] - pos[1])}")
         action = self.convert_action((pos[0] - path[0], pos[1] - path[1]))
         
         return action
@@ -165,43 +169,40 @@ class GridMap:
         start_node.g = start_node.h = start_node.f = 0
         end_node.g = end_node.h = end_node.f = 0
 
-        open_list = []
-        closed_list = []
+        open_list = set()
+        closed_list = set()
 
         path = []
 
-        open_list.append(start_node)
+        open_list.add(start_node)
 
         while len(open_list) > 0:
-            current_node = open_list[0]
+            current_node = e = next(iter(open_list))
             current_index = 0
 
             #[TODO DO WITH HEAP]
+            #FIND LOWEST FSCORE
             for index, item in enumerate(open_list):
                 if(item.f < current_node.f):
                     current_node = item
-                    current_index = index
+                    #current_index = index
 
-            open_list.pop(current_index)
-            closed_list.append(current_node)
-
+            open_list.discard(current_node)
+            closed_list.add(current_node)
 
             if current_node == end_node:
 
                 current = current_node
-
-                #track backwards through the path
+                #track backwards through the path - reconstruct the path
                 while current:
                     path.append(current.position)
                     current = current.parent
                 break
 
-            children = []
+            #children = set()
             for new_pos in self.get_neighbours(current_node.position[0], current_node.position[1]):
-                new_node = Node(current_node, new_pos)
-                children.append(new_node)
-
-            for child in children:
+                child = Node(current_node, new_pos)
+                #children.add(child)
                 if child in closed_list:
                     continue
 
@@ -209,13 +210,7 @@ class GridMap:
                 child.h = self.manhatten_dist(child.position[0], child.position[1],
                                               end_node.position[0], end_node.position[1])
                 child.f = child.g + child.h
-
-                #[TODO] Do this with a heap
-                for open_node in open_list:
-                    if(child == open_node and child.g > open_node.g):
-                        continue
-
-                open_list.append(child)
+                open_list.add(child)
 
         return path[::-1]
 
@@ -263,10 +258,10 @@ class GridMap:
         
         for i in f.readlines():
             out.append(list(i.strip('\n')))
-        print(out)
+        #print(out)
         self.size = len(out[0])
-        print(len(out))
-        print(len(out[0]))
+        #print(len(out))
+        #print(len(out[0]))
 
         for y in range(0,len(out)):
             for x in range(len(out[0])):

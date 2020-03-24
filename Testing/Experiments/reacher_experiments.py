@@ -64,31 +64,31 @@ total_steps = 1000000
 
 #trainer = ddpg.DDPGTrainer(env=NJointArm, config={"env_config": {"extra_joints": 1, "extra_state": False}})
 
-###PPO RUNS
-joints = 1
-tune.run(PPOTrainer, config={"env": "n-joints-v0", "env_config": {"extra_joints": joints, "extra_state": False}},
-         checkpoint_freq=10, checkpoint_at_end=True, stop = {"timesteps_total": total_steps}, name=f"{joints}-Joint-PPO")
-
-joints = 2
-tune.run(PPOTrainer, config={"env": "n-joints-v0", "env_config": {"extra_joints": joints, "extra_state": False}},
-         checkpoint_freq=10, checkpoint_at_end=True, stop = {"timesteps_total": total_steps}, name=f"{joints}-Joint-PPO")
-
-joints = 4
-tune.run(PPOTrainer, config={"env": "n-joints-v0", "env_config": {"extra_joints": joints, "extra_state": False}},
-         checkpoint_freq=10, checkpoint_at_end=True, stop = {"timesteps_total": total_steps}, name=f"{joints}-Joint-PPO")
-
-###DDPG RUNS
+# ###PPO RUNS
+# joints = 1
+# tune.run(PPOTrainer, config={"env": "n-joints-v0", "env_config": {"extra_joints": joints, "extra_state": False}},
+#          checkpoint_freq=10, checkpoint_at_end=True, stop = {"timesteps_total": total_steps}, name=f"{joints}-Joint-PPO")
 #
-joints = 1
-tune.run(DDPGTrainer, config={"env": "n-joints-v0", "env_config": {"extra_joints": joints, "extra_state": False}},
-         checkpoint_freq=10, checkpoint_at_end=True, stop = {"timesteps_total": total_steps}, name=f"{joints}-Joint-DDPG")
-
-joints = 2
-tune.run(DDPGTrainer, config={"env": "n-joints-v0", "env_config": {"extra_joints": joints, "extra_state": False}},
-         checkpoint_freq=10, checkpoint_at_end=True, stop = {"timesteps_total": total_steps}, name=f"{joints}-Joint-DDPG")
+# joints = 2
+# tune.run(PPOTrainer, config={"env": "n-joints-v0", "env_config": {"extra_joints": joints, "extra_state": False}},
+#          checkpoint_freq=10, checkpoint_at_end=True, stop = {"timesteps_total": total_steps}, name=f"{joints}-Joint-PPO")
+#
+# joints = 4
+# tune.run(PPOTrainer, config={"env": "n-joints-v0", "env_config": {"extra_joints": joints, "extra_state": False}},
+#          checkpoint_freq=10, checkpoint_at_end=True, stop = {"timesteps_total": total_steps}, name=f"{joints}-Joint-PPO")
+#
+# ###DDPG RUNS
+# #
+# joints = 1
+# tune.run(DDPGTrainer, config={"env": "n-joints-v0", "env_config": {"extra_joints": joints, "extra_state": False}},
+#          checkpoint_freq=10, checkpoint_at_end=True, stop = {"timesteps_total": total_steps}, name=f"{joints}-Joint-DDPG")
+#
+# joints = 2
+# tune.run(DDPGTrainer, config={"env": "n-joints-v0", "env_config": {"extra_joints": joints, "extra_state": False}},
+#          checkpoint_freq=10, checkpoint_at_end=True, stop = {"timesteps_total": total_steps}, name=f"{joints}-Joint-DDPG")
 
 joints = 4
-tune.run(DDPGTrainer, config={"env": "n-joints-v0", "env_config": {"extra_joints": joints, "extra_state": False}},
+tune.run(DDPGTrainer, config={"env": "n-joints-v0", "num_gpus":1, "env_config": {"extra_joints": joints, "extra_state": False}},
          checkpoint_freq=10, checkpoint_at_end=True, stop = {"timesteps_total": total_steps}, name=f"{joints}-Joint-DDPG")
 
 

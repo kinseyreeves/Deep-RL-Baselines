@@ -52,7 +52,7 @@ class MazeEnv(gym.Env):
     full state gives the
     '''
 
-    def __init__(self, mapfile=None, full_state = False, normalize_state = True):
+    def __init__(self, config = {"mapfile" : "out_5x5.txt", "full_state":False, "normalize_state":True}):
         self.screen = None
         # Action space initialised to [-1,0,1] for each joint
         self.action_space = spaces.Discrete(4)
@@ -69,10 +69,14 @@ class MazeEnv(gym.Env):
         self.reward = 0
         self.done = False
         self.normalize_state = False
-        self.gridmap = GridMap(mapfile, S_WIDTH)
+        self.grid = GridMap(config["mapfile"], S_WIDTH)
+        self.normalize_state = config["normalize_state"]
 
-        self.entity = Entity(self.gridmap.start[0], self.gridmap.start[1], self.gridmap)
-        print(f"Env starting entity at {self.gridmap.start[0]} {self.gridmap.start[1]}")
+        self.grid.set_render_goals(True)
+
+
+        self.entity = Entity(self.grid.start[0], self.grid.start[1], self.grid)
+        print(f"Env starting entity at {self.grid.start[0]} {self.grid.start[1]}")
 
         self.state = self.reset()
 
@@ -95,7 +99,7 @@ class MazeEnv(gym.Env):
 
         self.set_state()
 
-        if self.entity.x == self.gridmap.goal[0] and self.entity.y == self.gridmap.goal[1]:
+        if self.entity.x == self.grid.goal[0] and self.entity.y == self.grid.goal[1]:
             self.reset()
             self.reward = 1
             self.done = True
@@ -110,14 +114,14 @@ class MazeEnv(gym.Env):
 
     def set_state(self):
         if(self.normalize_state):
-            self.state = [utils.normalize(self.entity.x, 0, self.gridmap.size),
-                          utils.normalize(self.entity.y, 0, self.gridmap.size)]
+            self.state = [utils.normalize(self.entity.x, 0, self.grid.size),
+                          utils.normalize(self.entity.y, 0, self.grid.size)]
         else:
             self.state = [self.entity.x, self.entity.y]
 
     def reset(self):
-        self.entity.x = self.gridmap.start[0]
-        self.entity.y = self.gridmap.start[1]
+        self.entity.x = self.grid.start[0]
+        self.entity.y = self.grid.start[1]
 
         self.reward = 0
         self.steps = 0
@@ -135,8 +139,8 @@ class MazeEnv(gym.Env):
             pygame.init()
         self.screen.fill((255, 255, 255))
 
-        self.gridmap.render(self.screen)
-        self.entity.render(self.screen, self.gridmap.block_width, self.gridmap.block_height)
+        self.grid.render(self.screen)
+        self.entity.render(self.screen, self.grid.block_width, self.grid.block_height)
 
         time.sleep(0.1)
         pygame.display.update()
