@@ -297,4 +297,8 @@ class GridMap:
     def get_walkable_positions(self):
         return self.walkable
 
+    def draw_finished(self):
+        ...
+
+
 

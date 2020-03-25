@@ -14,9 +14,15 @@ class Entity:
         self.grid = grid
         self.render_text = "R"
 
+        self.render_sub_text = False
+
         self.font = pygame.font.Font(None, 32)
-        self.text = self.font.render(self.render_text, True, (0, 0, 0) , None)
+        self.text = self.font.render(self.render_text, True, (0, 0, 0), None)
         self.text_rect = self.text.get_rect()
+
+        self.sub_font = pygame.font.Font(None, 20)
+        self.sub_text = self.font.render(self.render_text, True, (0, 0, 0), None)
+        self.sub_text_rect = self.text.get_rect()
         #textRect.center = (X // 2, Y // 2)
 
 
@@ -40,12 +46,19 @@ class Entity:
 
         pygame.draw.circle(screen, self.color, ((round(((self.x - 1) / 2) * block_width + (block_width / 2))),
                                                 round((((self.y - 1) / 2) * block_height + (block_height / 2)))), int(block_height/5))
-        self.text_rect.center = (x,y)
+        self.text_rect.center = (x, y)
         screen.blit(self.text, self.text_rect)
 
-    def setText(self, text):
-        self.text = self.font.render(text, True, (0, 0, 0) , None)
+        if self.render_sub_text:
+            self.sub_text_rect.center = (x-int(block_height/5), y + int(block_height/3))
+            screen.blit(self.sub_text, self.sub_text_rect)
 
+    def setText(self, text):
+        self.text = self.font.render(text, True, (0, 0, 0), None)
+
+    def set_sub_text(self, text):
+        self.render_sub_text = True
+        self.sub_text = self.sub_font.render(text, True, (0, 0, 0), None)
 
     def update_auto(self):
         pass
@@ -134,7 +147,7 @@ class AStarEvader(Entity):
             best_pos = (self.x, self.y)
             best_dist = 0
 
-            if(self.grid.manhatten_dist(self.x, self.y,self.evading.x, self.evading.y) < self.evader_thresh):
+            if self.grid.manhatten_dist(self.x, self.y, self.evading.x, self.evading.y) < self.evader_thresh:
                 
                 rad_pos = self.get_radius_positions(self.x, self.y, self.evader_thresh)
                 walkable = self.grid.get_walkable_positions().intersection(rad_pos)

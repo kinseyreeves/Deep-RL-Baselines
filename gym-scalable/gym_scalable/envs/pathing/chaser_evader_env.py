@@ -1,5 +1,5 @@
 '''
-Evader environment
+Evader or Chaser environment
 Single agent
 
 Author : Kinsey Reeves
@@ -8,6 +8,7 @@ Goal:
     Chaser uses A* with some level of randomness
 
 Map is made up of:
+These are easily editable in the map file
 X - boundary
 O - walkable tile
 S - start tile
@@ -35,8 +36,6 @@ S_WIDTH = 500
 DTHETA = 0.2
 
 MAX_STEPS = 200
-
-CAUGHT_DIST = 10
 
 INT_ACTION = True
 
@@ -84,7 +83,7 @@ class GridEvaderEnv(gym.Env):
         self.grid.set_render_goals(False)
 
         # Initialize Entities
-        if (self.RL_evader):
+        if self.RL_evader:
             self.evader = Entity(self.grid.goal[0], self.grid.goal[1], self.grid)
             self.chaser = AStarChaser(self.grid.start[0], self.grid.start[1], self.grid)
             self.controlled_entity = self.evader

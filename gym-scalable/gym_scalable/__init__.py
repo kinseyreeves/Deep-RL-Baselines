@@ -22,9 +22,13 @@ register(
     entry_point='gym_scalable.envs:PathingEnv',
 )
 
-
 register(
     id='n-maze-v0',
     entry_point='gym_scalable.envs:MazeEnv',
 )
 
+
+register(
+    id='n-grid_chaser-vs-evader-v0',
+    entry_point='gym_scalable.envs:GridChaserVsEvaderEnv',
+)
