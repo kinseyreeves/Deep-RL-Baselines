@@ -14,7 +14,7 @@ i.e. maze solver, chaser, evader etc
 
 WALL_WIDTH = 10
 
-WALL_COLOUR = (100,100,100)
+WALL_COLOUR = (100, 100, 100)
 BACKGROUND_COLOUR = ()
 
 class Node:
@@ -253,15 +253,16 @@ class GridMap:
         #
         # print(self.goal)
         self.map[self.goal[1]][self.goal[0]] = ' '
-        goal_start = {self.goal, self.start}
-        self.goal = random.choice(list(self.walkable.difference(goal_start)))
+        #The new goal can't be the previous goal, the starting point, or the starting points neighbours
+        bad_spots = {self.goal, self.start}.union(set(self.get_neighbours(self.start[0], self.start[1])))
+        self.goal = random.choice(list(self.walkable.difference(bad_spots)))
         self.map[self.goal[1]][self.goal[0]] = 'G'
         # print(self.goal)
         # input()
 
     def set_random_start(self):
         self.map[self.start[1]][self.start[0]] = ' '
-        goal_start = {self.goal, self.start}
+        goal_start = {self.goal, self.start}.union(set(self.get_neighbours(self.goal[0], self.goal[1])))
         self.start = random.choice(list(self.walkable.difference(goal_start)))
         self.map[self.start[1]][self.start[0]] = 'S'
         #input()

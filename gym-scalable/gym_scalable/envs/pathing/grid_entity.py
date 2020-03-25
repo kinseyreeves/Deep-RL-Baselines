@@ -2,14 +2,23 @@ import pygame
 import random
 import numpy as np
 
+
+
 class Entity:
     # Basic class for defining circle object
-    def __init__(self, x, y, grid, color=(0, 255, 0)):
+    def __init__(self, x, y, grid, color=(0, 200, 100)):
+        pygame.init()
         self.x = x
         self.y = y
         self.color = color
         self.grid = grid
-        #self.pos = (x,y)
+        self.render_text = "R"
+
+        self.font = pygame.font.Font(None, 32)
+        self.text = self.font.render(self.render_text, True, (0, 0, 0) , None)
+        self.text_rect = self.text.get_rect()
+        #textRect.center = (X // 2, Y // 2)
+
 
     def update(self, action):
         #print(action)
@@ -25,8 +34,18 @@ class Entity:
             pass
 
     def render(self, screen, block_width, block_height):
+
+        x = round(((self.x - 1) / 2) * block_width + (block_width / 2))
+        y = round((((self.y - 1) / 2) * block_height + (block_height / 2)))
+
         pygame.draw.circle(screen, self.color, ((round(((self.x - 1) / 2) * block_width + (block_width / 2))),
-                                                round((((self.y - 1) / 2) * block_height + (block_height / 2)))), 10)
+                                                round((((self.y - 1) / 2) * block_height + (block_height / 2)))), int(block_height/5))
+        self.text_rect.center = (x,y)
+        screen.blit(self.text, self.text_rect)
+
+    def setText(self, text):
+        self.text = self.font.render(text, True, (0, 0, 0) , None)
+
 
     def update_auto(self):
         pass
@@ -51,7 +70,7 @@ class AStarChaser(Entity):
     Note: the evader must be initialized first
     """
 
-    def __init__(self, x, y, grid, randomness=0.2, env_controlled=False):
+    def __init__(self, x, y, grid, randomness=0.1, env_controlled=False):
         """
         :param x:
         :param y:
@@ -61,9 +80,11 @@ class AStarChaser(Entity):
         :return:
         """
         super().__init__(x, y, grid, color=(255, 0, 0))
+        super().setText("C")
         self.evading = None
         self.chased_entities = None
         self.randomness = randomness
+
 
     def update_auto(self):
         """
@@ -72,9 +93,9 @@ class AStarChaser(Entity):
         :return:
         """
         if(random.random() < self.randomness):
-            action = self.grid.get_astar_action((self.x, self.y), self.chasing.get_pos())
-        else:
             action = self.get_random_action()
+        else:
+            action = self.grid.get_astar_action((self.x, self.y), self.chasing.get_pos())
 
         super().update(action)
         
@@ -89,7 +110,7 @@ class AStarChaser(Entity):
 class AStarEvader(Entity):
     evader_thresh = 4
 
-    def __init__(self, x, y, grid, randomness=0.2):
+    def __init__(self, x, y, grid, randomness=0.3):
         """
 
         :param x:
@@ -99,9 +120,10 @@ class AStarEvader(Entity):
         :param randomness: Probability a random action will be taken
         :return:
         """
-        super().__init__(x, y, grid, color=(255, 0, 255))
+        super().__init__(x, y, grid, color=(200, 0, 100))
         self.evading = None
         self.randomness = randomness
+        super().setText("E")
 
 
     def update_auto(self):

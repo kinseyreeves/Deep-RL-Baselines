@@ -33,7 +33,7 @@ N_EVADERS = 1
 # minimum chaser/evader angle change
 DTHETA = 0.2
 
-MAX_STEPS = 200
+MAX_STEPS = 500
 
 INT_ACTION = True
 
