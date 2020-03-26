@@ -99,13 +99,14 @@ class NJointArm(gym.Env):
             {
                 extra_joints :
                 extra_state :
-                normalize_state :
             }
         """
+        print("SDFSDFSDsdfdFSDSDFSDFSDF")
+        input()
 
 
         self.screen = None
-        self.extra_joints = config["extra_joints"] if "extra_joints " in config else 1
+        self.extra_joints = config["extra_joints"] if "extra_joints" in config else 1
         self.extra_state = config["extra_state"] if "extra_state" in config else 1
 
 
@@ -116,10 +117,15 @@ class NJointArm(gym.Env):
         if CONT_ACTIONS:
             l_bound = np.array((self.extra_joints + 1) * [-1])
             h_bound = np.array((self.extra_joints + 1) * [1])
+
+
             self.action_space = spaces.Box(l_bound, h_bound, dtype=np.float32)
         else:
             self.action_space = spaces.Discrete(3 ** (self.extra_joints + 1))
-        # self.observation_space = spaces.
+        l_bounds = np.array([0] + [-1] * ((self.extra_joints + 1) * 2) + [-1, -1])
+        h_bounds = np.array([1] + [1] * ((self.extra_joints + 1) * 2) + [1, 1])
+
+        self.observation_space = spaces.Box(l_bounds, h_bounds, dtype=np.float32)
 
         self.obstacles = []
         self.time_pen = TIME_PENALTY
@@ -136,7 +142,6 @@ class NJointArm(gym.Env):
         self.arms = [self.arm]
         self.end_arm = self.arms[-1]
 
-
         # self.max_radius = (N_JOINTS)*ARM_LENGTH
 
         # Intialise the extra arms
@@ -151,10 +156,7 @@ class NJointArm(gym.Env):
 
         # Observation space [Joint angles ... , objective1x, ob1y] #TODO update below
 
-        l_bounds = np.array([0] + [-1] * ((self.extra_joints + 1) * 2) + [-1, -1])
-        h_bounds = np.array([1] + [1] * ((self.extra_joints + 1) * 2) + [1, 1])
 
-        self.observation_space = spaces.Box(l_bounds, h_bounds, dtype=np.float32)
 
         #setup objectives
         if (N_OBJECTIVES > 0):

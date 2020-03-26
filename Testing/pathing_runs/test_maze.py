@@ -11,6 +11,7 @@ i = 0
 
 goal = env.grid.goal
 
+
 while True:
     
     i += 1

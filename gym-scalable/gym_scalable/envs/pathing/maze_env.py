@@ -63,8 +63,6 @@ class MazeEnv(gym.Env):
         self.randomize_start = config["randomize_start"] if "randomize_start" in config else False
         self.normalize_state = config["normalize_state"] if "normalize_state" in config else False
 
-
-
         # Observation space boundaries
         high = np.array([1, 1, 1, 1])
         low = np.array([0, 0, 0, 0])

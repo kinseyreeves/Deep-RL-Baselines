@@ -6,7 +6,7 @@ import time
 import os
 
 print(os.getcwd())
-env = gym.make('n-grid_evaders-v0', config= {"mapfile" : "maps/map_3x3.txt", "randomize_start":False, "randomize_goal" : True, "RL_evader":False, "full_state" : False, "normalize_state" : True})
+env = gym.make('n-grid_evaders-v0', config= {"mapfile" : "maps/map_8x8.txt", "randomize_start":False, "randomize_goal" : True, "RL_evader":True, "full_state" : False, "normalize_state" : True})
 
 state = env.reset()
 i = 0

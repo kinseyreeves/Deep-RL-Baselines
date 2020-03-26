@@ -3,13 +3,19 @@ import gym_scalable
 import random
 import numpy as np
 
-env = gym.make('n-joints-v0',  config = {"extra_joints": 8, "extra_state": False})
+env = gym.make('n-joints-v0',  config = {"extra_joints": 5, "extra_state": False})
 i = 0
 
 print(env.action_space)
-print(env.action_space.sample())
-print(env.action_space.shape[0])
+print(env.observation_space.shape)
+print(env.action_space.shape)
 
+
+print(type(env.action_space))
+print(type(env.observation_space))
+state = env.reset()
+
+input()
 print("shape : " , env.observation_space.shape[0])
 
 while True:
@@ -27,6 +33,7 @@ while True:
     # print(action)
     # for i in range
     state, reward, done, _ = env.step(action)
+    print(state.shape)
     #print(reward)
     #print(state)
     #a = input()
