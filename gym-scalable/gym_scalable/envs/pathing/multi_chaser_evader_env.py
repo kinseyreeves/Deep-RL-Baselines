@@ -105,7 +105,7 @@ class GridChaserVsEvaderEnv(MultiAgentEnv):
         """
         chaser_action = utils.convert_1hot_action(action["chaser"], self.action_space.n)
         evader_action = utils.convert_1hot_action(action["evader"], self.action_space.n)
-        print(chaser_action)
+
         # TODO should the AI update first?
         self.chaser.update(chaser_action)
 
