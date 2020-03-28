@@ -92,7 +92,7 @@ class GridMap:
                 #Either columns or walls
                 elif x % 2 == 0:
                     if(self.map[y][x] == '|'):
-                        r = ((x / 2) * self.block_width - WALL_WIDTH/2, ((y-1) / 2) * self.block_height - WALL_WIDTH/2,
+                        r = ((x / 2) * self.block_width - WALL_WIDTH/2, ((y-1) / 2) * self.block_height - int(WALL_WIDTH/2),
                              WALL_WIDTH, self.block_height + WALL_WIDTH)
                         pygame.draw.rect(screen, WALL_COLOUR, r)
                 else:

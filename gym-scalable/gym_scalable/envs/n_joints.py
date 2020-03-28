@@ -101,9 +101,6 @@ class NJointArm(gym.Env):
                 extra_state :
             }
         """
-        print("SDFSDFSDsdfdFSDSDFSDFSDF")
-        input()
-
 
         self.screen = None
         self.extra_joints = config["extra_joints"] if "extra_joints" in config else 1

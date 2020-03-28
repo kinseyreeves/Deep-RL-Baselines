@@ -78,6 +78,7 @@ class GridEvaderEnv(gym.Env):
         self.RL_evader = config["RL_evader"] if "RL_evader" in config else True
         self.randomize_goal = config["randomize_goal"] if "randomize_goal" in config else False
         self.randomize_start = config["randomize_start"] if "randomize_start" in config else False
+        self.slowdown_step = config["slowdown_step"] if "slowdown_step" in config else False
 
         self.grid = GridMap(self.map_file, S_WIDTH)
         self.grid.set_render_goals(False)
@@ -100,6 +101,8 @@ class GridEvaderEnv(gym.Env):
         self.state = self.reset()
 
     def step(self, action):
+        if(self.slowdown_step):
+            time.sleep(0.3)
 
         # If the action is an arr or 1-hot vector
         if INT_ACTION:
@@ -146,6 +149,8 @@ class GridEvaderEnv(gym.Env):
             self.state = [self.evader.x, self.evader.y, self.chaser.x, self.chaser.y]
 
     def reset(self):
+        if(self.slowdown_step):
+            time.sleep(0.8)
 
         self.reward = 0
         self.steps = 0
