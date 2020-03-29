@@ -104,7 +104,7 @@ class NJointArm(gym.Env):
 
         self.screen = None
         self.extra_joints = config["extra_joints"] if "extra_joints" in config else 1
-        self.extra_state = config["extra_state"] if "extra_state" in config else 1
+        self.extra_state = config["extra_state"] if "extra_state" in config else False
 
 
         print(f"N-Joint arm environment started with : {self.extra_joints} joints.")
@@ -152,8 +152,6 @@ class NJointArm(gym.Env):
         self.reset_objective(static = True)
 
         # Observation space [Joint angles ... , objective1x, ob1y] #TODO update below
-
-
 
         #setup objectives
         if (N_OBJECTIVES > 0):
