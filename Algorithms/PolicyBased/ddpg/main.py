@@ -27,7 +27,7 @@ def run():
     avg_rewards = []
 
     extra_j = 1
-    env = gym.make('n-joints-v0')
+    env = gym.make('n-joints-v0', config = {"extra_joints":1, "extra_state":False})
 
     # action_size = env.action_space.shape[0]
     # state_size = env.observation_space.shape[0]
@@ -66,8 +66,8 @@ def run():
             state = new_state
             episode_reward += reward
             #env.render()
-            #if ep_n > 200:
-            #    env.render()
+            if ep_n > 200:
+               env.render()
 
             if done or step == MAX_EP_STEPS:
                 writer.add_scalar('ddpg/ep_reward', episode_reward, ep_n)
