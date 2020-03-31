@@ -27,7 +27,6 @@ class Entity:
 
 
     def update(self, action):
-        #print(action)
         if action[0] and self.grid.is_walkable(self.x + 1, self.y):
             self.x += 2
         elif action[1] and self.grid.is_walkable(self.x - 1, self.y):
@@ -36,7 +35,7 @@ class Entity:
             self.y += 2
         elif action[3] and self.grid.is_walkable(self.x, self.y - 1):
             self.y -= 2
-        elif action[4]:
+        elif (len(action)>4) and action[4]:
             pass
 
     def render(self, screen, block_width, block_height):

@@ -43,10 +43,12 @@ class GridMap:
     map = []
     colours = {'O' : (255,255,255), 'G':(0,255,0), 'X':(0,0,255), 'S':(255,0,0), '-':(255,0,0), '+':(255,0,0)}
 
+
     #All walkable positions
     walkable = set()
     a_searched = set()
     marked_blocks = set()
+    goals = set()
 
     entities = []
 
@@ -54,6 +56,7 @@ class GridMap:
 
     def __init__(self, mapfile, screen_width):
         #print(mapfile)
+        pygame.init()
         self.map = self.read_map(mapfile)
         self.screen_width = screen_width
 
@@ -64,6 +67,10 @@ class GridMap:
         self.block_width = screen_width / self.width
         self.block_height = screen_width / self.height
 
+        self.font = pygame.font.Font(None, 32)
+        self.text = self.font.render(None, True, (0, 0, 0), None)
+        self.text_rect = self.text.get_rect()
+
         # Action conversion:
         left = np.asarray([1, 0, 0, 0,0])
         right = np.asarray([0, 1, 0, 0,0])
@@ -73,17 +80,17 @@ class GridMap:
 
         self.actions_table = {(-2, 0): left, (2, 0): right, (0, -2): up, (0, 2): down, (0,0) : stay}
 
-
     def render(self, screen):
 
+        # Map rendering
         for y in range(0,len(self.map)):
             for x in range(0,len(self.map[0])):
                 #We're at a wall row
                 if y%2==0:
-                    if(self.map[y][x] == '+'):
+                    if self.map[y][x] == '+':
                         #maybe do something here
                         continue
-                    if(self.map[y][x] == '-'):
+                    if self.map[y][x] == '-':
 
                         r = (((x-1)/2) * self.block_width-WALL_WIDTH/2, (y/2) * self.block_height-WALL_WIDTH/2,
                              self.block_width + WALL_WIDTH/2, WALL_WIDTH)
@@ -91,26 +98,30 @@ class GridMap:
 
                 #Either columns or walls
                 elif x % 2 == 0:
-                    if(self.map[y][x] == '|'):
+                    if self.map[y][x] == '|':
                         r = ((x / 2) * self.block_width - WALL_WIDTH/2, ((y-1) / 2) * self.block_height - int(WALL_WIDTH/2),
                              WALL_WIDTH, self.block_height + WALL_WIDTH)
                         pygame.draw.rect(screen, WALL_COLOUR, r)
-                else:
-                    pass
-
                 #Goal and start
-                if(self.render_goals):
-                    if(self.map[y][x] == 'G'):
+                if self.render_goals:
+                    if self.map[y][x] == 'G':
                         r_start = ((round(((x - 1) / 2) * self.block_width + (self.block_width / 2))),
                                    round((((y - 1) / 2) * self.block_height + (self.block_height / 2))), 10, 10)
                         pygame.draw.rect(screen, (50, 255, 0), r_start)
-                    if(self.map[y][x] == 'S'):
+                    if self.map[y][x] == 'S':
                         r_start = ((round(((x - 1) / 2) * self.block_width + (self.block_width / 2))),
                                    round((((y - 1) / 2) * self.block_height + (self.block_height / 2))), 10, 10)
                         pygame.draw.rect(screen, (255, 50, 0), r_start)
 
-    def convert_action(self, dir):
-        return self.actions_table[dir]
+        # Util rendering
+        self.text_rect.center = (self.screen_width-self.screen_width/4, self.screen_width-self.screen_width/20)
+        screen.blit(self.text, self.text_rect)
+
+    def set_util_text(self, str):
+        self.text = self.font.render(str, True, (0, 0, 0), None)
+
+    def convert_action(self, direct):
+        return self.actions_table[direct]
 
     def get_astar_action(self, pos, goal):
         """
@@ -248,17 +259,36 @@ class GridMap:
             out.append((x, y-2))
         return out
 
-    def set_random_goal(self):
-        # print(self.map)
-        #
-        # print(self.goal)
+    def set_random_goal_spawn(self):
+        """
+        Sets a random position for the goal position
+        """
         self.map[self.goal[1]][self.goal[0]] = ' '
         #The new goal can't be the previous goal, the starting point, or the starting points neighbours
         bad_spots = {self.goal, self.start}.union(set(self.get_neighbours(self.start[0], self.start[1])))
         self.goal = random.choice(list(self.walkable.difference(bad_spots)))
         self.map[self.goal[1]][self.goal[0]] = 'G'
-        # print(self.goal)
-        # input()
+
+
+    def add_goal(self, x, y):
+        self.map[y][x] = 'G'
+        self.goals.add((x,y))
+
+    def add_random_goal(self):
+        possible_pos = self.walkable - self.goals
+        goal_pos = random.choice(list(possible_pos))
+        self.add_goal(*goal_pos)
+        return goal_pos
+
+    def get_goals(self):
+        return self.goals
+
+    def remove_goal(self, x, y):
+        self.map[y][x] = ' '
+        self.goals.remove((x,y))
+
+    def get_random_walkable(self):
+        return random.choice(list(self.walkable))
 
     def set_random_start(self):
         self.map[self.start[1]][self.start[0]] = ' '
@@ -267,6 +297,9 @@ class GridMap:
         self.map[self.start[1]][self.start[0]] = 'S'
         #input()
 
+    def generate_goals(self, num_goals):
+        for i in range(1, num_goals):
+            self.add_random_goal()
 
     def read_map(self, filename):
         out = []
@@ -287,10 +320,10 @@ class GridMap:
                 if(out[y][x] == 'G'):
                     self.walkable.add((x,y))
                     self.goal = (x,y)
+                    self.goals.add((x,y))
                 if(out[y][x] == 'S'):
                     self.walkable.add((x,y))
                     self.start = (x,y)
-                
 
         return out
 

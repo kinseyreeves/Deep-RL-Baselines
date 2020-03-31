@@ -76,7 +76,6 @@ class EvadersEnv(gym.Env):
         
         self.steps += 1
         self.reward = 1
-        
 
         self.set_state()
 

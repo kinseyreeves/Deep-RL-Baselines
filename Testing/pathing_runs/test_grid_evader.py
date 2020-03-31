@@ -6,7 +6,7 @@ import time
 import os
 
 print(os.getcwd())
-env = gym.make('n-grid_evaders-v0', config= {"mapfile" : "maps/map_8x8.txt", "randomize_start":False, "randomize_goal" : True, "RL_evader":True, "full_state" : False, "normalize_state" : True})
+env = gym.make('n-grid_evaders-v0', config= {"mapfile" : "maps/map_5x5.txt", "randomize_start":False, "randomize_goal" : True, "RL_evader":True, "full_state" : False, "normalize_state" : True})
 
 state = env.reset()
 i = 0
@@ -15,7 +15,6 @@ goal = env.grid.goal
 while True:
     i += 1
     env.render()
-
     #action_ = np.zeros(env.action_space.n)
 
     #print(action_)
@@ -41,6 +40,7 @@ while True:
 
     #print(env.normalize_state)
     if(done):
+        #env.render()
         env.reset()
     #input()
     time.sleep(0.5)

@@ -73,7 +73,7 @@ class GridEvaderEnv(gym.Env):
             exit(1)
 
         # TODO Set Defaults for config:
-        self.normalize_state = config["normalize_state"]
+        self.normalize_state = config["normalize_state"] if "normalize_state" in config else True
 
         self.RL_evader = config["RL_evader"] if "RL_evader" in config else True
         self.randomize_goal = config["randomize_goal"] if "randomize_goal" in config else False
@@ -101,8 +101,13 @@ class GridEvaderEnv(gym.Env):
         self.state = self.reset()
 
     def step(self, action):
-        if(self.slowdown_step):
+
+        if self.slowdown_step:
             time.sleep(0.3)
+
+        if self.steps >= MAX_STEPS:
+            self.done = True
+            return np.array(self.state), self.reward, self.done, {}
 
         # If the action is an arr or 1-hot vector
         if INT_ACTION:
@@ -110,33 +115,33 @@ class GridEvaderEnv(gym.Env):
             z_arr[action] = 1
             action = z_arr
 
+        # Set reward whether RL is the evader or chaser
         if self.RL_evader:
-            # Reward is 1 for each step NOT caught
             self.reward = 1
         else:
             self.reward = 0
 
-        # TODO should the AI update first?
+        self.check_done()
         self.controlled_entity.update(action)
+        self.check_done()
+        self.ai_entity.update_auto()
+
+
+
+        self.grid.set_util_text(f"Steps : {self.steps}")
 
         self.steps += 1
         self.set_state()
 
-        if self.steps >= MAX_STEPS:
-            self.done = True
-            return np.array(self.state), self.reward, self.done, {}
+        return np.array(self.state), self.reward, self.done, {}
 
+    def check_done(self):
         if self.chaser.get_pos() == self.evader.get_pos():
             self.done = True
-
             if self.RL_evader:
                 self.reward = -1
             else:
                 self.reward = 1
-
-        self.ai_entity.update_auto()
-
-        return np.array(self.state), self.reward, self.done, {}
 
     def set_state(self):
 
@@ -158,7 +163,7 @@ class GridEvaderEnv(gym.Env):
         self.set_state()
 
         if self.randomize_goal:
-            self.grid.set_random_goal()
+            self.grid.set_random_goal_spawn()
         if self.randomize_start:
             self.grid.set_random_start()
 

@@ -50,21 +50,24 @@ class GridChaserVsEvaderEnv(MultiAgentEnv):
     full state gives the
     '''
 
+    high = np.array([1, 1, 1, 1])
+    low = np.array([0, 0, 0, 0])
+
+    observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
+    action_space = spaces.Discrete(4)
+
     def __init__(self, config):
         self.screen = None
         # Action space initialised to [-1,0,1] for each joint
-        self.action_space = spaces.Discrete(5)
+
 
         # TODO should we normalize or use int vals ?
-        high = np.array([1, 1, 1, 1])
-        low = np.array([0, 0, 0, 0])
 
-        self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
         self.centre_x = round(S_WIDTH / 2)
         self.centre_y = round(S_WIDTH / 2)
         self.steps = 0
         self.reward = {"chaser":0, "evader": 0}
-        self.done = False
+        self.done = {"chaser":False, "evader":False}
 
         if "mapfile" in config:
             self.map_file = config["mapfile"]
@@ -73,10 +76,12 @@ class GridChaserVsEvaderEnv(MultiAgentEnv):
             exit(1)
 
         # TODO Set Defaults for config:
-        self.normalize_state = config["normalize_state"]
+        self.normalize_state = config["normalize_state"] if "normalize_state" in config else True
 
         self.randomize_goal = config["randomize_goal"] if "randomize_goal" in config else False
         self.randomize_start = config["randomize_start"] if "randomize_start" in config else False
+        self.slowdown_step = config["slowdown_step"] if "slowdown_step" in config else False
+
 
         self.grid = GridMap(self.map_file, S_WIDTH)
         self.grid.set_render_goals(False)
@@ -92,7 +97,13 @@ class GridChaserVsEvaderEnv(MultiAgentEnv):
         self.entities = [self.evader, self.chaser]
         self.state = self.reset()
 
-    def step(self, action):
+    def set_reward(self):
+        dist = self.grid.manhatten_dist(*self.evader.get_pos(), *self.chaser.get_pos())
+        #dist = self.grid.get_astar_distance(*self.evader.get_pos(), *self.chaser.get_pos())
+        self.reward["evader"] = dist
+        self.reward["chaser"] = -dist
+
+    def step(self, actions):
         """
         Step takes a dictionary of actions passed in from the RL agents
         e.g.
@@ -103,29 +114,34 @@ class GridChaserVsEvaderEnv(MultiAgentEnv):
         :param actions:
         :return:
         """
-        chaser_action = utils.convert_1hot_action(action["chaser"], self.action_space.n)
-        evader_action = utils.convert_1hot_action(action["evader"], self.action_space.n)
+        if self.slowdown_step:
+            time.sleep(0.3)
 
-        # TODO should the AI update first?
+        chaser_action = utils.convert_1hot_action(actions["chaser"], self.action_space.n)
+        evader_action = utils.convert_1hot_action(actions["evader"], self.action_space.n)
+
         self.chaser.update(chaser_action)
 
-        self.steps += 1
-        self.set_state()
-        self.reward["evader"] = 1
-        self.reward["evader"] = 0
-
-        if self.steps >= MAX_STEPS:
-            self.done = True
-            return np.array(self.state), self.reward, self.done, {}
-
         if self.chaser.get_pos() == self.evader.get_pos():
-            self.done = True
-            self.reward["chaser"] = 1
-            self.reward["evader"] = -1
+            self.set_done(True)
+            return self.state, self.reward, self.done, {}
 
         self.evader.update(evader_action)
 
-        return np.array(self.state), self.reward, self.done, {}
+        if self.chaser.get_pos() == self.evader.get_pos():
+            self.set_done(True)
+            return self.state, self.reward, self.done, {}
+
+        self.steps += 1
+        self.grid.set_util_text(f"Steps : {self.steps}")
+        self.set_state()
+        self.set_reward()
+
+        if self.steps >= MAX_STEPS:
+            self.set_done(True)
+            return self.state, self.reward, self.done, {}
+
+        return self.state, self.reward, self.done, {}
 
     def set_state(self):
 
@@ -139,15 +155,21 @@ class GridChaserVsEvaderEnv(MultiAgentEnv):
             state = [self.evader.x, self.evader.y, self.chaser.x, self.chaser.y]
             self.state = {"evader": state, "chaser": state}
 
+    def set_done(self, val):
+        self.done["evader"] = val
+        self.done["chaser"] = val
+        self.done["__all__"] = val
+
+
     def reset(self):
 
         self.reward = {"chaser":0, "evader": 0}
         self.steps = 0
-        self.done = False
+        self.set_done(False)
         self.set_state()
 
         if self.randomize_goal:
-            self.grid.set_random_goal()
+            self.grid.set_random_goal_spawn()
         if self.randomize_start:
             self.grid.set_random_start()
 
@@ -155,7 +177,7 @@ class GridChaserVsEvaderEnv(MultiAgentEnv):
         self.evader.set_pos(self.grid.start)
         self.chaser.set_pos(self.grid.goal)
 
-        return np.array(self.state)
+        return self.state
 
     def render(self, mode='human', close=False):
 
