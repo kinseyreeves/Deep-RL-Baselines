@@ -16,7 +16,7 @@ from gym_scalable.envs.pathing.multi_chaser_evader_env import GridChaserVsEvader
 
 
 total_steps = 1000000
-EXP_NAME = "ChaserVsEvader_bothrand"
+EXP_NAME = "ChaserVsEvader"
 action_space = GridChaserVsEvaderEnv.action_space
 obs_space = GridChaserVsEvaderEnv.observation_space
 def tune_runner(trainer, mapfile, total_steps, name, mapsize):
@@ -24,8 +24,8 @@ def tune_runner(trainer, mapfile, total_steps, name, mapsize):
     tune.run(trainer,
              config={"env": GridChaserVsEvaderEnv,
                      "multiagent": {
-                         "chaser":(None, obs_space, action_space, {"gamma":0.95}),
-                         "evader": (None, obs_space, action_space, {"gamma": 0.95})
+                         "chaser":(None, obs_space, action_space, {"gamma":0.99}),
+                         "evader": (None, obs_space, action_space, {"gamma": 0.99})
                      },
                     "env_config": {"mapfile": os.getcwd() + mapfile,
                                    "full_state": False, "normalize_state": True,
@@ -43,14 +43,13 @@ mapfile = "/maps/map_3x3.txt"
 mapsize = 3
 trainer = ppo.PPOTrainer
 
-#tune_runner(trainer, mapfile, total_steps, name, mapsize)
+tune_runner(trainer, mapfile, total_steps, name, mapsize)
 
 mapfile = "/maps/map_5x5.txt"
 mapsize = 5
 
 tune_runner(trainer, mapfile, total_steps, name, mapsize)
 
-exit(0)
 
 mapfile = "/maps/map_8x8.txt"
 mapsize = 8

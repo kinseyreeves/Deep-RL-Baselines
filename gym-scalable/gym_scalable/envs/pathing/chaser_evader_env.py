@@ -155,7 +155,7 @@ class GridEvaderEnv(gym.Env):
 
     def reset(self):
         if(self.slowdown_step):
-            time.sleep(0.8)
+            time.sleep(0.2)
 
         self.reward = 0
         self.steps = 0
@@ -175,7 +175,7 @@ class GridEvaderEnv(gym.Env):
 
     def render(self, mode='human', close=False):
 
-        if (self.screen is None):
+        if self.screen is None:
             self.screen = pygame.display.set_mode((S_WIDTH, S_WIDTH))
             self.screen.fill((255, 255, 255))
             pygame.display.set_caption('RL Chaser Evader Environment')

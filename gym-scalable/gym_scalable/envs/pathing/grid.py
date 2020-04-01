@@ -43,7 +43,6 @@ class GridMap:
     map = []
     colours = {'O' : (255,255,255), 'G':(0,255,0), 'X':(0,0,255), 'S':(255,0,0), '-':(255,0,0), '+':(255,0,0)}
 
-
     #All walkable positions
     walkable = set()
     a_searched = set()
@@ -122,6 +121,17 @@ class GridMap:
 
     def convert_action(self, direct):
         return self.actions_table[direct]
+
+    def add_goals(self, num_goals):
+
+        for i in range(num_goals):
+            pos_pos = random.choice(list(self.walkable-self.goals-{self.start}))
+            self.map[pos_pos[1]][pos_pos[0]] = 'G'
+            self.goals.add(pos_pos)
+
+
+    def num_goals(self):
+        return len(self.goals)
 
     def get_astar_action(self, pos, goal):
         """
@@ -206,7 +216,6 @@ class GridMap:
                     path.append(current.position)
                     current = current.parent
                 break
-
             #children = set()
             for new_pos in self.get_neighbours(current_node.position[0], current_node.position[1]):
                 child = Node(current_node, new_pos)
@@ -274,12 +283,6 @@ class GridMap:
         self.map[y][x] = 'G'
         self.goals.add((x,y))
 
-    def add_random_goal(self):
-        possible_pos = self.walkable - self.goals
-        goal_pos = random.choice(list(possible_pos))
-        self.add_goal(*goal_pos)
-        return goal_pos
-
     def get_goals(self):
         return self.goals
 
@@ -287,19 +290,20 @@ class GridMap:
         self.map[y][x] = ' '
         self.goals.remove((x,y))
 
+    def clear_goals(self):
+        for goal in self.goals:
+            self.set_map(goal[0], goal[1], ' ')
+        self.goals = set()
+
     def get_random_walkable(self):
         return random.choice(list(self.walkable))
 
     def set_random_start(self):
-        self.map[self.start[1]][self.start[0]] = ' '
-        goal_start = {self.goal, self.start}.union(set(self.get_neighbours(self.goal[0], self.goal[1])))
-        self.start = random.choice(list(self.walkable.difference(goal_start)))
-        self.map[self.start[1]][self.start[0]] = 'S'
-        #input()
+        self.set_map(self.start[0], self.start[1], ' ')
+        pos_pos = self.walkable - self.goals - {self.goal}
+        self.start = random.choice(list(pos_pos))
+        self.set_map(self.start[0], self.start[1], 'S')
 
-    def generate_goals(self, num_goals):
-        for i in range(1, num_goals):
-            self.add_random_goal()
 
     def read_map(self, filename):
         out = []
@@ -307,10 +311,7 @@ class GridMap:
         
         for i in f.readlines():
             out.append(list(i.strip('\n')))
-        #print(out)
         self.size = len(out[0])
-        #print(len(out))
-        #print(len(out[0]))
 
         for y in range(0,len(out)):
             for x in range(len(out[0])):
@@ -330,8 +331,8 @@ class GridMap:
     def get_walkable_positions(self):
         return self.walkable
 
-    def draw_finished(self):
-        ...
+    def set_map(self, x, y, val):
+        self.map[y][x] = val
 
 
 

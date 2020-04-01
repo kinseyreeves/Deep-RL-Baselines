@@ -62,6 +62,7 @@ class MazeEnv(gym.Env):
         self.randomize_goal = config["randomize_goal"] if "randomize_goal" in config else False
         self.randomize_start = config["randomize_start"] if "randomize_start" in config else False
         self.normalize_state = config["normalize_state"] if "normalize_state" in config else False
+        self.num_goals = config["num_goals"] if "num_goals" in config else False
 
         # Observation space boundaries
         high = np.array([1, 1, 1, 1])
@@ -76,6 +77,7 @@ class MazeEnv(gym.Env):
         self.done = False
         self.grid = GridMap(self.map_file, S_WIDTH)
 
+        self.grid.add_goals(self.num_goals-self.grid.num_goals())
         self.grid.set_render_goals(True)
 
         self.entity = Entity(self.grid.start[0], self.grid.start[1], self.grid)
@@ -97,9 +99,11 @@ class MazeEnv(gym.Env):
 
         self.set_state()
 
-        if self.entity.x == self.grid.goal[0] and self.entity.y == self.grid.goal[1]:
+        if self.grid.is_goal(self.entity.x, self.entity.y):
+            self.grid.remove_goal(self.entity.x, self.entity.y)
             self.reward = 1
-            self.done = True
+            if(self.grid.num_goals()==0):
+                self.done = True
 
         if self.steps >= MAX_STEPS:
             self.done = True
@@ -123,9 +127,10 @@ class MazeEnv(gym.Env):
         self.done = False
         self.set_state()
 
-        if(self.randomize_goal):
-            self.grid.set_random_goal()
-        if(self.randomize_start):
+        self.grid.clear_goals()
+        self.grid.add_goals(self.num_goals)
+
+        if self.randomize_start:
             self.grid.set_random_start()
 
         self.entity.x = self.grid.start[0]

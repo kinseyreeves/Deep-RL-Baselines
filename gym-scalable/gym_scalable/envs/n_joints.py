@@ -33,9 +33,6 @@ ARM_LENGTH = 50
 # either -.1, 0 or .1 rads of the arm
 ARM_RADS_CHANGE = 0.1
 
-# Number of joints excluding the middle point
-extra_joints = 1
-
 # Whether or not the arm movements are relative. Read step()
 RELATIVE = False
 
@@ -100,17 +97,18 @@ class NJointArm(gym.Env):
         self.extra_joints = config["extra_joints"] if "extra_joints" in config else 1
         self.extra_state = config["extra_state"] if "extra_state" in config else False
 
+        print(f"N-jointed arm started with {self.extra_joints+1} joints")
         self.screen = None
 
         self.obstacles = []
         # If continuous action space = n, where n in range [-1,1]
         # if discrete action space initialised to [-1,0,1]*joints
         if CONT_ACTIONS:
-            l_bound = np.array((extra_joints + 1) * [-1])
-            h_bound = np.array((extra_joints + 1) * [1])
+            l_bound = np.array((self.extra_joints + 1) * [-1])
+            h_bound = np.array((self.extra_joints + 1) * [1])
             self.action_space = spaces.Box(l_bound, h_bound, dtype=np.float32)
         else:
-            self.action_space = spaces.Discrete(3 ** (extra_joints + 1))
+            self.action_space = spaces.Discrete(3 ** (self.extra_joints + 1))
         # self.observation_space = spaces.
 
         self.time_pen = TIME_PENALTY
@@ -129,16 +127,15 @@ class NJointArm(gym.Env):
         self.arm = Arm(self.centre_x, S_HEIGHT / 2, ARM_ANGLE, ARM_LENGTH, None)
         self.arms = [self.arm]
 
-        self.normalize_len = len(self.arms)*(ARM_LENGTH+10)
-
-        # self.max_radius = (N_JOINTS)*ARM_LENGTH
 
         # Intialise the extra arms
-        for i in range(1, extra_joints + 1):
+        for i in range(1, self.extra_joints + 1):
             prev_arm = self.arms[i - 1]
             (p_x, p_y) = prev_arm.getEnd()
             new_arm = Arm(p_x, p_y, 0, ARM_LENGTH, prev_arm)
             self.arms.append(new_arm)
+        #print(self.arms)
+        self.normalize_len = (self.extra_joints+1) * (ARM_LENGTH)*2
 
         self.end_arm = self.arms[-1]
 
@@ -146,8 +143,8 @@ class NJointArm(gym.Env):
 
         # Observation space [Joint angles ... , objective1x, ob1y] #TODO update below
 
-        l_bounds = np.array([0] + [-1] * ((extra_joints + 1) * 2) + [-1, -1])
-        h_bounds = np.array([1] + [1] * ((extra_joints + 1) * 2) + [1, 1])
+        l_bounds = np.array([0] + [-1] * ((self.extra_joints + 1) * 2) + [-1, -1])
+        h_bounds = np.array([1] + [1] * ((self.extra_joints + 1) * 2) + [1, 1])
 
         self.observation_space = spaces.Box(l_bounds, h_bounds, dtype=np.float32)
 

@@ -3,7 +3,7 @@ import gym_scalable
 import random
 import numpy as np
 import time
-config = { "mapfile" : "maps/map_3x3.txt", "normalize_state" : False, "randomize_start": True, "randomize_goal" : True }
+config = { "mapfile" : "maps/map_5x5.txt", "normalize_state" : True, "randomize_start": True, "num_goals":3}
 env = gym.make('n-maze-v0',config = config)
 
 state = env.reset()
@@ -30,5 +30,7 @@ while True:
     end = time.time()
     print("step time : " + str(end - start))
     if(done):
-        #a = input()
+        a = input()
         env.reset()
+    a = input()
+

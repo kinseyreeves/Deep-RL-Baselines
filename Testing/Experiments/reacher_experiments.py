@@ -19,9 +19,6 @@ from ray.rllib.agents.ppo import PPOTrainer
 from ray.rllib.agents.ddpg import DDPGTrainer
 
 
-logdir = "~/ray_results/maze"
-
-
 # def tune_runner(trainer, name):
 #     tune.run(trainer,
 #              config={"env": NJointArm, "output" : logdir, "env_config": {"extra_joints": 3, "full_state": False, "normalize_state": True}},
@@ -32,7 +29,7 @@ logdir = "~/ray_results/maze"
 #
 # ###PPO RUNS
 # tune_runner(ddpg.DDPGTrainer, "PPO")
-total_steps = 1000000
+total_steps = 500000
 
 joints = 1
 tune.run(PPOTrainer, config={"env": NJointArm, "env_config": {"extra_joints": joints, "extra_state": False}},
