@@ -1,9 +1,10 @@
 import random
 import pygame
 import numpy as np
-
+import collections
 
 from gym_scalable.envs.pathing.grid_entity import *
+
 
 """
 Grid which serves as the lower level of all pathing environments
@@ -13,7 +14,7 @@ i.e. maze solver, chaser, evader etc
 
 WALL_WIDTH = 10
 
-WALL_COLOUR = (100,100,100)
+WALL_COLOUR = (100, 100, 100)
 BACKGROUND_COLOUR = ()
 
 class Node:
@@ -31,6 +32,9 @@ class Node:
     def __eq__(self, other):
         return self.position == other.position
 
+    def __hash__(self):
+        return hash(self.position)
+
 class GridMap:
     """
     Gridmap containing low level functionality for the grid.
@@ -43,6 +47,8 @@ class GridMap:
     walkable = set()
     a_searched = set()
     marked_blocks = set()
+    goals = set()
+    static_goals = set()
 
     entities = []
 
@@ -50,6 +56,8 @@ class GridMap:
 
     def __init__(self, mapfile, screen_width):
         #print(mapfile)
+        
+        self.screen = None
         self.map = self.read_map(mapfile)
         self.screen_width = screen_width
 
@@ -60,26 +68,32 @@ class GridMap:
         self.block_width = screen_width / self.width
         self.block_height = screen_width / self.height
 
+
         # Action conversion:
         left = np.asarray([1, 0, 0, 0,0])
         right = np.asarray([0, 1, 0, 0,0])
-        up = np.asarray([0, 0, 1, 0])
+        up = np.asarray([0, 0, 1, 0,0])
         down = np.asarray([0, 0, 0, 1,0])
         stay = np.asarray([0,0,0,0,1])
 
         self.actions_table = {(-2, 0): left, (2, 0): right, (0, -2): up, (0, 2): down, (0,0) : stay}
 
-
     def render(self, screen):
+        if(not self.screen):
+            self.font = pygame.font.Font(None, 32)
+            self.text = self.font.render(None, True, (0, 0, 0), None)
+            self.text_rect = self.text.get_rect()
+            self.screen = screen
 
+        # Map rendering
         for y in range(0,len(self.map)):
             for x in range(0,len(self.map[0])):
                 #We're at a wall row
                 if y%2==0:
-                    if(self.map[y][x] == '+'):
+                    if self.map[y][x] == '+':
                         #maybe do something here
                         continue
-                    if(self.map[y][x] == '-'):
+                    if self.map[y][x] == '-':
 
                         r = (((x-1)/2) * self.block_width-WALL_WIDTH/2, (y/2) * self.block_height-WALL_WIDTH/2,
                              self.block_width + WALL_WIDTH/2, WALL_WIDTH)
@@ -87,39 +101,58 @@ class GridMap:
 
                 #Either columns or walls
                 elif x % 2 == 0:
-                    if(self.map[y][x] == '|'):
-                        r = ((x / 2) * self.block_width - WALL_WIDTH/2, ((y-1) / 2) * self.block_height - WALL_WIDTH/2,
-                             WALL_WIDTH, self.block_height + WALL_WIDTH/2)
+                    if self.map[y][x] == '|':
+                        r = ((x / 2) * self.block_width - WALL_WIDTH/2, ((y-1) / 2) * self.block_height - int(WALL_WIDTH/2),
+                             WALL_WIDTH, self.block_height + WALL_WIDTH)
                         pygame.draw.rect(screen, WALL_COLOUR, r)
-                else:
-                    pass
-
                 #Goal and start
-                if(self.render_goals):
-                    if(self.map[y][x] == 'G'):
+                if self.render_goals:
+                    if self.map[y][x] == 'G':
                         r_start = ((round(((x - 1) / 2) * self.block_width + (self.block_width / 2))),
                                    round((((y - 1) / 2) * self.block_height + (self.block_height / 2))), 10, 10)
                         pygame.draw.rect(screen, (50, 255, 0), r_start)
-                    if(self.map[y][x] == 'S'):
+                    if self.map[y][x] == 'S':
                         r_start = ((round(((x - 1) / 2) * self.block_width + (self.block_width / 2))),
                                    round((((y - 1) / 2) * self.block_height + (self.block_height / 2))), 10, 10)
                         pygame.draw.rect(screen, (255, 50, 0), r_start)
 
-    def convert_action(self, dir):
-        return self.actions_table[dir]
+        # Util rendering
+        self.text_rect.center = (self.screen_width-self.screen_width/4, self.screen_width-self.screen_width/20)
+        screen.blit(self.text, self.text_rect)
+
+    def set_util_text(self, str):
+        if self.screen:
+            self.text = self.font.render(str, True, (0, 0, 0), None)
+
+    def convert_action(self, direct):
+        """
+        Converts action to 1hot vector
+        """
+        #print(direct)
+        return self.actions_table[direct]
+
+    def add_goals(self, num_goals):
+        """
+        Adds randomly placed goals
+        """
+        for i in range(num_goals):
+            pos_pos = random.choice(list(self.walkable-self.goals-{self.start}))
+            self.map[pos_pos[1]][pos_pos[0]] = 'G'
+            self.goals.add(pos_pos)
+
+        self.static_goals = self.goals.copy()
+
+    def num_goals(self):
+        return len(self.goals)
 
     def get_astar_action(self, pos, goal):
         """
         Gets the converted action in one hot vector format
         """
         path = self.astar_path(pos[0], pos[1], goal[0], goal[1])
-        #print(path)
         if len(path) <= 1:
             return self.convert_action((0,0))
-        print(f"Path : {path}")
         path = path[1]
-        print(f"pos: {pos}, goal: {goal}")
-        print(f"diff: {(path[0] - pos[0], path[1] - pos[1])}")
         action = self.convert_action((pos[0] - path[0], pos[1] - path[1]))
         
         return action
@@ -165,43 +198,36 @@ class GridMap:
         start_node.g = start_node.h = start_node.f = 0
         end_node.g = end_node.h = end_node.f = 0
 
-        open_list = []
-        closed_list = []
+        open_list = set()
+        closed_list = set()
 
         path = []
-
-        open_list.append(start_node)
+        open_list.add(start_node)
 
         while len(open_list) > 0:
-            current_node = open_list[0]
+            current_node = e = next(iter(open_list))
             current_index = 0
 
-            #[TODO DO WITH HEAP]
             for index, item in enumerate(open_list):
                 if(item.f < current_node.f):
                     current_node = item
-                    current_index = index
+                    #current_index = index
 
-            open_list.pop(current_index)
-            closed_list.append(current_node)
-
+            open_list.discard(current_node)
+            closed_list.add(current_node)
 
             if current_node == end_node:
 
                 current = current_node
-
-                #track backwards through the path
+                #track backwards through the path - reconstruct the path
                 while current:
                     path.append(current.position)
                     current = current.parent
                 break
-
-            children = []
+            #children = set()
             for new_pos in self.get_neighbours(current_node.position[0], current_node.position[1]):
-                new_node = Node(current_node, new_pos)
-                children.append(new_node)
-
-            for child in children:
+                child = Node(current_node, new_pos)
+                #children.add(child)
                 if child in closed_list:
                     continue
 
@@ -209,13 +235,7 @@ class GridMap:
                 child.h = self.manhatten_dist(child.position[0], child.position[1],
                                               end_node.position[0], end_node.position[1])
                 child.f = child.g + child.h
-
-                #[TODO] Do this with a heap
-                for open_node in open_list:
-                    if(child == open_node and child.g > open_node.g):
-                        continue
-
-                open_list.append(child)
+                open_list.add(child)
 
         return path[::-1]
 
@@ -256,6 +276,43 @@ class GridMap:
             out.append((x, y-2))
         return out
 
+    def set_random_goal_spawn(self):
+        """
+        Sets a random position for the goal position
+        """
+        self.map[self.goal[1]][self.goal[0]] = ' '
+        #The new goal can't be the previous goal, the starting point, or the starting points neighbours
+        bad_spots = {self.goal, self.start}.union(set(self.get_neighbours(self.start[0], self.start[1])))
+        self.goal = random.choice(list(self.walkable.difference(bad_spots)))
+        self.map[self.goal[1]][self.goal[0]] = 'G'
+
+
+    def add_goal(self, x, y):
+        self.map[y][x] = 'G'
+        self.goals.add((x,y))
+
+    def get_goals(self):
+        return self.goals
+
+    def remove_goal(self, x, y):
+        self.map[y][x] = ' '
+        self.goals.remove((x,y))
+
+    def clear_goals(self):
+        for goal in self.goals:
+            self.set_map(goal[0], goal[1], ' ')
+        self.goals = set()
+        self.static_goals=set()
+
+    def get_random_walkable(self):
+        return random.choice(list(self.walkable))
+
+    def set_random_start(self):
+        self.set_map(self.start[0], self.start[1], ' ')
+        pos_pos = self.walkable - self.goals - {self.goal}
+        self.start = random.choice(list(pos_pos))
+        self.set_map(self.start[0], self.start[1], 'S')
+
 
     def read_map(self, filename):
         out = []
@@ -263,10 +320,7 @@ class GridMap:
         
         for i in f.readlines():
             out.append(list(i.strip('\n')))
-        print(out)
         self.size = len(out[0])
-        print(len(out))
-        print(len(out[0]))
 
         for y in range(0,len(out)):
             for x in range(len(out[0])):
@@ -276,14 +330,19 @@ class GridMap:
                 if(out[y][x] == 'G'):
                     self.walkable.add((x,y))
                     self.goal = (x,y)
+                    self.goals.add((x,y))
+                    self.static_goals.add((x,y))
                 if(out[y][x] == 'S'):
                     self.walkable.add((x,y))
                     self.start = (x,y)
-                
 
         return out
 
     def get_walkable_positions(self):
         return self.walkable
+
+    def set_map(self, x, y, val):
+        self.map[y][x] = val
+
 
 

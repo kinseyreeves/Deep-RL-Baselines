@@ -4,3 +4,9 @@ venv/
 gym-scalable/gym_scalable.egg-info/
 *.KRXPS
 *.dat
+*.ipynb_checkpoints
+results/chaser_results
+results/evader_results
+results/maze_results
+results/graphs
+results/chaser_vs_evader_results

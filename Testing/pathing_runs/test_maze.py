@@ -3,25 +3,36 @@ import gym_scalable
 import random
 import numpy as np
 import time
-
-env = gym.make('n-maze-v0', mapfile = "maps/map_5x5.txt", full_state = False, normalize_state = False)
+config = { "mapfile" : "maps/map_3x3.txt", "normalize_state" : True, "randomize_start": True, "num_goals":1}
+env = gym.make('n-maze-v0',config = config)
 
 state = env.reset()
 i = 0
 
-goal = env.gridmap.goal
+goal = env.grid.goal
+
+print(env.observation_space)
+print(env.action_space)
 
 while True:
     
     i += 1
     env.render()
-    action_ = env.gridmap.get_astar_action(state, env.gridmap.goal)
+    start = time.time()
+    action = env.action_space.sample()
+    print(action)
 
     action_size = env.action_space.n
-    action = np.zeros(action_size)
 
-    action[env.action_space.sample()] = 1
-    state, reward, done, _ = env.step(action_)
+    print(state.shape)
 
+    state, reward, done, _ = env.step(action)
+
+    end = time.time()
+    print("step time : " + str(end - start))
     if(done):
-        env.reset()
+        #a = input()
+        state = env.reset()
+        print("%%%%%%%%%%")
+    a = input()
+
