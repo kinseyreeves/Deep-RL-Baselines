@@ -32,9 +32,6 @@ from gym_scalable.envs.pathing.grid_entity import *
 
 S_WIDTH = 500
 
-# minimum chaser/evader angle change
-DTHETA = 0.2
-
 MAX_STEPS = 200
 
 INT_ACTION = True
@@ -126,8 +123,6 @@ class GridEvaderEnv(gym.Env):
         self.check_done()
         self.ai_entity.update_auto()
 
-
-
         self.grid.set_util_text(f"Steps : {self.steps}")
 
         self.steps += 1
@@ -154,7 +149,7 @@ class GridEvaderEnv(gym.Env):
             self.state = [self.evader.x, self.evader.y, self.chaser.x, self.chaser.y]
 
     def reset(self):
-        if(self.slowdown_step):
+        if (self.slowdown_step):
             time.sleep(0.2)
 
         self.reward = 0
@@ -178,9 +173,22 @@ class GridEvaderEnv(gym.Env):
         if self.screen is None:
             self.screen = pygame.display.set_mode((S_WIDTH, S_WIDTH))
             self.screen.fill((255, 255, 255))
+            pygame.init()
             pygame.display.set_caption('RL Chaser Evader Environment')
 
-            pygame.init()
+            for e in self.entities:
+                e.render_setup(self.screen)
+
+            self.controlled_entity.set_text("R")
+
+            if self.RL_evader:
+                self.ai_entity.set_text("C")
+            else:
+                self.ai_entity.set_text("E")
+
+
+
+
         self.screen.fill((255, 255, 255))
         self.grid.render(self.screen)
         for e in self.entities:

@@ -7,23 +7,12 @@ import numpy as np
 class Entity:
     # Basic class for defining circle object
     def __init__(self, x, y, grid, color=(0, 200, 100)):
-        pygame.init()
         self.x = x
         self.y = y
         self.color = color
         self.grid = grid
-        self.render_text = "R"
-
-        self.render_sub_text = False
-
-        self.font = pygame.font.Font(None, 32)
-        self.text = self.font.render(self.render_text, True, (0, 0, 0), None)
-        self.text_rect = self.text.get_rect()
-
-        self.sub_font = pygame.font.Font(None, 20)
-        self.sub_text = self.font.render(self.render_text, True, (0, 0, 0), None)
-        self.sub_text_rect = self.text.get_rect()
-        #textRect.center = (X // 2, Y // 2)
+        self.screen = None
+        self.render_sub_text=False
 
 
     def update(self, action):
@@ -52,7 +41,7 @@ class Entity:
             self.sub_text_rect.center = (x-int(block_height/5), y + int(block_height/3))
             screen.blit(self.sub_text, self.sub_text_rect)
 
-    def setText(self, text):
+    def set_text(self, text):
         self.text = self.font.render(text, True, (0, 0, 0), None)
 
     def set_sub_text(self, text):
@@ -75,6 +64,20 @@ class Entity:
         action = self.grid.convert_action((self.x - new_pos[0], self.y - new_pos[1]))
         return action
 
+    def render_setup(self, screen):
+        self.screen = screen
+        self.render_text = "R"
+
+        self.render_sub_text = False
+
+        self.font = pygame.font.Font(None, 32)
+        self.text = self.font.render(self.render_text, True, (0, 0, 0), None)
+        self.text_rect = self.text.get_rect()
+
+        self.sub_font = pygame.font.Font(None, 20)
+        self.sub_text = self.font.render(self.render_text, True, (0, 0, 0), None)
+        self.sub_text_rect = self.text.get_rect()
+
 
 class AStarChaser(Entity):
     """
@@ -92,7 +95,7 @@ class AStarChaser(Entity):
         :return:
         """
         super().__init__(x, y, grid, color=(255, 0, 0))
-        super().setText("C")
+        #super().setText("C")
         self.evading = None
         self.chased_entities = None
         self.randomness = randomness
@@ -135,7 +138,7 @@ class AStarEvader(Entity):
         super().__init__(x, y, grid, color=(200, 0, 100))
         self.evading = None
         self.randomness = randomness
-        super().setText("E")
+        #super().setText("E")
 
 
     def update_auto(self):

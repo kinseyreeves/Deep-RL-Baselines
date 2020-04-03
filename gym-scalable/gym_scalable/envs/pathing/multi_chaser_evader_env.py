@@ -32,15 +32,9 @@ from ray.rllib.env import MultiAgentEnv
 
 S_WIDTH = 500
 
-# minimum chaser/evader angle change
-DTHETA = 0.2
-
 MAX_STEPS = 200
 
 INT_ACTION = True
-
-mapfile = "out_big.txt"
-
 
 class GridChaserVsEvaderEnv(MultiAgentEnv):
     metadata = {'render.modes': ['human']}
@@ -91,8 +85,7 @@ class GridChaserVsEvaderEnv(MultiAgentEnv):
         self.evader = Entity(self.grid.goal[0], self.grid.goal[1], self.grid)
         self.chaser = Entity(self.grid.start[0], self.grid.start[1], self.grid)
 
-        self.evader.set_sub_text("Evader")
-        self.chaser.set_sub_text("Chaser")
+
 
         self.entities = [self.evader, self.chaser]
         self.state = self.reset()
@@ -182,11 +175,16 @@ class GridChaserVsEvaderEnv(MultiAgentEnv):
     def render(self, mode='human', close=False):
 
         if (self.screen is None):
+            pygame.init()
             self.screen = pygame.display.set_mode((S_WIDTH, S_WIDTH))
             self.screen.fill((255, 255, 255))
             pygame.display.set_caption('RL Chaser Evader Environment')
+            for e in self.entities:
+                e.render_setup(self.screen)
+            self.evader.set_sub_text("Evader")
+            self.chaser.set_sub_text("Chaser")
 
-            pygame.init()
+
         self.screen.fill((255, 255, 255))
         self.grid.render(self.screen)
         for e in self.entities:

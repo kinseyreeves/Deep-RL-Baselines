@@ -15,78 +15,76 @@ from ray.tune.registry import register_env
 from gym_scalable.envs.pathing.chaser_evader_env import GridEvaderEnv
 
 
-total_steps = 1000000
+total_steps = 500000
 EXP_NAME = "Chaser"
 def tune_runner(trainer, mapfile, total_steps, name, mapsize):
     print(mapfile)
     tune.run(trainer,
              config={"env": GridEvaderEnv, "env_config": {"mapfile": os.getcwd() + mapfile, "RL_evader":False,
                                                                        "full_state": False, "normalize_state": True,
-                                                                       "randomize_start":False, "randomize_goal": True}},
+                                                                       "randomize_start":True, "randomize_goal": True}},
              checkpoint_freq=10, checkpoint_at_end=True, stop={"timesteps_total": total_steps},
              name=f"{EXP_NAME}-{mapsize}x{mapsize}-{name}")
-
 
 ## ##################################################### #
 ## # -----------------##PPO##--------------------------- #
 ## # ################################################### #
-name = "PPO"
-mapfile = "/maps/map_3x3.txt"
-mapsize = 3
-trainer = ppo.PPOTrainer
+#name = "PPO"
+# mapfile = "/maps/map_3x3.txt"
+# mapsize = 3
+# trainer = ppo.PPOTrainer
 
-tune_runner(trainer, mapfile, total_steps, name, mapsize)
+# tune_runner(trainer, mapfile, total_steps, name, mapsize)
 
-mapfile = "/maps/map_5x5.txt"
-mapsize = 5
+# mapfile = "/maps/map_5x5.txt"
+# mapsize = 5
 
-tune_runner(trainer, mapfile, total_steps, name, mapsize)
+# tune_runner(trainer, mapfile, total_steps, name, mapsize)
 
-mapfile = "/maps/map_8x8.txt"
-mapsize = 8
+# mapfile = "/maps/map_8x8.txt"
+# mapsize = 8
 
-tune_runner(trainer, mapfile, total_steps, name, mapsize)
+# tune_runner(trainer, mapfile, total_steps, name, mapsize)
 
-## ################################################### #
-## -----------------##DQN##--------------------------- #
-## ################################################### #
-name = "DQN"
-mapfile = "/maps/map_3x3.txt"
-mapsize = 3
-trainer = dqn.DQNTrainer
+# ## ################################################### #
+# ## -----------------##DQN##--------------------------- #
+# ## ################################################### #
+# name = "DQN"
+# mapfile = "/maps/map_3x3.txt"
+# mapsize = 3
+# trainer = dqn.DQNTrainer
 
-tune_runner(trainer, mapfile, total_steps, name, mapsize)
+# tune_runner(trainer, mapfile, total_steps, name, mapsize)
 
-mapfile = "/maps/map_5x5.txt"
-mapsize = 5
+# mapfile = "/maps/map_5x5.txt"
+# mapsize = 5
 
-tune_runner(trainer, mapfile, total_steps, name, mapsize)
+# tune_runner(trainer, mapfile, total_steps, name, mapsize)
 
-mapfile = "/maps/map_8x8.txt"
-mapsize = 8
+# mapfile = "/maps/map_8x8.txt"
+# mapsize = 8
 
-tune_runner(trainer, mapfile, total_steps, name, mapsize)
+# tune_runner(trainer, mapfile, total_steps, name, mapsize)
 
 
-## ################################################### #
-## -----------------##A3C##--------------------------- #
-## ################################################### #
+# ## ################################################### #
+# ## -----------------##A3C##--------------------------- #
+# ## ################################################### #
 
 name = "A3C"
-mapfile = "/maps/map_3x3.txt"
-mapsize = 3
+# mapfile = "/maps/map_3x3.txt"
+# mapsize = 3
 trainer = a3c.A3CTrainer
 
-tune_runner(trainer, mapfile, total_steps, name, mapsize)
+# tune_runner(trainer, mapfile, total_steps, name, mapsize)
 
-mapfile = "/maps/map_5x5.txt"
-mapsize = 5
+# mapfile = "/maps/map_5x5.txt"
+# mapsize = 5
 
-tune_runner(trainer, mapfile, total_steps, name, mapsize)
+# tune_runner(trainer, mapfile, total_steps, name, mapsize)
 
 mapfile = "/maps/map_8x8.txt"
 mapsize = 8
-
 tune_runner(trainer, mapfile, total_steps, name, mapsize)
 
 

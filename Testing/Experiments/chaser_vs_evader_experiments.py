@@ -15,7 +15,7 @@ from ray.tune.registry import register_env
 from gym_scalable.envs.pathing.multi_chaser_evader_env import GridChaserVsEvaderEnv
 
 
-total_steps = 1000000
+total_steps = 500000
 EXP_NAME = "ChaserVsEvader"
 action_space = GridChaserVsEvaderEnv.action_space
 obs_space = GridChaserVsEvaderEnv.observation_space

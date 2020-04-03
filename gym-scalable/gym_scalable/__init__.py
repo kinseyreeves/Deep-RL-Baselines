@@ -6,12 +6,6 @@ register(
     entry_point='gym_scalable.envs:NJointArm',
 )
 
-
-register(
-    id='n-evaders-v0',
-    entry_point='gym_scalable.envs:EvadersEnv',
-)
-
 register(
     id='n-grid_evaders-v0',
     entry_point='gym_scalable.envs:GridEvaderEnv',

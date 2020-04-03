@@ -12,7 +12,10 @@ state = env.reset()
 i = 0
 goal = env.grid.goal
 
+print(env.observation_space)
+
 while True:
+    #input()
     i += 1
     env.render()
     #action_ = np.zeros(env.action_space.n)

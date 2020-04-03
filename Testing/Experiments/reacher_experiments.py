@@ -19,44 +19,47 @@ from ray.rllib.agents.ppo import PPOTrainer
 from ray.rllib.agents.ddpg import DDPGTrainer
 
 
-# def tune_runner(trainer, name):
-#     tune.run(trainer,
-#              config={"env": NJointArm, "output" : logdir, "env_config": {"extra_joints": 3, "full_state": False, "normalize_state": True}},
-#              checkpoint_freq=10, checkpoint_at_end=True, stop={"timesteps_total": total_steps},
-#              name=f"nj-{name}")
-#
-#
+def nj_runner(trainer, name, nj):
+    tune.run(trainer,
+             config={"env": NJointArm, "env_config": {"extra_joints": nj, "full_state": False, "normalize_state": True}},
+             checkpoint_freq=10, checkpoint_at_end=True, stop={"timesteps_total": total_steps},
+             name=f"{nj}-joints-{name}")
+
+def ddpg_nj_runner(trainer, name, nj):
+    tune.run(trainer,
+             config={"env": NJointArm,
+                     "buffer_size": 5000,
+                     "smooth_target_policy":True,
+                     #"exploration_config":{"type":"GaussianNoise"},
+                     #"timesteps_per_iteration": 1000,
+                     "exploration_should_anneal": True,
+                     #"exploration_noise_type": "gaussian",
+                     "env_config": {"extra_joints": nj, "full_state": False, "normalize_state": True}},
+             checkpoint_freq=10, checkpoint_at_end=True, stop={"timesteps_total": total_steps},
+             name=f"{nj}-joints-{name}",)
+###DDPG RUNS
+total_steps = 100000
+trainer = DDPGTrainer
+name = "DDPG"
+joints = 1
+ddpg_nj_runner(trainer, name, joints)
+joints = 2
+ddpg_nj_runner(trainer, name, joints)
+joints = 4
+ddpg_nj_runner(trainer, name, joints)
+
 #
 # ###PPO RUNS
 # tune_runner(ddpg.DDPGTrainer, "PPO")
-total_steps = 500000
+name = "PPO"
 
+trainer = PPOTrainer
 joints = 1
-tune.run(PPOTrainer, config={"env": NJointArm, "env_config": {"extra_joints": joints, "extra_state": False}},
-         checkpoint_freq=10, checkpoint_at_end=True, stop = {"timesteps_total": total_steps}, name=f"{joints}-Joint-PPO")
-
+nj_runner(trainer, name, joints)
 joints = 2
-tune.run(PPOTrainer, config={"env": NJointArm, "env_config": {"extra_joints": joints, "extra_state": False}},
-         checkpoint_freq=10, checkpoint_at_end=True, stop = {"timesteps_total": total_steps}, name=f"{joints}-Joint-PPO")
-
+nj_runner(trainer, name, joints)
 joints = 4
-tune.run(PPOTrainer, config={"env": NJointArm, "env_config": {"extra_joints": joints, "extra_state": False}},
-         checkpoint_freq=10, checkpoint_at_end=True, stop = {"timesteps_total": total_steps}, name=f"{joints}-Joint-PPO")
-
-###DDPG RUNS
-#
-joints = 1
-tune.run(DDPGTrainer, config={"env": NJointArm, "env_config": {"extra_joints": joints, "extra_state": False}},
-         checkpoint_freq=10, checkpoint_at_end=True, stop = {"timesteps_total": total_steps}, name=f"{joints}-Joint-DDPG")
-
-joints = 2
-tune.run(DDPGTrainer, config={"env": NJointArm, "env_config": {"extra_joints": joints, "extra_state": False}},
-         checkpoint_freq=10, checkpoint_at_end=True, stop = {"timesteps_total": total_steps}, name=f"{joints}-Joint-DDPG")
-
-joints = 4
-tune.run(DDPGTrainer, config={"env": NJointArm, "num_gpus":1, "env_config": {"extra_joints": joints, "extra_state": False}},
-         checkpoint_freq=10, checkpoint_at_end=True, stop = {"timesteps_total": total_steps}, name=f"{joints}-Joint-DDPG")
-
+nj_runner(trainer, name, joints)
 
 
 

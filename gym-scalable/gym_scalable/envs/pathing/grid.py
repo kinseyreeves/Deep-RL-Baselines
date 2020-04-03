@@ -48,6 +48,7 @@ class GridMap:
     a_searched = set()
     marked_blocks = set()
     goals = set()
+    static_goals = set()
 
     entities = []
 
@@ -55,7 +56,8 @@ class GridMap:
 
     def __init__(self, mapfile, screen_width):
         #print(mapfile)
-        pygame.init()
+        
+        self.screen = None
         self.map = self.read_map(mapfile)
         self.screen_width = screen_width
 
@@ -66,9 +68,6 @@ class GridMap:
         self.block_width = screen_width / self.width
         self.block_height = screen_width / self.height
 
-        self.font = pygame.font.Font(None, 32)
-        self.text = self.font.render(None, True, (0, 0, 0), None)
-        self.text_rect = self.text.get_rect()
 
         # Action conversion:
         left = np.asarray([1, 0, 0, 0,0])
@@ -80,6 +79,11 @@ class GridMap:
         self.actions_table = {(-2, 0): left, (2, 0): right, (0, -2): up, (0, 2): down, (0,0) : stay}
 
     def render(self, screen):
+        if(not self.screen):
+            self.font = pygame.font.Font(None, 32)
+            self.text = self.font.render(None, True, (0, 0, 0), None)
+            self.text_rect = self.text.get_rect()
+            self.screen = screen
 
         # Map rendering
         for y in range(0,len(self.map)):
@@ -117,18 +121,26 @@ class GridMap:
         screen.blit(self.text, self.text_rect)
 
     def set_util_text(self, str):
-        self.text = self.font.render(str, True, (0, 0, 0), None)
+        if self.screen:
+            self.text = self.font.render(str, True, (0, 0, 0), None)
 
     def convert_action(self, direct):
+        """
+        Converts action to 1hot vector
+        """
+        #print(direct)
         return self.actions_table[direct]
 
     def add_goals(self, num_goals):
-
+        """
+        Adds randomly placed goals
+        """
         for i in range(num_goals):
             pos_pos = random.choice(list(self.walkable-self.goals-{self.start}))
             self.map[pos_pos[1]][pos_pos[0]] = 'G'
             self.goals.add(pos_pos)
 
+        self.static_goals = self.goals.copy()
 
     def num_goals(self):
         return len(self.goals)
@@ -138,13 +150,9 @@ class GridMap:
         Gets the converted action in one hot vector format
         """
         path = self.astar_path(pos[0], pos[1], goal[0], goal[1])
-        #print(path)
         if len(path) <= 1:
             return self.convert_action((0,0))
-        #print(f"Path : {path}")
         path = path[1]
-        #print(f"pos: {pos}, goal: {goal}")
-        #print(f"diff: {(path[0] - pos[0], path[1] - pos[1])}")
         action = self.convert_action((pos[0] - path[0], pos[1] - path[1]))
         
         return action
@@ -294,6 +302,7 @@ class GridMap:
         for goal in self.goals:
             self.set_map(goal[0], goal[1], ' ')
         self.goals = set()
+        self.static_goals=set()
 
     def get_random_walkable(self):
         return random.choice(list(self.walkable))
@@ -322,6 +331,7 @@ class GridMap:
                     self.walkable.add((x,y))
                     self.goal = (x,y)
                     self.goals.add((x,y))
+                    self.static_goals.add((x,y))
                 if(out[y][x] == 'S'):
                     self.walkable.add((x,y))
                     self.start = (x,y)

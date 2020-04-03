@@ -15,13 +15,13 @@ from ray.tune.registry import register_env
 from gym_scalable.envs.pathing.chaser_evader_env import GridEvaderEnv
 
 
-total_steps = 1000000
+total_steps = 500000
 def tune_runner(trainer, mapfile, total_steps, name, mapsize):
     print(mapfile)
     tune.run(trainer,
              config={"env": GridEvaderEnv, "env_config": {"mapfile": os.getcwd() + mapfile, "RL_evader":True,
                                                                        "full_state": False, "normalize_state": True,
-                                                                       "randomize_start":False, "randomize_goal": True}},
+                                                                       "randomize_start":True, "randomize_goal": True}},
              checkpoint_freq=10, checkpoint_at_end=True, stop={"timesteps_total": total_steps},
              name=f"evader-{mapsize}x{mapsize}-{name}")
 
