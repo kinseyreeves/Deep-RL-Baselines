@@ -1,4 +1,4 @@
-# Masters-Project-KR
+# Deep Reinforcement Learning Baseline Environments
 
 Masters of computer science Masters project, implementing openai gyms to test various Deep RL algorithms against as baselines.
 These environments are designed to have scalable action and state space complexity. i.e. we can increase the complexity of the problem while keeping the number of possible actions the same, or vice versa
