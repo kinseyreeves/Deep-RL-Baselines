@@ -7,6 +7,11 @@ These environments are designed to have scalable action and state space complexi
 Kinsey Reeves
 kreeves@student.unimelb.edu.au
 
+**Requirements**
+- OpenAI gym
+- Pygame
+
+
 **Environments:**
 
 - N-jointed arm
@@ -25,38 +30,11 @@ kreeves@student.unimelb.edu.au
 - N-Grid-Evaders
     - Action space : discrete (scalable)
     - State space : discrete (grid coordinates of evader and chaser)
+    
+- N-Grid-Chasers
+
 
 - N-Maze solver
 
-TODO
-- N-Grid-Chasers
-- N-Grid-Competition (multiagent)
-- N-Cont-Evaders
 
-
-Algorithms implemented:
-NOTE - testing now using RLLIB
-- DQN
-- Monte Carlo Policy Gradients
-- DDPG
-- Cross Entropy
-- A2C
-
-
-- Deep Q Learning
-
-Running the code:
-Requirements : openai gym, pygame, pytorch
-
-- Files for testing environments can be found in /Testing
-- 
-
-
-TODO 
-    - DQN
-        - Double Q-Learning
-    - A2C
-    - Double Q-Learning
-    - PPO
-    - TRPO?
-    - 
+This is a work in progress.
