@@ -5,6 +5,8 @@ gym-scalable/gym_scalable.egg-info/
 *.KRXPS
 *.dat
 *.ipynb_checkpoints
+.vscode
+__pycache__
 results/chaser_results
 results/evader_results
 results/maze_results
