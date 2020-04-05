@@ -13,9 +13,9 @@ print(os.getcwd())
 from ray import tune
 from ray.tune.registry import register_env
 from gym_scalable.envs.pathing.chaser_evader_env import GridEvaderEnv
+import sys
 
-
-total_steps = 500000
+total_steps = int(sys.argv[1])
 def tune_runner(trainer, mapfile, total_steps, name, mapsize):
     print(mapfile)
     tune.run(trainer,

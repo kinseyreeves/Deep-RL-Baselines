@@ -3,7 +3,6 @@ import random
 import numpy as np
 
 
-
 class Entity:
     # Basic class for defining circle object
     def __init__(self, x, y, grid, color=(0, 200, 100)):
@@ -12,8 +11,7 @@ class Entity:
         self.color = color
         self.grid = grid
         self.screen = None
-        self.render_sub_text=False
-
+        self.render_sub_text = False
 
     def update(self, action):
         if action[0] and self.grid.is_walkable(self.x + 1, self.y):
@@ -24,7 +22,7 @@ class Entity:
             self.y += 2
         elif action[3] and self.grid.is_walkable(self.x, self.y - 1):
             self.y -= 2
-        elif (len(action)>4) and action[4]:
+        elif (len(action) > 4) and action[4]:
             pass
 
     def render(self, screen, block_width, block_height):
@@ -33,12 +31,13 @@ class Entity:
         y = round((((self.y - 1) / 2) * block_height + (block_height / 2)))
 
         pygame.draw.circle(screen, self.color, ((round(((self.x - 1) / 2) * block_width + (block_width / 2))),
-                                                round((((self.y - 1) / 2) * block_height + (block_height / 2)))), int(block_height/5))
+                                                round((((self.y - 1) / 2) * block_height + (block_height / 2)))),
+                           int(block_height / 5))
         self.text_rect.center = (x, y)
         screen.blit(self.text, self.text_rect)
 
         if self.render_sub_text:
-            self.sub_text_rect.center = (x-int(block_height/5), y + int(block_height/3))
+            self.sub_text_rect.center = (x - int(block_height / 5), y + int(block_height / 3))
             screen.blit(self.sub_text, self.sub_text_rect)
 
     def set_text(self, text):
@@ -57,7 +56,7 @@ class Entity:
     def set_pos(self, pos):
         self.x = pos[0]
         self.y = pos[1]
-    
+
     def get_random_action(self):
         neighbours = self.grid.get_neighbours(self.x, self.y)
         new_pos = random.choice(neighbours)
@@ -95,11 +94,10 @@ class AStarChaser(Entity):
         :return:
         """
         super().__init__(x, y, grid, color=(255, 0, 0))
-        #super().setText("C")
+        # super().setText("C")
         self.evading = None
         self.chased_entities = None
         self.randomness = randomness
-
 
     def update_auto(self):
         """
@@ -107,13 +105,12 @@ class AStarChaser(Entity):
         :param action:
         :return:
         """
-        if(random.random() < self.randomness):
+        if (random.random() < self.randomness):
             action = self.get_random_action()
         else:
             action = self.grid.get_astar_action((self.x, self.y), self.chasing.get_pos())
 
         super().update(action)
-        
 
     def set_chasing(self, entity):
         self.chasing = entity
@@ -138,8 +135,7 @@ class AStarEvader(Entity):
         super().__init__(x, y, grid, color=(200, 0, 100))
         self.evading = None
         self.randomness = randomness
-        #super().setText("E")
-
+        # super().setText("E")
 
     def update_auto(self):
 
@@ -150,15 +146,15 @@ class AStarEvader(Entity):
             best_dist = 0
 
             if self.grid.manhatten_dist(self.x, self.y, self.evading.x, self.evading.y) < self.evader_thresh:
-                
+
                 rad_pos = self.get_radius_positions(self.x, self.y, self.evader_thresh)
                 walkable = self.grid.get_walkable_positions().intersection(rad_pos)
                 # print("Own position: ")
-                
+
                 for pos in walkable:
                     chase_dist = self.grid.manhatten_dist(pos[0], pos[1], self.evading.x, self.evading.y)
-                    
-                    if(chase_dist > best_dist):
+
+                    if (chase_dist > best_dist):
                         best_dist = chase_dist
                         best_pos = pos
 
@@ -168,15 +164,11 @@ class AStarEvader(Entity):
 
     def get_radius_positions(self, x, y, r):
         out = set()
-        for i in range(x-r, x+r):
-            for j in range(y-r, y+r):
-                out.add((i,j))
-        
-        return out
+        for i in range(x - r, x + r):
+            for j in range(y - r, y + r):
+                out.add((i, j))
 
+        return out
 
     def set_evading(self, entity):
         self.evading = entity
-
-
-

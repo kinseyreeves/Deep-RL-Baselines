@@ -46,7 +46,7 @@ def get_jacobian(nj, eff_coords, joints):
 
 for test in range(1,15):
     extra_j = test
-    env = gym.make('n-joints-v0', extra_joints=extra_j, extra_state=True)
+    env = gym.make('n-joints-v0', config = {"extra_joints":extra_j, "extra_state":True})
     #f.write(str(extra_j) + ",")
     act_size = env.action_space.shape[0]
     steps = 0

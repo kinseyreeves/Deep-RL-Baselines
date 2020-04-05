@@ -17,7 +17,7 @@ from ray.tune.registry import register_env
 from gym_scalable.envs.n_joints import NJointArm
 from ray.rllib.agents.ppo import PPOTrainer
 from ray.rllib.agents.ddpg import DDPGTrainer
-
+import sys
 
 def nj_runner(trainer, name, nj):
     tune.run(trainer,
@@ -38,7 +38,7 @@ def ddpg_nj_runner(trainer, name, nj):
              checkpoint_freq=10, checkpoint_at_end=True, stop={"timesteps_total": total_steps},
              name=f"{nj}-joints-{name}",)
 ###DDPG RUNS
-total_steps = 100000
+total_steps = int(sys.argv[1])
 trainer = DDPGTrainer
 name = "DDPG"
 joints = 1

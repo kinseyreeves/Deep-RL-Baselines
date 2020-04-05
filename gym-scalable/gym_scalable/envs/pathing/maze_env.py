@@ -12,18 +12,11 @@ G - goal tile
 
 '''
 
-import gym
-from gym import error, spaces, utils
-from gym.utils import seeding
-
-import pygame
-import math
-import random
 import time
+
+import gym
+from gym import spaces, utils
 from gym_scalable.envs import utils
-import numpy as np
-import os
-import math
 from gym_scalable.envs.pathing.grid import *
 
 S_WIDTH = 500
@@ -47,7 +40,7 @@ class MazeEnv(gym.Env):
         self.screen = None
         # Action space initialised to [-1,0,1] for each joint
 
-        #Checking config otherwise use defaults
+        # Checking config otherwise use defaults
         if "mapfile" in config:
             self.map_file = config["mapfile"]
         else:
@@ -58,10 +51,12 @@ class MazeEnv(gym.Env):
         self.randomize_start = config["randomize_start"] if "randomize_start" in config else False
         self.normalize_state = config["normalize_state"] if "normalize_state" in config else False
         self.num_goals = config["num_goals"] if "num_goals" in config else False
+        # Sets the reward to 1 when a goal is found, otherwise uses -ve goals remaining
+        self.capture_reward = config["capture_reward"] if "capture_reward" in config else False
 
         # Observation space boundaries
-        high = np.array([1, 1] + [1, 1]*self.num_goals)
-        low = np.array([0, 0] + [0, 0]*self.num_goals)
+        high = np.array([1, 1] + [1, 1] * self.num_goals)
+        low = np.array([0, 0] + [0, 0] * self.num_goals)
         self.action_space = spaces.Discrete(4)
         self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
 
@@ -72,16 +67,14 @@ class MazeEnv(gym.Env):
         self.done = False
         self.grid = GridMap(self.map_file, S_WIDTH)
 
-        self.grid.add_goals(self.num_goals-self.grid.num_goals())
+        self.grid.add_goals(self.num_goals - self.grid.num_goals())
         self.grid.set_render_goals(True)
 
         self.entity = Entity(self.grid.start[0], self.grid.start[1], self.grid)
         self.state = self.reset()
 
-        # observation space = [self.x, self.y, enemy.x, enemy.y]
-        # self.observation_space = spaces.Box(l_bounds, h_bounds, dtype=np.float32)
-
     def step(self, action):
+
         if INT_ACTION:
             z_arr = np.zeros(self.action_space.n)
             z_arr[action] = 1
@@ -90,15 +83,17 @@ class MazeEnv(gym.Env):
         self.entity.update(action)
 
         self.steps += 1
-        self.reward = 0
+
+        self.reward = 0 if self.capture_reward else -1
 
         self.set_state()
 
         if self.grid.is_goal(self.entity.x, self.entity.y):
             self.grid.remove_goal(self.entity.x, self.entity.y)
-            self.reward = 1
-            if(self.grid.num_goals()==0):
+
+            if self.capture_reward:
                 self.reward = 1
+            if self.grid.num_goals() == 0:
                 self.done = True
 
         if self.steps >= MAX_STEPS:
@@ -108,7 +103,7 @@ class MazeEnv(gym.Env):
         return self.state, self.reward, self.done, {}
 
     def set_state(self):
-        if (self.normalize_state):
+        if self.normalize_state:
             self.state = [utils.normalize(self.entity.x, 0, self.grid.size),
                           utils.normalize(self.entity.y, 0, self.grid.size)]
             for goal in self.grid.static_goals:
@@ -127,7 +122,6 @@ class MazeEnv(gym.Env):
         self.steps = 0
         self.done = False
 
-
         self.grid.clear_goals()
         self.grid.add_goals(self.num_goals)
 
@@ -144,7 +138,7 @@ class MazeEnv(gym.Env):
     def render(self, mode='human', close=False):
 
         # If screen isnt initiated, initiate it, fill it white
-        if (self.screen is None):
+        if self.screen is None:
             self.screen = pygame.display.set_mode((S_WIDTH, S_WIDTH))
             self.screen.fill((255, 255, 255))
             pygame.init()
@@ -155,10 +149,3 @@ class MazeEnv(gym.Env):
 
         time.sleep(0.1)
         pygame.display.update()
-
-
-def out_of_bounds(pos):
-    x, y = pos
-    if x < 0 or x > S_WIDTH or y < 0 or y > S_WIDTH:
-        return True
-    return False

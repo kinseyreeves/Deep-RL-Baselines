@@ -5,6 +5,7 @@
 Single evader (RL controlled) with single chaser (A* controlled) experiments
 Kinsey Reeves
 """
+import sys
 
 from ray.rllib.agents import ppo, ddpg, a3c, dqn
 import gym
@@ -15,7 +16,7 @@ from ray.tune.registry import register_env
 from gym_scalable.envs.pathing.chaser_evader_env import GridEvaderEnv
 
 
-total_steps = 500000
+total_steps = int(sys.argv[1])
 EXP_NAME = "Chaser"
 def tune_runner(trainer, mapfile, total_steps, name, mapsize):
     print(mapfile)
