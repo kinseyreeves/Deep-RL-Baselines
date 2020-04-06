@@ -14,6 +14,7 @@ from ray.tune import grid_search
 from ray.rllib.agents import ppo, ddpg, a3c, dqn
 import gym
 import os
+import sys
 print(os.getcwd())
 from ray import tune
 from ray.tune.registry import register_env
@@ -21,7 +22,7 @@ from gym_scalable.envs.pathing.maze_env import MazeEnv
 
 
 logdir = "~/ray_results/maze"
-total_steps = 100000
+total_steps = int(sys.argv[1]) if len(sys.argv) > 1 else 500000
 
 a = os.getcwd() + "/maps/map_3x3.txt"
 
@@ -30,8 +31,11 @@ def tune_runner(trainer, mapfile, total_steps, name, mapsize, goals):
     print(mapfile)
     tune.run(trainer,
              config={"env": MazeEnv, "env_config": {"mapfile": os.getcwd() + mapfile,
-                                                                       "normalize_state": True,
-                                                                       "randomize_start":True, "randomize_goal": True, "num_goals": goals}},
+                                                       "normalize_state": True,
+                                                       "randomize_start":True,
+                                                       "randomize_goal": True,
+                                                       "num_goals": goals,
+                                                       "capture_reward":False}},
              checkpoint_freq=10, checkpoint_at_end=True, stop={"timesteps_total": total_steps},
              name=f"maze-{mapsize}x{mapsize}-{name}")
 
@@ -43,7 +47,7 @@ name = "PPO"
 mapfile = "/maps/map_3x3.txt"
 mapsize = 3
 trainer = ppo.PPOTrainer
-goals = 1
+goals = 3
 
 tune_runner(trainer, mapfile, total_steps, name, mapsize, goals)
 

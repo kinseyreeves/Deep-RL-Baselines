@@ -13,9 +13,9 @@ print(os.getcwd())
 from ray import tune
 from ray.tune.registry import register_env
 from gym_scalable.envs.pathing.multi_chaser_evader_env import GridChaserVsEvaderEnv
+import sys
 
-
-total_steps = 500000
+total_steps = int(sys.argv[1])
 EXP_NAME = "ChaserVsEvader"
 action_space = GridChaserVsEvaderEnv.action_space
 obs_space = GridChaserVsEvaderEnv.observation_space

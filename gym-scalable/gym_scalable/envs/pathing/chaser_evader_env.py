@@ -186,9 +186,6 @@ class GridEvaderEnv(gym.Env):
             else:
                 self.ai_entity.set_text("E")
 
-
-
-
         self.screen.fill((255, 255, 255))
         self.grid.render(self.screen)
         for e in self.entities:
