@@ -30,6 +30,7 @@ parser.add_argument('--steps', type=int)
 parser.add_argument('--1reward', dest='reward', action='store_true')
 parser.add_argument('--name', type = str)
 parser.add_argument('--num_goals', type = int)
+parser.add_argument('--fixed_goals', dest='fixed_goals', action='store_true')
 args = parser.parse_args()
 
 
@@ -53,6 +54,7 @@ def tune_runner(trainer, mapfile, total_steps, name, mapsize):
                                     "randomize_start":True,
                                     "randomize_goal": True,
                                     "num_goals": goals,
+                                    "fixed_goals": args.fixed_goals,
                                     "capture_reward":args.reward}},
              checkpoint_freq=10, checkpoint_at_end=True, stop={"timesteps_total": total_steps},
              name=f"{args.name}_maze-{mapsize}x{mapsize}-{name}")

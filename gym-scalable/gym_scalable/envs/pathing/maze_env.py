@@ -33,10 +33,12 @@ class MazeEnv(gym.Env):
     Basic maze environment, get to the finish
     full state gives the
     '''
+    total_eps = 0
 
     def __init__(self, config):
 
         print(f"Starting with config {config}")
+
         self.screen = None
         # Action space initialised to [-1,0,1] for each joint
 
@@ -53,6 +55,7 @@ class MazeEnv(gym.Env):
         self.num_goals = config["num_goals"] if "num_goals" in config else False
         # Sets the reward to 1 when a goal is found, otherwise uses -ve goals remaining
         self.capture_reward = config["capture_reward"] if "capture_reward" in config else False
+        self.fixed_goals = config["fixed_goals"] if "fixed_goals" in config else False
 
         # Observation space boundaries
         high = np.array([1, 1] + [1, 1] * self.num_goals)
@@ -67,7 +70,16 @@ class MazeEnv(gym.Env):
         self.done = False
         self.grid = GridMap(self.map_file, S_WIDTH)
 
-        self.grid.add_goals(self.num_goals - self.grid.num_goals())
+        if self.fixed_goals:
+            goals = [self.grid.get_random_walkable_non_goal() for _ in range(self.num_goals - self.grid.num_goals())]
+            goals+=[self.grid.goal]
+            self.static_goals = goals
+            for g in goals:
+                self.grid.add_goal(g[0], g[1])
+
+        else:
+            self.grid.add_random_goals(self.num_goals - self.grid.num_goals())
+
         self.grid.set_render_goals(True)
 
         self.entity = Entity(self.grid.start[0], self.grid.start[1], self.grid)
@@ -84,7 +96,7 @@ class MazeEnv(gym.Env):
 
         self.steps += 1
 
-        self.reward = 0 if self.capture_reward else -1
+        self.reward = 0 if self.capture_reward else -.1
 
         self.set_state()
 
@@ -93,7 +105,10 @@ class MazeEnv(gym.Env):
 
             if self.capture_reward:
                 self.reward = 1
+            else:
+                self.reward=1
             if self.grid.num_goals() == 0:
+                self.reward = (MAX_STEPS-self.steps)*.05
                 self.done = True
 
         if self.steps >= MAX_STEPS:
@@ -121,9 +136,15 @@ class MazeEnv(gym.Env):
         self.reward = 0
         self.steps = 0
         self.done = False
+        self.total_eps+=1
 
-        self.grid.clear_goals()
-        self.grid.add_goals(self.num_goals)
+
+        if self.fixed_goals:
+            self.grid.clear_goals()
+            self.grid.add_goals(self.static_goals)
+        else:
+            self.grid.clear_goals()
+            self.grid.add_random_goals(self.num_goals)
 
         self.set_state()
 

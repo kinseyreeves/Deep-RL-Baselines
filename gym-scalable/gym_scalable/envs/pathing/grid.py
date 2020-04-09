@@ -138,7 +138,7 @@ class GridMap:
         # print(direct)
         return self.actions_table[direct]
 
-    def add_goals(self, num_goals):
+    def add_random_goals(self, num_goals):
         """
         Adds randomly placed goals
         """
@@ -148,6 +148,11 @@ class GridMap:
             self.goals.add(pos_pos)
 
         self.static_goals = self.goals.copy()
+
+    def add_goals(self, goals_list):
+
+        for g in goals_list:
+            self.add_goal(g[0], g[1])
 
     def num_goals(self):
         return len(self.goals)
@@ -170,7 +175,7 @@ class GridMap:
     def get_astar_distance(self, pos, end):
 
         path = self.astar_path(pos[0], pos[1], end[0], end[1])
-        return len(path)
+        return len(path)-1
 
     def add_entity(self, entity):
         self.entities.append(entity)
@@ -250,6 +255,7 @@ class GridMap:
         return path[::-1]
 
     def set_render_goals(self, val):
+
         self.render_goals = val
 
     def mark_block(self, x, y):
@@ -261,6 +267,30 @@ class GridMap:
         :return:
         """
         self.marked_blocks.add((x, y))
+
+    def get_dist_list(self,pos):
+        """
+        Distance list calculated by A*.
+        Used for computing TSP/Minimum spanning tree
+        to get the benchmark. works with MLrose TSP
+        The agents position is always first in the returned
+        coords list
+        Pos: Position of the agent
+        Return : (List of coordinates, list of coords index and the distance)
+        """
+        coords_list = self.static_goals
+        coords_list = [pos] + list(coords_list)
+        # num_pos = len(coords_list)
+        # mat = [[0 for _ in range(0, num_pos)] for _ in range(num_pos)]
+        # mat = np.zeros((num_pos,num_pos))
+        dist_list = []
+
+        for i,pos in enumerate(coords_list):
+            for j in range(i+1, len(coords_list)):
+                pos2 = coords_list[j]
+                dist_list.append((i, j, self.get_astar_distance(pos, pos2)))
+
+        return (coords_list, dist_list)
 
     def is_walkable(self, x, y):
         if (x >= len(self.map[0]) or y >= len(self.map)):
@@ -274,15 +304,18 @@ class GridMap:
             return True
         return False
 
-    def get_neighbours(self, x, y, check_searched=False):
+    def get_neighbours(self, x, y):
+        """
+        Gets a positions neighbours on the grid
+        """
         out = []
-        if self.is_walkable(x + 1, y) and (x + 2, y) not in self.a_searched:
+        if self.is_walkable(x + 1, y) and (x + 2, y):
             out.append((x + 2, y))
-        if self.is_walkable(x - 1, y) and (x - 2, y) not in self.a_searched:
+        if self.is_walkable(x - 1, y) and (x - 2, y):
             out.append((x - 2, y))
-        if self.is_walkable(x, y + 1) and (x, y + 2) not in self.a_searched:
+        if self.is_walkable(x, y + 1) and (x, y + 2):
             out.append((x, y + 2))
-        if self.is_walkable(x, y - 1) and (x, y - 2) not in self.a_searched:
+        if self.is_walkable(x, y - 1) and (x, y - 2):
             out.append((x, y - 2))
         return out
 
@@ -315,6 +348,9 @@ class GridMap:
 
     def get_random_walkable(self):
         return random.choice(list(self.walkable))
+
+    def get_random_walkable_non_goal(self):
+        return random.choice(list(self.walkable.difference(self.goals)))
 
     def set_random_start(self):
         self.set_map(self.start[0], self.start[1], ' ')
