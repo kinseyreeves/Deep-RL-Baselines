@@ -48,10 +48,11 @@ def tune_runner(trainer, mapfile, total_steps, name, mapsize):
         goals = mapsize
     tune.run(trainer,
              config={"env": MazeEnv,
-                     "num_workers":1,
+                     "num_workers":0,
+                     "num_envs_per_worker": 1,
                      "env_config": {"mapfile": os.getcwd() + mapfile,
                                     "normalize_state": True,
-                                    "randomize_start":True,
+                                    "randomize_start":False,
                                     "randomize_goal": True,
                                     "num_goals": goals,
                                     "fixed_goals": args.fixed_goals,

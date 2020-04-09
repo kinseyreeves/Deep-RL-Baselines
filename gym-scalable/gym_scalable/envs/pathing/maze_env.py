@@ -37,7 +37,7 @@ class MazeEnv(gym.Env):
 
     def __init__(self, config):
 
-        print(f"Starting with config {config}")
+        print(f"Starting MazeEnv with config {config}")
 
         self.screen = None
         # Action space initialised to [-1,0,1] for each joint
@@ -49,7 +49,6 @@ class MazeEnv(gym.Env):
             print("Error : Please enter a mapfile")
             exit(1)
 
-        self.randomize_goal = config["randomize_goal"] if "randomize_goal" in config else False
         self.randomize_start = config["randomize_start"] if "randomize_start" in config else False
         self.normalize_state = config["normalize_state"] if "normalize_state" in config else False
         self.num_goals = config["num_goals"] if "num_goals" in config else False

@@ -150,9 +150,10 @@ class GridMap:
         self.static_goals = self.goals.copy()
 
     def add_goals(self, goals_list):
-
+        self.static_goals = set()
         for g in goals_list:
             self.add_goal(g[0], g[1])
+            self.static_goals.add(g)
 
     def num_goals(self):
         return len(self.goals)
