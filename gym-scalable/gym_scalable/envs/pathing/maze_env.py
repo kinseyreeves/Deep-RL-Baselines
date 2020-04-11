@@ -79,7 +79,7 @@ class MazeEnv(gym.Env):
 
         if not self.randomize_goals:
             goals = [self.grid.get_random_walkable_non_goal() for _ in range(self.num_goals - self.grid.num_goals())]
-            goals+=[self.grid.goal]
+            goals += [self.grid.goal]
             self.static_goals = goals
             for g in goals:
                 self.grid.add_goal(g[0], g[1])
