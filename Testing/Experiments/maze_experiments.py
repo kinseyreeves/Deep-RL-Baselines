@@ -26,11 +26,12 @@ tracker = SummaryTracker()
 
 
 parser = argparse.ArgumentParser(description='Maze experiment runner')
-parser.add_argument('--steps', type=int)
+parser.add_argument('--steps', type=int, default = 5000)
 parser.add_argument('--1reward', dest='reward', action='store_true')
-parser.add_argument('--name', type = str)
-parser.add_argument('--num_goals', type = int)
-parser.add_argument('--fixed_goals', dest='fixed_goals', action='store_true')
+parser.add_argument('--name', type = str, default = 'test_run')
+parser.add_argument('--num_goals', type = int, default = 3)
+parser.add_argument('--random_goals', dest='random_goals', action='store_true', default = False)
+parser.add_argument('--random_start', dest='random_start', action='store_true', default = False)
 args = parser.parse_args()
 
 
@@ -38,12 +39,8 @@ logdir = "~/ray_results/maze"
 
 a = os.getcwd() + "/maps/map_3x3.txt"
 
-if args.steps:
-    total_steps = args.steps
-else:
-    total_steps = 500
 
-def tune_runner(trainer, mapfile, total_steps, name, mapsize):
+def tune_runner(trainer, mapfile, name, mapsize):
     global args
     if(args.num_goals):
         goals = args.num_goals
@@ -55,12 +52,11 @@ def tune_runner(trainer, mapfile, total_steps, name, mapsize):
                      "num_envs_per_worker": 1,
                      "env_config": {"mapfile": os.getcwd() + mapfile,
                                     "encoded_state": True,
-                                    "randomize_start":False,
-                                    "randomize_goal": True,
+                                    "randomize_start":args.random_start,
                                     "num_goals": goals,
-                                    "fixed_goals": args.fixed_goals,
+                                    "randomize_goals": args.random_goals,
                                     "capture_reward":args.reward}},
-             checkpoint_freq=10, checkpoint_at_end=True, stop={"timesteps_total": total_steps},
+             checkpoint_freq=10, checkpoint_at_end=True, stop={"timesteps_total": args.steps},
              name=f"{args.name}_maze-{mapsize}x{mapsize}-{name}")
 
 
@@ -73,17 +69,17 @@ mapsize = 3
 trainer = ppo.PPOTrainer
 goals = 3
 tracker.print_diff()
-tune_runner(trainer, mapfile, total_steps, name, mapsize)
+tune_runner(trainer, mapfile, name, mapsize)
 
 mapfile = "/maps/map_5x5.txt"
 mapsize = 5
 tracker.print_diff()
-tune_runner(trainer, mapfile, total_steps, name, mapsize)
+tune_runner(trainer, mapfile, name, mapsize)
 
 mapfile = "/maps/map_8x8.txt"
 mapsize = 8
 tracker.print_diff()
-tune_runner(trainer, mapfile, total_steps, name, mapsize)
+tune_runner(trainer, mapfile, name, mapsize)
 del(trainer)
 tracker.print_diff()
 # ################################################### #
@@ -94,17 +90,17 @@ mapfile = "/maps/map_3x3.txt"
 mapsize = 3
 trainer = dqn.DQNTrainer
 
-tune_runner(trainer, mapfile, total_steps, name, mapsize)
+tune_runner(trainer, mapfile, name, mapsize)
 
 mapfile = "/maps/map_5x5.txt"
 mapsize = 5
 tracker.print_diff()
-tune_runner(trainer, mapfile, total_steps, name, mapsize)
+tune_runner(trainer, mapfile, name, mapsize)
 
 mapfile = "/maps/map_8x8.txt"
 mapsize = 8
 
-tune_runner(trainer, mapfile, total_steps, name, mapsize)
+tune_runner(trainer, mapfile, name, mapsize)
 del(trainer)
 tracker.print_diff()
 ################################################### #
@@ -116,17 +112,17 @@ mapfile = "/maps/map_3x3.txt"
 mapsize = 3
 trainer = a3c.A3CTrainer
 
-tune_runner(trainer, mapfile, total_steps, name, mapsize)
+tune_runner(trainer, mapfile, name, mapsize)
 
 mapfile = "/maps/map_5x5.txt"
 mapsize = 5
 
-tune_runner(trainer, mapfile, total_steps, name, mapsize)
+tune_runner(trainer, mapfile, name, mapsize)
 
 mapfile = "/maps/map_8x8.txt"
 mapsize = 8
 
-tune_runner(trainer, mapfile, total_steps, name, mapsize)
+tune_runner(trainer, mapfile, name, mapsize)
 
 del(trainer)
 

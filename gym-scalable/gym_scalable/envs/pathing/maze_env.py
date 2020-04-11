@@ -54,7 +54,7 @@ class MazeEnv(gym.Env):
         self.num_goals = config["num_goals"] if "num_goals" in config else False
         # Sets the reward to 1 when a goal is found, otherwise uses -ve goals remaining
         self.capture_reward = config["capture_reward"] if "capture_reward" in config else False
-        self.fixed_goals = config["fixed_goals"] if "fixed_goals" in config else False
+        self.randomize_goals = config["randomize_goals"] if "randomize_goals" in config else False
         self.encoded_state = config["encoded_state"] if "encoded_state" in config else False
 
         self.grid = GridMap(self.map_file, S_WIDTH)
@@ -77,13 +77,12 @@ class MazeEnv(gym.Env):
         self.done = False
 
 
-        if self.fixed_goals:
+        if not self.randomize_goals:
             goals = [self.grid.get_random_walkable_non_goal() for _ in range(self.num_goals - self.grid.num_goals())]
             goals+=[self.grid.goal]
             self.static_goals = goals
             for g in goals:
                 self.grid.add_goal(g[0], g[1])
-
         else:
             self.grid.add_random_goals(self.num_goals - self.grid.num_goals())
 
@@ -157,7 +156,7 @@ class MazeEnv(gym.Env):
         #     print(self.total_eps)
 
 
-        if self.fixed_goals:
+        if not self.randomize_goals:
             self.grid.clear_goals()
             self.grid.add_goals(self.static_goals)
         else:
