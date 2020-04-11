@@ -38,7 +38,10 @@ logdir = "~/ray_results/maze"
 
 a = os.getcwd() + "/maps/map_3x3.txt"
 
-total_steps = args.steps
+if args.steps:
+    total_steps = args.steps
+else:
+    total_steps = 500
 
 def tune_runner(trainer, mapfile, total_steps, name, mapsize):
     global args
@@ -51,7 +54,7 @@ def tune_runner(trainer, mapfile, total_steps, name, mapsize):
                      "num_workers":0,
                      "num_envs_per_worker": 1,
                      "env_config": {"mapfile": os.getcwd() + mapfile,
-                                    "normalize_state": True,
+                                    "encoded_state": True,
                                     "randomize_start":False,
                                     "randomize_goal": True,
                                     "num_goals": goals,

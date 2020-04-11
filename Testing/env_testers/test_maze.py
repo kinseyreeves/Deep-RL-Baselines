@@ -9,16 +9,17 @@ from pympler.tracker import SummaryTracker
 tracker = SummaryTracker()
 
 
-config = { "mapfile" : "maps/map_5x5.txt", "normalize_state" : True, "fixed_goals" : True, "randomize_start": False, "num_goals":3, "capture_reward":False}
+config = { "mapfile" : "maps/map_3x3.txt", "encoded_state" : True, "fixed_goals" : True, "randomize_start": False, "num_goals":3, "capture_reward":False}
 env = gym.make('n-maze-v0',config = config)
 
 state = env.reset()
 i = 0
 
 
-#print(env.observation_space)
-#print(env.action_space)
+print(env.observation_space)
+print(env.action_space)
 
+input()
 while i < 100000:
     
     i += 1
@@ -29,7 +30,8 @@ while i < 100000:
 
     action_size = env.action_space.n
 
-    #print(state.shape)
+    print(env.grid.encode())
+    print(env.grid.get_encoding_shape())
 
     state, reward, done, _ = env.step(action)
     print(f"{state}, {reward}, {done}")
@@ -39,7 +41,7 @@ while i < 100000:
     if(done):
         #a = input()
         state = env.reset()
-    #a = input()
+    a = input()
 
 tracker.print_diff()
 

@@ -55,19 +55,27 @@ class MazeEnv(gym.Env):
         # Sets the reward to 1 when a goal is found, otherwise uses -ve goals remaining
         self.capture_reward = config["capture_reward"] if "capture_reward" in config else False
         self.fixed_goals = config["fixed_goals"] if "fixed_goals" in config else False
+        self.encoded_state = config["encoded_state"] if "encoded_state" in config else False
+
+        self.grid = GridMap(self.map_file, S_WIDTH)
 
         # Observation space boundaries
-        high = np.array([1, 1] + [1, 1] * self.num_goals)
-        low = np.array([0, 0] + [0, 0] * self.num_goals)
+
         self.action_space = spaces.Discrete(4)
-        self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
+
+        if self.encoded_state:
+            self.observation_space = spaces.Box(low=0, high=6,shape=self.grid.get_encoding_shape(), dtype=np.float32)
+        else:
+            high = np.array([1, 1] + [1, 1] * self.num_goals)
+            low = np.array([0, 0] + [0, 0] * self.num_goals)
+            self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
 
         self.centre_x = round(S_WIDTH / 2)
         self.centre_y = round(S_WIDTH / 2)
         self.steps = 0
         self.reward = 0
         self.done = False
-        self.grid = GridMap(self.map_file, S_WIDTH)
+
 
         if self.fixed_goals:
             goals = [self.grid.get_random_walkable_non_goal() for _ in range(self.num_goals - self.grid.num_goals())]
@@ -106,8 +114,9 @@ class MazeEnv(gym.Env):
                 self.reward = 1
             else:
                 self.reward=1
+
             if self.grid.num_goals() == 0:
-                self.reward = (MAX_STEPS-self.steps)*.05
+                #self.reward = (MAX_STEPS-self.steps)*.05
                 self.done = True
 
         if self.steps >= MAX_STEPS:
@@ -116,19 +125,27 @@ class MazeEnv(gym.Env):
 
         return self.state, self.reward, self.done, {}
 
-    def set_state(self):
-        if self.normalize_state:
-            self.state = [utils.normalize(self.entity.x, 0, self.grid.size),
-                          utils.normalize(self.entity.y, 0, self.grid.size)]
-            for goal in self.grid.static_goals:
-                self.state += [utils.normalize(goal[0], 0, self.grid.size),
-                               utils.normalize(goal[1], 0, self.grid.size)]
-        else:
-            self.state = [self.entity.x, self.entity.y]
-            for goal in self.grid.static_goals:
-                self.state += [goal[0], goal[1]]
 
-        self.state = np.asarray(self.state)
+
+    def set_state(self):
+        """
+        Sets the state for maze.
+        """
+        if self.encoded_state:
+            self.state = self.grid.encode(rl_entity_pos=self.entity.get_pos())
+        else:
+            if self.normalize_state:
+                self.state = [utils.normalize(self.entity.x, 0, self.grid.size),
+                              utils.normalize(self.entity.y, 0, self.grid.size)]
+                for goal in self.grid.static_goals:
+                    self.state += [utils.normalize(goal[0], 0, self.grid.size),
+                                   utils.normalize(goal[1], 0, self.grid.size)]
+            else:
+                self.state = [self.entity.x, self.entity.y]
+                for goal in self.grid.static_goals:
+                    self.state += [goal[0], goal[1]]
+
+            self.state = np.asarray(self.state)
 
     def reset(self):
 
@@ -136,6 +153,8 @@ class MazeEnv(gym.Env):
         self.steps = 0
         self.done = False
         self.total_eps+=1
+        # if(self.total_eps%10==0):
+        #     print(self.total_eps)
 
 
         if self.fixed_goals:

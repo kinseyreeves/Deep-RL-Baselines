@@ -47,8 +47,10 @@ class GridMap:
 
     """
     map = []
-    colours = {'O': (255, 255, 255), 'G': (0, 255, 0), 'X': (0, 0, 255), 'S': (255, 0, 0), '-': (255, 0, 0),
-               '+': (255, 0, 0)}
+    colours = {'O': (255, 255, 255), 'G': (0, 255, 0), 'X': (0, 0, 255),
+               'S': (255, 0, 0), '-': (255, 0, 0),'+': (255, 0, 0)}
+
+    state_encoding = {' ':0,'G':2, '-':1, '|':1, '+':1, 'S': 0}
 
     # All walkable positions
     walkable = set()
@@ -127,6 +129,25 @@ class GridMap:
         self.text_rect.center = (self.screen_width - self.screen_width / 4, self.screen_width - self.screen_width / 20)
         screen.blit(self.text, self.text_rect)
 
+    def encode(self, rl_entity_pos=None, enemy_pos=None):
+        """
+        Encodes the map. Note -1s and -2s are to reshape it to
+        only take the inner grid
+        """
+        encoding = np.zeros((len(self.map)-2, len(self.map[0])-2))
+        for y in range(1,len(self.map)-1):
+            for x in range(1,len(self.map)-1):
+                encoding[y-1][x-1] = self.state_encoding[self.map[y][x]]
+        if rl_entity_pos:
+            encoding[rl_entity_pos[1]-1][rl_entity_pos[0]-1] = 3
+        if enemy_pos:
+            encoding[enemy_pos[1]-1][enemy_pos[0]-1] = 4
+        return encoding
+
+    def get_encoding_shape(self):
+        return (len(self.map) - 2, len(self.map[0]) - 2)
+
+
     def set_util_text(self, str):
         if self.screen:
             self.text = self.font.render(str, True, (0, 0, 0), None)
@@ -135,7 +156,6 @@ class GridMap:
         """
         Converts action to 1hot vector
         """
-        # print(direct)
         return self.actions_table[direct]
 
     def add_random_goals(self, num_goals):
