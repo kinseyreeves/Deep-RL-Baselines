@@ -47,6 +47,7 @@ joints = 2
 ddpg_nj_runner(trainer, name, joints)
 joints = 4
 ddpg_nj_runner(trainer, name, joints)
+del(trainer)
 
 #
 # ###PPO RUNS
@@ -61,6 +62,7 @@ nj_runner(trainer, name, joints)
 joints = 4
 nj_runner(trainer, name, joints)
 
+del(trainer)
 
 
 

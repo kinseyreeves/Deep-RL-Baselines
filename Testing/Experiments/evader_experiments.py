@@ -45,6 +45,7 @@ mapfile = "/maps/map_8x8.txt"
 mapsize = 8
 
 tune_runner(trainer, mapfile, total_steps, name, mapsize)
+del(trainer)
 
 ## ################################################### #
 ## -----------------##DQN##--------------------------- #
@@ -65,6 +66,7 @@ mapfile = "/maps/map_8x8.txt"
 mapsize = 8
 
 tune_runner(trainer, mapfile, total_steps, name, mapsize)
+del(trainer)
 
 
 ## ################################################### #
@@ -87,5 +89,6 @@ mapfile = "/maps/map_8x8.txt"
 mapsize = 8
 
 tune_runner(trainer, mapfile, total_steps, name, mapsize)
+del(trainer)
 
 

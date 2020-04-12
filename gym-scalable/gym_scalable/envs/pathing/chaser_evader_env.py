@@ -57,8 +57,6 @@ class GridEvaderEnv(gym.Env):
         low = np.array([0, 0, 0, 0])
 
         self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
-        self.centre_x = round(S_WIDTH / 2)
-        self.centre_y = round(S_WIDTH / 2)
         self.steps = 0
         self.reward = 0
         self.done = False

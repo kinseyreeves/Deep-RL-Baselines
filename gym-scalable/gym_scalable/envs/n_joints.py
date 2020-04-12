@@ -96,7 +96,7 @@ class NJointArm(gym.Env):
         """
         self.extra_joints = config["extra_joints"] if "extra_joints" in config else 1
         self.extra_state = config["extra_state"] if "extra_state" in config else False
-
+        
         print(f"N-jointed arm started with {self.extra_joints+1} joints")
         self.screen = None
 

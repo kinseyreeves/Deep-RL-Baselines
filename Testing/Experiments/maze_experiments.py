@@ -18,26 +18,46 @@ import sys
 print(os.getcwd())
 from ray import tune
 from ray.tune.registry import register_env
-from gym_scalable.envs.pathing.maze_env import MazeEnv
+import argparse
+
+from pympler.tracker import SummaryTracker
+
+tracker = SummaryTracker()
+
+
+parser = argparse.ArgumentParser(description='Maze experiment runner')
+parser.add_argument('--steps', type=int, default = 5000)
+parser.add_argument('--1reward', dest='reward', action='store_true')
+parser.add_argument('--name', type = str, default = 'test_run')
+parser.add_argument('--num_goals', type = int, default = 3)
+parser.add_argument('--random_goals', dest='random_goals', action='store_true', default = False)
+parser.add_argument('--random_start', dest='random_start', action='store_true', default = False)
+args = parser.parse_args()
 
 
 logdir = "~/ray_results/maze"
-total_steps = int(sys.argv[1]) if len(sys.argv) > 1 else 500000
 
 a = os.getcwd() + "/maps/map_3x3.txt"
 
 
-def tune_runner(trainer, mapfile, total_steps, name, mapsize, goals):
-    print(mapfile)
+def tune_runner(trainer, mapfile, name, mapsize):
+    global args
+    if(args.num_goals):
+        goals = args.num_goals
+    else:
+        goals = mapsize
     tune.run(trainer,
-             config={"env": MazeEnv, "env_config": {"mapfile": os.getcwd() + mapfile,
-                                                       "normalize_state": True,
-                                                       "randomize_start":True,
-                                                       "randomize_goal": True,
-                                                       "num_goals": goals,
-                                                       "capture_reward":False}},
-             checkpoint_freq=10, checkpoint_at_end=True, stop={"timesteps_total": total_steps},
-             name=f"maze-{mapsize}x{mapsize}-{name}")
+             config={"env": MazeEnv,
+                     "num_workers":0,
+                     "num_envs_per_worker": 1,
+                     "env_config": {"mapfile": os.getcwd() + mapfile,
+                                    "encoded_state": True,
+                                    "randomize_start":args.random_start,
+                                    "num_goals": goals,
+                                    "randomize_goals": args.random_goals,
+                                    "capture_reward":args.reward}},
+             checkpoint_freq=10, checkpoint_at_end=True, stop={"timesteps_total": args.steps},
+             name=f"{args.name}_maze-{mapsize}x{mapsize}-{name}")
 
 
 # ################################################### #
@@ -48,19 +68,20 @@ mapfile = "/maps/map_3x3.txt"
 mapsize = 3
 trainer = ppo.PPOTrainer
 goals = 3
-
-tune_runner(trainer, mapfile, total_steps, name, mapsize, goals)
+tracker.print_diff()
+tune_runner(trainer, mapfile, name, mapsize)
 
 mapfile = "/maps/map_5x5.txt"
 mapsize = 5
-
-tune_runner(trainer, mapfile, total_steps, name, mapsize, goals)
+tracker.print_diff()
+tune_runner(trainer, mapfile, name, mapsize)
 
 mapfile = "/maps/map_8x8.txt"
 mapsize = 8
-
-tune_runner(trainer, mapfile, total_steps, name, mapsize, goals)
-
+tracker.print_diff()
+tune_runner(trainer, mapfile, name, mapsize)
+del(trainer)
+tracker.print_diff()
 # ################################################### #
 # -----------------##DQN##--------------------------- #
 # ################################################### #
@@ -69,19 +90,19 @@ mapfile = "/maps/map_3x3.txt"
 mapsize = 3
 trainer = dqn.DQNTrainer
 
-tune_runner(trainer, mapfile, total_steps, name, mapsize, goals)
+tune_runner(trainer, mapfile, name, mapsize)
 
 mapfile = "/maps/map_5x5.txt"
 mapsize = 5
-
-tune_runner(trainer, mapfile, total_steps, name, mapsize, goals)
+tracker.print_diff()
+tune_runner(trainer, mapfile, name, mapsize)
 
 mapfile = "/maps/map_8x8.txt"
 mapsize = 8
 
-tune_runner(trainer, mapfile, total_steps, name, mapsize, goals)
-
-
+tune_runner(trainer, mapfile, name, mapsize)
+del(trainer)
+tracker.print_diff()
 ################################################### #
 ###-----------------##A3C##------------------------ #
 ################################################### #
@@ -91,16 +112,18 @@ mapfile = "/maps/map_3x3.txt"
 mapsize = 3
 trainer = a3c.A3CTrainer
 
-tune_runner(trainer, mapfile, total_steps, name, mapsize, goals)
+tune_runner(trainer, mapfile, name, mapsize)
 
 mapfile = "/maps/map_5x5.txt"
 mapsize = 5
 
-tune_runner(trainer, mapfile, total_steps, name, mapsize, goals)
+tune_runner(trainer, mapfile, name, mapsize)
 
 mapfile = "/maps/map_8x8.txt"
 mapsize = 8
 
-tune_runner(trainer, mapfile, total_steps, name, mapsize, goals)
+tune_runner(trainer, mapfile, name, mapsize)
 
+del(trainer)
 
+tracker.print_diff()

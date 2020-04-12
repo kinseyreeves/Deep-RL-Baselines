@@ -1,5 +1,4 @@
 
-
 """
 
 Single evader (RL controlled) with single chaser (A* controlled) experiments
@@ -27,65 +26,84 @@ def tune_runner(trainer, mapfile, total_steps, name, mapsize):
              checkpoint_freq=10, checkpoint_at_end=True, stop={"timesteps_total": total_steps},
              name=f"{EXP_NAME}-{mapsize}x{mapsize}-{name}")
 
-## ##################################################### #
-## # -----------------##PPO##--------------------------- #
-## # ################################################### #
-#name = "PPO"
-# mapfile = "/maps/map_3x3.txt"
-# mapsize = 3
-# trainer = ppo.PPOTrainer
+# ##################################################### #
+# # -----------------##PPO##--------------------------- #
+# # ################################################### #
+name = "PPO"
+mapfile = "/maps/map_3x3.txt"
+mapsize = 3
 
-# tune_runner(trainer, mapfile, total_steps, name, mapsize)
+trainer = ppo.PPOTrainer
 
-# mapfile = "/maps/map_5x5.txt"
-# mapsize = 5
+tune_runner(trainer, mapfile, total_steps, name, mapsize)
 
-# tune_runner(trainer, mapfile, total_steps, name, mapsize)
+mapfile = "/maps/map_5x5.txt"
+mapsize = 5
 
-# mapfile = "/maps/map_8x8.txt"
-# mapsize = 8
+del(trainer)
+trainer = ppo.PPOTrainer
 
-# tune_runner(trainer, mapfile, total_steps, name, mapsize)
+tune_runner(trainer, mapfile, total_steps, name, mapsize)
 
-# ## ################################################### #
-# ## -----------------##DQN##--------------------------- #
-# ## ################################################### #
-# name = "DQN"
-# mapfile = "/maps/map_3x3.txt"
-# mapsize = 3
-# trainer = dqn.DQNTrainer
+mapfile = "/maps/map_8x8.txt"
+mapsize = 8
 
-# tune_runner(trainer, mapfile, total_steps, name, mapsize)
+del(trainer)
+trainer = ppo.PPOTrainer
 
-# mapfile = "/maps/map_5x5.txt"
-# mapsize = 5
+tune_runner(trainer, mapfile, total_steps, name, mapsize)
 
-# tune_runner(trainer, mapfile, total_steps, name, mapsize)
+## ################################################### #
+## -----------------##DQN##--------------------------- #
+## ################################################### #
+name = "DQN"
+mapfile = "/maps/map_3x3.txt"
+mapsize = 3
+trainer = dqn.DQNTrainer
 
-# mapfile = "/maps/map_8x8.txt"
-# mapsize = 8
+tune_runner(trainer, mapfile, total_steps, name, mapsize)
 
-# tune_runner(trainer, mapfile, total_steps, name, mapsize)
+del(trainer)
+trainer = dqn.DQNTrainer
 
+mapfile = "/maps/map_5x5.txt"
+mapsize = 5
 
-# ## ################################################### #
-# ## -----------------##A3C##--------------------------- #
-# ## ################################################### #
+tune_runner(trainer, mapfile, total_steps, name, mapsize)
+
+del(trainer)
+trainer = dqn.DQNTrainer
+
+mapfile = "/maps/map_8x8.txt"
+mapsize = 8
+
+tune_runner(trainer, mapfile, total_steps, name, mapsize)
+del(trainer)
+
+## ################################################### #
+## -----------------##A3C##--------------------------- #
+## ################################################### #
 
 name = "A3C"
-# mapfile = "/maps/map_3x3.txt"
-# mapsize = 3
+mapfile = "/maps/map_3x3.txt"
+mapsize = 3
 trainer = a3c.A3CTrainer
 
-# tune_runner(trainer, mapfile, total_steps, name, mapsize)
+tune_runner(trainer, mapfile, total_steps, name, mapsize)
+del(trainer)
+trainer = a3c.A3CTrainer
 
-# mapfile = "/maps/map_5x5.txt"
-# mapsize = 5
 
-# tune_runner(trainer, mapfile, total_steps, name, mapsize)
+mapfile = "/maps/map_5x5.txt"
+mapsize = 5
+
+tune_runner(trainer, mapfile, total_steps, name, mapsize)
+del(trainer)
+trainer = a3c.A3CTrainer
 
 mapfile = "/maps/map_8x8.txt"
 mapsize = 8
 tune_runner(trainer, mapfile, total_steps, name, mapsize)
+del(trainer)
 
 

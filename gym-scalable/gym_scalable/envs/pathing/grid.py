@@ -47,8 +47,10 @@ class GridMap:
 
     """
     map = []
-    colours = {'O': (255, 255, 255), 'G': (0, 255, 0), 'X': (0, 0, 255), 'S': (255, 0, 0), '-': (255, 0, 0),
-               '+': (255, 0, 0)}
+    colours = {'O': (255, 255, 255), 'G': (0, 255, 0), 'X': (0, 0, 255),
+               'S': (255, 0, 0), '-': (255, 0, 0),'+': (255, 0, 0)}
+
+    state_encoding = {' ':0,'G':2, '-':1, '|':1, '+':1, 'S': 0}
 
     # All walkable positions
     walkable = set()
@@ -127,6 +129,25 @@ class GridMap:
         self.text_rect.center = (self.screen_width - self.screen_width / 4, self.screen_width - self.screen_width / 20)
         screen.blit(self.text, self.text_rect)
 
+    def encode(self, rl_entity_pos=None, enemy_pos=None):
+        """
+        Encodes the map. Note -1s and -2s are to reshape it to
+        only take the inner grid
+        """
+        encoding = np.zeros((len(self.map)-2, len(self.map[0])-2))
+        for y in range(1,len(self.map)-1):
+            for x in range(1,len(self.map)-1):
+                encoding[y-1][x-1] = self.state_encoding[self.map[y][x]]
+        if rl_entity_pos:
+            encoding[rl_entity_pos[1]-1][rl_entity_pos[0]-1] = 3
+        if enemy_pos:
+            encoding[enemy_pos[1]-1][enemy_pos[0]-1] = 4
+        return encoding
+
+    def get_encoding_shape(self):
+        return (len(self.map) - 2, len(self.map[0]) - 2)
+
+
     def set_util_text(self, str):
         if self.screen:
             self.text = self.font.render(str, True, (0, 0, 0), None)
@@ -135,10 +156,9 @@ class GridMap:
         """
         Converts action to 1hot vector
         """
-        # print(direct)
         return self.actions_table[direct]
 
-    def add_goals(self, num_goals):
+    def add_random_goals(self, num_goals):
         """
         Adds randomly placed goals
         """
@@ -148,6 +168,12 @@ class GridMap:
             self.goals.add(pos_pos)
 
         self.static_goals = self.goals.copy()
+
+    def add_goals(self, goals_list):
+        self.static_goals = set()
+        for g in goals_list:
+            self.add_goal(g[0], g[1])
+            self.static_goals.add(g)
 
     def num_goals(self):
         return len(self.goals)
@@ -170,7 +196,7 @@ class GridMap:
     def get_astar_distance(self, pos, end):
 
         path = self.astar_path(pos[0], pos[1], end[0], end[1])
-        return len(path)
+        return len(path)-1
 
     def add_entity(self, entity):
         self.entities.append(entity)
@@ -250,6 +276,7 @@ class GridMap:
         return path[::-1]
 
     def set_render_goals(self, val):
+
         self.render_goals = val
 
     def mark_block(self, x, y):
@@ -261,6 +288,30 @@ class GridMap:
         :return:
         """
         self.marked_blocks.add((x, y))
+
+    def get_dist_list(self,pos):
+        """
+        Distance list calculated by A*.
+        Used for computing TSP/Minimum spanning tree
+        to get the benchmark. works with MLrose TSP
+        The agents position is always first in the returned
+        coords list
+        Pos: Position of the agent
+        Return : (List of coordinates, list of coords index and the distance)
+        """
+        coords_list = self.static_goals
+        coords_list = [pos] + list(coords_list)
+        # num_pos = len(coords_list)
+        # mat = [[0 for _ in range(0, num_pos)] for _ in range(num_pos)]
+        # mat = np.zeros((num_pos,num_pos))
+        dist_list = []
+
+        for i,pos in enumerate(coords_list):
+            for j in range(i+1, len(coords_list)):
+                pos2 = coords_list[j]
+                dist_list.append((i, j, self.get_astar_distance(pos, pos2)))
+
+        return (coords_list, dist_list)
 
     def is_walkable(self, x, y):
         if (x >= len(self.map[0]) or y >= len(self.map)):
@@ -274,15 +325,18 @@ class GridMap:
             return True
         return False
 
-    def get_neighbours(self, x, y, check_searched=False):
+    def get_neighbours(self, x, y):
+        """
+        Gets a positions neighbours on the grid
+        """
         out = []
-        if self.is_walkable(x + 1, y) and (x + 2, y) not in self.a_searched:
+        if self.is_walkable(x + 1, y) and (x + 2, y):
             out.append((x + 2, y))
-        if self.is_walkable(x - 1, y) and (x - 2, y) not in self.a_searched:
+        if self.is_walkable(x - 1, y) and (x - 2, y):
             out.append((x - 2, y))
-        if self.is_walkable(x, y + 1) and (x, y + 2) not in self.a_searched:
+        if self.is_walkable(x, y + 1) and (x, y + 2):
             out.append((x, y + 2))
-        if self.is_walkable(x, y - 1) and (x, y - 2) not in self.a_searched:
+        if self.is_walkable(x, y - 1) and (x, y - 2):
             out.append((x, y - 2))
         return out
 
@@ -315,6 +369,9 @@ class GridMap:
 
     def get_random_walkable(self):
         return random.choice(list(self.walkable))
+
+    def get_random_walkable_non_goal(self):
+        return random.choice(list(self.walkable.difference(self.goals)))
 
     def set_random_start(self):
         self.set_map(self.start[0], self.start[1], ' ')
