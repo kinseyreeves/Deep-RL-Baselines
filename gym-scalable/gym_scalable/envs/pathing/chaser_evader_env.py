@@ -50,7 +50,7 @@ class GridEvaderEnv(gym.Env):
     def __init__(self, config):
         self.screen = None
         # Action space initialised to [-1,0,1] for each joint
-        self.action_space = spaces.Discrete(5)
+        self.action_space = spaces.Discrete(4)
 
         # TODO should we normalize or use int vals ?
         high = np.array([1, 1, 1, 1])
@@ -69,11 +69,12 @@ class GridEvaderEnv(gym.Env):
 
         # TODO Set Defaults for config:
         self.normalize_state = config["normalize_state"] if "normalize_state" in config else True
-
         self.RL_evader = config["RL_evader"] if "RL_evader" in config else True
         self.randomize_goal = config["randomize_goal"] if "randomize_goal" in config else False
         self.randomize_start = config["randomize_start"] if "randomize_start" in config else False
         self.slowdown_step = config["slowdown_step"] if "slowdown_step" in config else False
+        self.encoded_state = config["encoded_state"] if "encoded_state" in config else False
+
 
         self.grid = GridMap(self.map_file, S_WIDTH)
         self.grid.set_render_goals(False)
@@ -147,7 +148,7 @@ class GridEvaderEnv(gym.Env):
             self.state = [self.evader.x, self.evader.y, self.chaser.x, self.chaser.y]
 
     def reset(self):
-        if (self.slowdown_step):
+        if self.slowdown_step:
             time.sleep(0.2)
 
         self.reward = 0

@@ -19,29 +19,30 @@ i = 0
 print(env.observation_space)
 print(env.action_space)
 
-input()
 while i < 100000:
     
     i += 1
-    env.render()
+    #env.render()
     start = time.time()
     action = env.action_space.sample()
     #print(action)
 
     action_size = env.action_space.n
 
-    print(env.grid.encode())
-    print(env.grid.get_encoding_shape())
+    #print(env.grid.encode())
+    #print(env.grid.get_encoding_shape())
 
     state, reward, done, _ = env.step(action)
-    print(f"{state}, {reward}, {done}")
+    #print(f"{state}, {reward}, {done}")
+    if(done):
+        print(f"finished {i}")
 
     end = time.time()
     #print("step time : " + str(end - start))
     if(done):
         #a = input()
         state = env.reset()
-    a = input()
+    #a = input()
 
 tracker.print_diff()
 

@@ -129,7 +129,7 @@ class GridMap:
         self.text_rect.center = (self.screen_width - self.screen_width / 4, self.screen_width - self.screen_width / 20)
         screen.blit(self.text, self.text_rect)
 
-    def encode(self, rl_entity_pos=None, enemy_pos=None):
+    def encode(self, entities = None):
         """
         Encodes the map. Note -1s and -2s are to reshape it to
         only take the inner grid
@@ -138,10 +138,12 @@ class GridMap:
         for y in range(1,len(self.map)-1):
             for x in range(1,len(self.map)-1):
                 encoding[y-1][x-1] = self.state_encoding[self.map[y][x]]
-        if rl_entity_pos:
-            encoding[rl_entity_pos[1]-1][rl_entity_pos[0]-1] = 3
-        if enemy_pos:
-            encoding[enemy_pos[1]-1][enemy_pos[0]-1] = 4
+
+        if entities:
+            n = 3
+            for e in entities:
+                e_pos = e.get_pos()
+                encoding[e_pos[1]-1][e_pos[0]-1] = n
         return encoding
 
     def get_encoding_shape(self):
@@ -370,8 +372,9 @@ class GridMap:
     def get_random_walkable(self):
         return random.choice(list(self.walkable))
 
-    def get_random_walkable_non_goal(self):
-        return random.choice(list(self.walkable.difference(self.goals)))
+    def get_random_walkable_non_goal(self, entities):
+        all_entities = set([e.get_pos() for e in entities])
+        return random.choice(list(self.walkable.difference(self.goals).difference(all_entities)))
 
     def set_random_start(self):
         self.set_map(self.start[0], self.start[1], ' ')
