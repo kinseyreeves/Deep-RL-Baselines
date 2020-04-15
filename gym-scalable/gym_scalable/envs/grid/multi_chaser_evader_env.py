@@ -15,29 +15,13 @@ G - goal tile
 
 '''
 
-import pygame
-import math
-import random
-import time
-import gym
-import os
-import numpy as np
-
 from gym import error, spaces, utils
-from gym.utils import seeding
 from gym_scalable.envs import utils
-from gym_scalable.envs.pathing.grid import *
-from gym_scalable.envs.pathing.grid_entity import *
 from ray.rllib.env import MultiAgentEnv
-
-S_WIDTH = 500
-
-MAX_STEPS = 200
-
-INT_ACTION = True
+from gym_scalable.envs.grid.grid_env import *
 
 
-class GridChaserVsEvaderEnv(MultiAgentEnv):
+class GridChaserVsEvaderEnv(MultiAgentEnv, GridEnv):
     metadata = {'render.modes': ['human']}
 
     '''
@@ -45,47 +29,29 @@ class GridChaserVsEvaderEnv(MultiAgentEnv):
     full state gives the
     '''
 
-    high = np.array([1, 1, 1, 1])
-    low = np.array([0, 0, 0, 0])
-
-    observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
-    action_space = spaces.Discrete(4)
-
     def __init__(self, config):
-        self.screen = None
-        # Action space initialised to [-1,0,1] for each joint
+        GridEnv.__init__(self,config)
 
-        # TODO should we normalize or use int vals ?
+        if self.encoded_state:
+            self.observation_space = spaces.Box(low=0, high=6,
+                                                shape=self.grid.get_encoding_shape(),
+                                                dtype=np.float32)
+        else:
+            high = np.array([1, 1, 1, 1])
+            low = np.array([0, 0, 0, 0])
 
-        self.centre_x = round(S_WIDTH / 2)
-        self.centre_y = round(S_WIDTH / 2)
-        self.steps = 0
+            self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
+
         self.reward = {"chaser": 0, "evader": 0}
         self.done = {"chaser": False, "evader": False}
 
-        if "mapfile" in config:
-            self.map_file = config["mapfile"]
-        else:
-            print("Error : Please enter a mapfile")
-            exit(1)
-
-        # TODO Set Defaults for config:
-        self.normalize_state = config["normalize_state"] if "normalize_state" in config else True
-
-        self.randomize_goal = config["randomize_goal"] if "randomize_goal" in config else False
-        self.randomize_start = config["randomize_start"] if "randomize_start" in config else False
-        self.slowdown_step = config["slowdown_step"] if "slowdown_step" in config else False
-
-        self.grid = GridMap(self.map_file, S_WIDTH)
         self.grid.set_render_goals(False)
 
         # Initialize Entities
 
         self.evader = Entity(self.grid.goal[0], self.grid.goal[1], self.grid)
         self.chaser = Entity(self.grid.start[0], self.grid.start[1], self.grid)
-
         self.entities = [self.evader, self.chaser]
-        self.state = self.reset()
 
     def set_reward(self):
         dist = self.grid.manhatten_dist(*self.evader.get_pos(), *self.chaser.get_pos())
@@ -122,12 +88,11 @@ class GridChaserVsEvaderEnv(MultiAgentEnv):
             self.set_done(True)
             return self.state, self.reward, self.done, {}
 
-        self.steps += 1
         self.grid.set_util_text(f"Steps : {self.steps}")
         self.set_state()
         self.set_reward()
 
-        if self.steps >= MAX_STEPS:
+        if self.steps >= self.max_steps:
             self.set_done(True)
             return self.state, self.reward, self.done, {}
 
@@ -185,7 +150,4 @@ class GridChaserVsEvaderEnv(MultiAgentEnv):
         for e in self.entities:
             e.render(self.screen, self.grid.block_width, self.grid.block_height)
 
-        # self.entity.render(self.screen, self.grid.block_width, self.grid.block_height)
-
-        # time.sleep(0.1)
         pygame.display.update()

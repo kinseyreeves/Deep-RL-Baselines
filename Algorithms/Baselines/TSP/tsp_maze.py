@@ -5,14 +5,16 @@ import numpy as np
 import time
 import os
 import mlrose
+from itertools import permutations
+
 
 print(os.getcwd())
 from pympler.tracker import SummaryTracker
 
 tracker = SummaryTracker()
 
-config = {"mapfile": "/home/krer/Documents/Deep-RL-Baselines/gym-scalable/gym_scalable/envs/pathing/mazes/map_3x3.txt",
-          "normalize_state": True, "randomize_start": True, "num_goals": 3,
+config = {"mapfile": "/home/krer/Documents/Deep-RL-Baselines/gym-scalable/gym_scalable/envs/grid/mazes/map_3x3.txt",
+          "normalize_state": True,"randomize_goals":True, "randomize_start": True, "num_goals": 3,
           "capture_reward": False}
 env = gym.make('n-maze-v0', config=config)
 
@@ -28,6 +30,8 @@ def get_dist(order, coords_list):
         next_pos = order[i + 1]
         dist += env.grid.get_astar_distance(coords_list[pos], coords_list[next_pos])
     return dist
+
+
 
 def best_dist(order, coords_list):
     """
@@ -52,9 +56,9 @@ def best_dist(order, coords_list):
         return order_for, dist_for
     return order_back, dist_back
 
-def get_tsp_dist(env):
+def get_tsp_optim_dist(coords_list, dist_list):
     #entity_pos = env.entity.get_pos()
-    coords_list, dist_list = env.grid.get_dist_list(env.entity.get_pos())
+
 
     fitness_coords = mlrose.TravellingSales(coords=coords_list)
     fitness_dists = mlrose.TravellingSales(distances=dist_list)
@@ -63,54 +67,67 @@ def get_tsp_dist(env):
 
     best_state, best_fitness = mlrose.genetic_alg(problem_fit)
 
-
     best_states, dist = best_dist(best_state, coords_list)
-    print("best_path")
 
-    print(best_states)
     dist = 0
     for i in range(0, len(best_states) - 1):
         pos = best_states[i]
         next_pos = best_states[i + 1]
-        print((coords_list[pos],coords_list[next_pos]))
+        #print((coords_list[pos],coords_list[next_pos]))
 
         d = env.grid.get_astar_distance(coords_list[pos], coords_list[next_pos])
-        print(d)
+
         dist += d
 
+    #print(f"distance: {dist}")
 
-    for s in best_states:
-        print(coords_list[s])
+    return dist
 
-    print(f"distance: {dist}")
+def calc_dist(path):
+    dist = 0
+
+    for i in range(0,len(path)-1):
+        pos = path[i]
+        next_pos = path[i+1]
+        dist+= env.grid.get_astar_distance(pos, next_pos)
+        #print(f"{pos} {next_pos} with d : {env.grid.get_astar_distance(pos, next_pos)}")
 
     return dist
 
 
+def get_tsp_greedy_dist(coords_list, dist_list):
 
+    start = coords_list[0]
+    rest = coords_list[1:]
+    combos = permutations(rest,len(rest))
+    best_dist = 100
+    best_path = []
+
+    for i in combos:
+        path = [start] + list(i)
+        #print(path)
+        d = calc_dist(path)
+
+        if d < best_dist:
+            best_dist = d
+            best_path = [start] + list(i)
+    return best_dist
+
+
+dists = []
 i = 0
-while i < 100000:
+while i < 10000:
 
     i += 1
-    env.render()
-    start = time.time()
-    action = env.action_space.sample()
-    # print(action)
-
-    action_size = env.action_space.n
-
-    print(get_tsp_dist(env))
+    #env.render()
 
 
-    state, reward, done, _ = env.step(action)
-    # print(f"{state}, {reward}, {done}")
+    coords_list, dist_list = env.grid.get_dist_list(env.entity.get_pos())
 
-    end = time.time()
-    # print("step time : " + str(end - start))
-    input()
-    if (done):
-        # a = input()
-        state = env.reset()
-    # a = input()
+    dists.append(get_tsp_greedy_dist(coords_list, dist_list))
 
-tracker.print_diff()
+    env.reset()
+
+print(dists)
+print(np.average(dists))
+

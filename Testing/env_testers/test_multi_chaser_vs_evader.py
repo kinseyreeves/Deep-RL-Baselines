@@ -4,7 +4,7 @@ import random
 import numpy as np
 import time
 import os
-from gym_scalable.envs.pathing.multi_chaser_evader_env import GridChaserVsEvaderEnv
+from gym_scalable.envs.grid.multi_chaser_evader_env import GridChaserVsEvaderEnv
 
 print(os.getcwd())
 env = GridChaserVsEvaderEnv(config= {"mapfile" : "maps/map_8x8.txt", "RL_evader":False, "full_state" : False, "normalize_state" : True})

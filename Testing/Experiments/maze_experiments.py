@@ -4,8 +4,8 @@ from ray.rllib.models import ModelCatalog
 from ray.rllib.models.tf.tf_modelv2 import TFModelV2
 from ray.rllib.models.tf.fcnet_v2 import FullyConnectedNetwork
 from gym.spaces import Discrete, Box
-from gym_scalable.envs.pathing.chaser_evader_env import GridEvaderEnv
-from gym_scalable.envs.pathing.maze_env import MazeEnv
+from gym_scalable.envs.grid.chaser_evader_env import GridEvaderEnv
+from gym_scalable.envs.grid.maze_env import MazeEnv
 
 import ray
 from ray import tune

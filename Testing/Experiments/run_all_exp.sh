@@ -11,6 +11,6 @@ python maze_experiments.py --steps 200000 --name encoded_3goals_neg01_reward_on_
 
 #python reacher_experiments.py
 
-#python chaser_experiments.py
+#python chaser_evader_experiments.py
 #python evader_experiments.py
 #python chaser_vs_evader_experiments.py

@@ -27,56 +27,32 @@ import numpy as np
 from gym import error, spaces, utils
 from gym.utils import seeding
 from gym_scalable.envs import utils
-from gym_scalable.envs.pathing.grid import *
-from gym_scalable.envs.pathing.grid_entity import *
-
-S_WIDTH = 500
-
-MAX_STEPS = 200
-
-INT_ACTION = True
-
-mapfile = "out_big.txt"
+from gym_scalable.envs.grid.grid import *
+from gym_scalable.envs.grid.grid_entity import *
+from gym_scalable.envs.grid.grid_env import *
 
 
-class GridEvaderEnv(gym.Env):
+class GridEvaderEnv(gym.Env, GridEnv):
     metadata = {'render.modes': ['human']}
 
     '''
-    Basic maze environment, get to the finish
-    full state gives the
+    Evader or chaser environment
     '''
 
     def __init__(self, config):
-        self.screen = None
-        # Action space initialised to [-1,0,1] for each joint
-        self.action_space = spaces.Discrete(4)
+        GridEnv.__init__(self, config)
 
-        # TODO should we normalize or use int vals ?
-        high = np.array([1, 1, 1, 1])
-        low = np.array([0, 0, 0, 0])
-
-        self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
-        self.steps = 0
-        self.reward = 0
-        self.done = False
-
-        if "mapfile" in config:
-            self.map_file = config["mapfile"]
+        if self.encoded_state:
+            self.observation_space = spaces.Box(low=0, high=6,
+                                                shape=self.grid.get_encoding_shape(),
+                                                dtype=np.float32)
         else:
-            print("Error : Please enter a mapfile")
-            exit(1)
+            high = np.array([1, 1, 1, 1])
+            low = np.array([0, 0, 0, 0])
+            self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
 
-        # TODO Set Defaults for config:
-        self.normalize_state = config["normalize_state"] if "normalize_state" in config else True
         self.RL_evader = config["RL_evader"] if "RL_evader" in config else True
-        self.randomize_goal = config["randomize_goal"] if "randomize_goal" in config else False
-        self.randomize_start = config["randomize_start"] if "randomize_start" in config else False
-        self.slowdown_step = config["slowdown_step"] if "slowdown_step" in config else False
-        self.encoded_state = config["encoded_state"] if "encoded_state" in config else False
 
-
-        self.grid = GridMap(self.map_file, S_WIDTH)
         self.grid.set_render_goals(False)
 
         # Initialize Entities
@@ -94,22 +70,14 @@ class GridEvaderEnv(gym.Env):
             self.ai_entity = self.evader
 
         self.entities = [self.evader, self.chaser]
-        self.state = self.reset()
 
     def step(self, action):
+        GridEnv.step(self,action)
 
-        if self.slowdown_step:
-            time.sleep(0.3)
-
-        if self.steps >= MAX_STEPS:
+        if self.steps >= self.max_steps:
             self.done = True
             return np.array(self.state), self.reward, self.done, {}
 
-        # If the action is an arr or 1-hot vector
-        if INT_ACTION:
-            z_arr = np.zeros(self.action_space.n)
-            z_arr[action] = 1
-            action = z_arr
 
         # Set reward whether RL is the evader or chaser
         if self.RL_evader:
@@ -118,13 +86,10 @@ class GridEvaderEnv(gym.Env):
             self.reward = 0
 
         self.check_done()
-        self.controlled_entity.update(action)
+        self.controlled_entity.update(self.action)
         self.check_done()
         self.ai_entity.update_auto()
 
-        self.grid.set_util_text(f"Steps : {self.steps}")
-
-        self.steps += 1
         self.set_state()
 
         return np.array(self.state), self.reward, self.done, {}
@@ -138,22 +103,20 @@ class GridEvaderEnv(gym.Env):
                 self.reward = 1
 
     def set_state(self):
-
-        if self.normalize_state:
-            self.state = [utils.normalize(self.evader.x, 0, self.grid.size),
-                          utils.normalize(self.evader.y, 0, self.grid.size),
-                          utils.normalize(self.chaser.x, 0, self.grid.size),
-                          utils.normalize(self.chaser.y, 0, self.grid.size)]
+        if self.encoded_state:
+            self.state = self.grid.encode(entities = self.entities, maze=False)
         else:
-            self.state = [self.evader.x, self.evader.y, self.chaser.x, self.chaser.y]
+            if self.normalize_state:
+                self.state = [utils.normalize(self.evader.x, 0, self.grid.size),
+                              utils.normalize(self.evader.y, 0, self.grid.size),
+                              utils.normalize(self.chaser.x, 0, self.grid.size),
+                              utils.normalize(self.chaser.y, 0, self.grid.size)]
+            else:
+                self.state = [self.evader.x, self.evader.y, self.chaser.x, self.chaser.y]
 
     def reset(self):
-        if self.slowdown_step:
-            time.sleep(0.2)
+        GridEnv.reset(self)
 
-        self.reward = 0
-        self.steps = 0
-        self.done = False
         self.set_state()
 
         if self.randomize_goal:
@@ -170,8 +133,6 @@ class GridEvaderEnv(gym.Env):
     def render(self, mode='human', close=False):
 
         if self.screen is None:
-            self.screen = pygame.display.set_mode((S_WIDTH, S_WIDTH))
-            self.screen.fill((255, 255, 255))
             pygame.init()
             pygame.display.set_caption('RL Chaser Evader Environment')
 
@@ -184,13 +145,9 @@ class GridEvaderEnv(gym.Env):
                 self.ai_entity.set_text("C")
             else:
                 self.ai_entity.set_text("E")
+        GridEnv.render(self)
 
-        self.screen.fill((255, 255, 255))
-        self.grid.render(self.screen)
         for e in self.entities:
             e.render(self.screen, self.grid.block_width, self.grid.block_height)
 
-        # self.entity.render(self.screen, self.grid.block_width, self.grid.block_height)
-
-        # time.sleep(0.1)
         pygame.display.update()

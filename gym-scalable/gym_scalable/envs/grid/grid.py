@@ -3,11 +3,15 @@ import pygame
 import numpy as np
 import collections
 
-from gym_scalable.envs.pathing.grid_entity import *
+from gym_scalable.envs.grid.grid_entity import *
 
 """
-Grid which serves as the lower level of all pathing environments
+Grid which serves as the lower level of all grid environments
 i.e. maze solver, chaser, evader etc
+Contains functionality for all environments and can be used to create
+new grid environments easily
+
+Kinsey Reeves 2020
 
 """
 
@@ -44,13 +48,13 @@ class GridMap:
     Includes setting/removing agent goals
     A* pathfinding between two points
 
-
     """
     map = []
     colours = {'O': (255, 255, 255), 'G': (0, 255, 0), 'X': (0, 0, 255),
                'S': (255, 0, 0), '-': (255, 0, 0),'+': (255, 0, 0)}
 
-    state_encoding = {' ':0,'G':2, '-':1, '|':1, '+':1, 'S': 0}
+    state_encoding_nonmaze = {' ':0,'G':2, '-':1, '|':1, '+':1, 'S': 0}
+    state_encoding_maze = {' ': 0, 'G': 2, '-': 1, '|': 1, '+': 1, 'S': 0}
 
     # All walkable positions
     walkable = set()
@@ -129,7 +133,7 @@ class GridMap:
         self.text_rect.center = (self.screen_width - self.screen_width / 4, self.screen_width - self.screen_width / 20)
         screen.blit(self.text, self.text_rect)
 
-    def encode(self, entities = None):
+    def encode(self, entities = None, maze=True):
         """
         Encodes the map. Note -1s and -2s are to reshape it to
         only take the inner grid
@@ -137,7 +141,11 @@ class GridMap:
         encoding = np.zeros((len(self.map)-2, len(self.map[0])-2))
         for y in range(1,len(self.map)-1):
             for x in range(1,len(self.map)-1):
-                encoding[y-1][x-1] = self.state_encoding[self.map[y][x]]
+                if(maze):
+                    encoding[y-1][x-1] = self.state_encoding_maze[self.map[y][x]]
+                else:
+                    encoding[y-1][x-1] = self.state_encoding_nonmaze[self.map[y][x]]
+
 
         if entities:
             n = 3

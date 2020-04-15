@@ -17,8 +17,8 @@ import time
 import gym
 from gym import spaces, utils
 from gym_scalable.envs import utils
-from gym_scalable.envs.pathing.grid import *
-from gym_scalable.envs.pathing.grid_env import *
+from gym_scalable.envs.grid.grid import *
+from gym_scalable.envs.grid.grid_env import *
 
 
 MAX_STEPS = 500
@@ -51,13 +51,15 @@ class MazeEnv(gym.Env, GridEnv):
         self.entities.append(self.entity)
 
         if self.encoded_state:
-            self.observation_space = spaces.Box(low=0, high=6,shape=self.grid.get_encoding_shape(), dtype=np.float32)
+            self.observation_space = spaces.Box(low=0, high=6,
+                                                shape=self.grid.get_encoding_shape(),
+                                                dtype=np.float32)
         else:
             high = np.array([1, 1] + [1, 1] * self.num_goals)
             low = np.array([0, 0] + [0, 0] * self.num_goals)
             self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
 
-        if not self.randomize_goals:
+        if not self.randomize_goal:
             goals = []
             for _ in range(self.num_goals - self.grid.num_goals()):
                 goal = self.grid.get_random_walkable_non_goal(set(self.entities))
@@ -119,7 +121,7 @@ class MazeEnv(gym.Env, GridEnv):
     def reset(self):
         GridEnv.reset(self)
 
-        if not self.randomize_goals:
+        if not self.randomize_goal:
             self.grid.clear_goals()
             self.grid.add_goals(self.static_goals)
         else:

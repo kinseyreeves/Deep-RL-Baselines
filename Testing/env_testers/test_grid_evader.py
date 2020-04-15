@@ -9,7 +9,7 @@ from pympler.tracker import SummaryTracker
 tracker = SummaryTracker()
 
 print(os.getcwd())
-env = gym.make('n-grid_evaders-v0', config= {"mapfile" : "maps/map_3x3.txt", "randomize_start":True, "randomize_goal" : True, "RL_evader":True, "full_state" : False, "normalize_state" : True})
+env = gym.make('n-grid_evaders-v0', config= {"mapfile" : "maps/map_3x3.txt", "encoded_state":True, "randomize_start":True, "randomize_goal" : True, "RL_evader":True, "full_state" : False, "normalize_state" : True})
 
 state = env.reset()
 i = 0
@@ -20,7 +20,7 @@ print(env.observation_space)
 while i < 100000:
     #input()
     i += 1
-    #env.render()
+    env.render()
     #action_ = np.zeros(env.action_space.n)
 
     #print(action_)
@@ -43,13 +43,15 @@ while i < 100000:
     # print(f"state :  {state}")
 
     action_ = env.action_space.sample()
+    print(action_)
     state, reward, done, _ = env.step(action_)
+    print(f"{state}  {reward}")
 
     #print(env.normalize_state)
     if(done):
         env.reset()
 
-    #input()
-    #time.sleep(0.2)
+    input()
+    time.sleep(0.2)
 
 tracker.print_diff()
