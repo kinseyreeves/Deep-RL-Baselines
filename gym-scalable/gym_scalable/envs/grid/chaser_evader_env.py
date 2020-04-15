@@ -41,6 +41,11 @@ class GridEvaderEnv(gym.Env, GridEnv):
 
     def __init__(self, config):
         GridEnv.__init__(self, config)
+        self.RL_evader = config["RL_evader"] if "RL_evader" in config else True
+        if(self.RL_evader):
+            print(f"Started RL evader environment with config:{config}")
+        else:
+            print(f"Started RL Chaser environment with config:{config}")
 
         if self.encoded_state:
             self.observation_space = spaces.Box(low=0, high=6,
@@ -51,7 +56,6 @@ class GridEvaderEnv(gym.Env, GridEnv):
             low = np.array([0, 0, 0, 0])
             self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
 
-        self.RL_evader = config["RL_evader"] if "RL_evader" in config else True
 
         self.grid.set_render_goals(False)
 
@@ -79,11 +83,10 @@ class GridEvaderEnv(gym.Env, GridEnv):
             return np.array(self.state), self.reward, self.done, {}
 
 
-        # Set reward whether RL is the evader or chaser
         if self.RL_evader:
             self.reward = 1
         else:
-            self.reward = 0
+            self.reward = -1
 
         self.check_done()
         self.controlled_entity.update(self.action)
@@ -100,7 +103,7 @@ class GridEvaderEnv(gym.Env, GridEnv):
             if self.RL_evader:
                 self.reward = -1
             else:
-                self.reward = 1
+                self.reward = 10
 
     def set_state(self):
         if self.encoded_state:

@@ -53,7 +53,7 @@ class GridMap:
     colours = {'O': (255, 255, 255), 'G': (0, 255, 0), 'X': (0, 0, 255),
                'S': (255, 0, 0), '-': (255, 0, 0),'+': (255, 0, 0)}
 
-    state_encoding_nonmaze = {' ':0,'G':2, '-':1, '|':1, '+':1, 'S': 0}
+    state_encoding_nonmaze = {' ':0,'G':0, '-':1, '|':1, '+':1, 'S': 0}
     state_encoding_maze = {' ': 0, 'G': 2, '-': 1, '|': 1, '+': 1, 'S': 0}
 
     # All walkable positions
@@ -88,7 +88,7 @@ class GridMap:
         down = np.asarray([0, 0, 0, 1, 0])
         stay = np.asarray([0, 0, 0, 0, 1])
 
-        self.actions_table = {(-2, 0): left, (2, 0): right, (0, -2): up, (0, 2): down, (0, 0): stay}
+        self.actions_table = {(-2, 0): left, (2, 0): right, (0, -2): up, (0, 2): down}
 
     def render(self, screen):
         if (not self.screen):
@@ -196,14 +196,16 @@ class GridMap:
         Gets the converted action in one hot vector format
         """
         path = self.astar_path(pos[0], pos[1], goal[0], goal[1])
-        if len(path) <= 1:
-            return self.convert_action((0, 0))
-        path = path[1]
-        action = self.convert_action((pos[0] - path[0], pos[1] - path[1]))
+
+        if(len(path)<=1):
+            action = self.actions_table[random.choice(list(self.actions_table))]
+        else:
+            path = path[1]
+            action = self.convert_action((pos[0] - path[0], pos[1] - path[1]))
 
         return action
 
-    def get_astar_distance(self, pos, end):
+    def get_astar_dist(self, pos, end):
 
         path = self.astar_path(pos[0], pos[1], end[0], end[1])
         return len(path)-1
@@ -215,8 +217,12 @@ class GridMap:
         # TODO
         pass
 
-    def manhatten_dist(self, x, y, gX, gY):
-        return (abs(x - gX) + abs(y - gY)) / 2
+    def get_manhatten_dist(self, start, end):
+        x = start[0]
+        y = start[1]
+        gX = end[0]
+        gY = end[1]
+        return (abs(x - gX)/2 + abs(y - gY)/2)
 
     def get_astar_move(self, startX, startY, endX, endY):
         """
@@ -278,8 +284,8 @@ class GridMap:
                     continue
 
                 child.g = current_node.g + 1
-                child.h = self.manhatten_dist(child.position[0], child.position[1],
-                                              end_node.position[0], end_node.position[1])
+                child.h = self.get_manhatten_dist(child.position,
+                                              end_node.position)
                 child.f = child.g + child.h
                 open_list.add(child)
 
@@ -311,15 +317,13 @@ class GridMap:
         """
         coords_list = self.static_goals
         coords_list = [pos] + list(coords_list)
-        # num_pos = len(coords_list)
-        # mat = [[0 for _ in range(0, num_pos)] for _ in range(num_pos)]
-        # mat = np.zeros((num_pos,num_pos))
+
         dist_list = []
 
         for i,pos in enumerate(coords_list):
             for j in range(i+1, len(coords_list)):
                 pos2 = coords_list[j]
-                dist_list.append((i, j, self.get_astar_distance(pos, pos2)))
+                dist_list.append((i, j, self.get_astar_dist(pos, pos2)))
 
         return (coords_list, dist_list)
 

@@ -77,6 +77,9 @@ class Entity:
         self.sub_text = self.font.render(self.render_text, True, (0, 0, 0), None)
         self.sub_text_rect = self.text.get_rect()
 
+    def set_randomness(self, r):
+        self.randomness = r
+
 
 class AStarChaser(Entity):
     """
@@ -120,9 +123,9 @@ class AStarChaser(Entity):
 
 
 class AStarEvader(Entity):
-    evader_thresh = 4
+    evader_thresh = 3
 
-    def __init__(self, x, y, grid, randomness=0.3):
+    def __init__(self, x, y, grid, randomness=0.2):
         """
 
         :param x:
@@ -135,7 +138,7 @@ class AStarEvader(Entity):
         super().__init__(x, y, grid, color=(200, 0, 100))
         self.evading = None
         self.randomness = randomness
-        # super().setText("E")
+
 
     def update_auto(self):
 
@@ -145,18 +148,28 @@ class AStarEvader(Entity):
             best_pos = (self.x, self.y)
             best_dist = 0
 
-            if self.grid.manhatten_dist(self.x, self.y, self.evading.x, self.evading.y) < self.evader_thresh:
 
-                rad_pos = self.get_radius_positions(self.x, self.y, self.evader_thresh)
-                walkable = self.grid.get_walkable_positions().intersection(rad_pos)
-                # print("Own position: ")
+            #TODO this should be smarter
 
-                for pos in walkable:
-                    chase_dist = self.grid.manhatten_dist(pos[0], pos[1], self.evading.x, self.evading.y)
+            if self.grid.get_manhatten_dist(self.get_pos(), self.evading.get_pos()) < self.evader_thresh:
 
-                    if (chase_dist > best_dist):
+                neighbours = self.grid.get_neighbours(*self.get_pos())
+                for pos in neighbours:
+                    chase_dist = self.grid.get_astar_dist(pos, self.evading.get_pos())
+
+                    if(chase_dist > best_dist):
                         best_dist = chase_dist
                         best_pos = pos
+
+                # rad_pos = self.get_radius_positions(self.x, self.y, self.evader_thresh)
+                # walkable = self.grid.get_walkable_positions().intersection(rad_pos)
+                # for pos in walkable:
+                #     chase_dist = self.grid.get_manhatten_dist((pos[0], pos[1]), (self.evading.x, self.evading.y))
+                #
+                #     if (chase_dist > best_dist):
+                #         best_dist = chase_dist
+                #         best_pos = pos
+
 
             action = self.grid.get_astar_action((self.x, self.y), best_pos)
 
@@ -172,3 +185,5 @@ class AStarEvader(Entity):
 
     def set_evading(self, entity):
         self.evading = entity
+
+

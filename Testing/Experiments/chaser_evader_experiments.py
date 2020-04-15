@@ -35,7 +35,7 @@ def tune_runner(trainer, mapfile, name, mapsize):
              config={"env": GridEvaderEnv,
                      "env_config": {"mapfile": os.getcwd() + mapfile,
                                       "RL_evader":args.rl_evader,
-                                      "encode_state":args.encode_state,
+                                      "encode_state":True,
                                       "randomize_start":args.random_start,
                                       "randomize_goal": args.random_goals}},
                      checkpoint_freq=10,

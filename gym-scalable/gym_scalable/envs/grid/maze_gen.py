@@ -1,5 +1,5 @@
 """
-Script to generaze mazes of differing complexity
+Script to generaze maps of differing complexity
 
 """
 

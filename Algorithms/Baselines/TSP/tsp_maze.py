@@ -13,7 +13,7 @@ from pympler.tracker import SummaryTracker
 
 tracker = SummaryTracker()
 
-config = {"mapfile": "/home/krer/Documents/Deep-RL-Baselines/gym-scalable/gym_scalable/envs/grid/mazes/map_3x3.txt",
+config = {"mapfile": "/home/krer/Documents/Deep-RL-Baselines/gym-scalable/gym_scalable/envs/grid/maps/map_3x3.txt",
           "normalize_state": True,"randomize_goals":True, "randomize_start": True, "num_goals": 3,
           "capture_reward": False}
 env = gym.make('n-maze-v0', config=config)
@@ -28,7 +28,7 @@ def get_dist(order, coords_list):
     for i in range(0, len(order) - 1):
         pos = order[i]
         next_pos = order[i + 1]
-        dist += env.grid.get_astar_distance(coords_list[pos], coords_list[next_pos])
+        dist += env.grid.get_astar_dist(coords_list[pos], coords_list[next_pos])
     return dist
 
 
@@ -75,7 +75,7 @@ def get_tsp_optim_dist(coords_list, dist_list):
         next_pos = best_states[i + 1]
         #print((coords_list[pos],coords_list[next_pos]))
 
-        d = env.grid.get_astar_distance(coords_list[pos], coords_list[next_pos])
+        d = env.grid.get_astar_dist(coords_list[pos], coords_list[next_pos])
 
         dist += d
 
@@ -89,7 +89,7 @@ def calc_dist(path):
     for i in range(0,len(path)-1):
         pos = path[i]
         next_pos = path[i+1]
-        dist+= env.grid.get_astar_distance(pos, next_pos)
+        dist+= env.grid.get_astar_dist(pos, next_pos)
         #print(f"{pos} {next_pos} with d : {env.grid.get_astar_distance(pos, next_pos)}")
 
     return dist
