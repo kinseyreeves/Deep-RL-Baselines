@@ -82,7 +82,6 @@ class GridEvaderEnv(gym.Env, GridEnv):
             self.done = True
             return np.array(self.state), self.reward, self.done, {}
 
-
         if self.RL_evader:
             self.reward = 1
         else:

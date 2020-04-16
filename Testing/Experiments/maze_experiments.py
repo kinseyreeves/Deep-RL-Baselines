@@ -26,7 +26,8 @@ tracker = SummaryTracker()
 
 
 parser = argparse.ArgumentParser(description='Maze experiment runner')
-parser.add_argument('--steps', type=int, default = 5000)
+parser.add_argument('--steps', type=int, default = 200)
+parser.add_argument('--rl', type=str, default = "PPO")
 parser.add_argument('--1reward', dest='reward', action='store_true')
 parser.add_argument('--name', type = str, default = 'test_run')
 parser.add_argument('--num_goals', type = int, default = 3)
@@ -39,9 +40,15 @@ logdir = "~/ray_results/maze"
 
 a = os.getcwd() + "/maps/map_3x3.txt"
 
+map_sizes = [3,5,8]
 
 def tune_runner(trainer, mapfile, name, mapsize):
+    global map_sizes
     global args
+
+    if mapsize not in map_sizes:
+        return
+
     if(args.num_goals):
         goals = args.num_goals
     else:
@@ -61,12 +68,25 @@ def tune_runner(trainer, mapfile, name, mapsize):
 
 
 # ################################################### #
-# # -----------------##PPO##--------------------------- #
-# # ################################################### #
-name = "PPO"
+# # -----------------##Training##-------------------- #
+# # ################################################# #
+def get_trainer(args):
+    trainer = None
+    if(args.rl == 'DQN'):
+        trainer = dqn.DQNTrainer
+    elif(args.rl == 'A3C'):
+        trainer = a3c.A3CTrainer
+    elif(args.rl == 'PPO'):
+        trainer = ppo.PPOTrainer
+    else:
+        print("please enter valid trainer")
+        exit(0)
+    return trainer
+
+name = args.rl
 mapfile = "/maps/map_3x3.txt"
 mapsize = 3
-trainer = ppo.PPOTrainer
+trainer = get_trainer(args)
 goals = 3
 tracker.print_diff()
 tune_runner(trainer, mapfile, name, mapsize)
@@ -81,49 +101,4 @@ mapsize = 8
 tracker.print_diff()
 tune_runner(trainer, mapfile, name, mapsize)
 del(trainer)
-tracker.print_diff()
-# ################################################### #
-# -----------------##DQN##--------------------------- #
-# ################################################### #
-name = "DQN"
-mapfile = "/maps/map_3x3.txt"
-mapsize = 3
-trainer = dqn.DQNTrainer
-
-tune_runner(trainer, mapfile, name, mapsize)
-
-mapfile = "/maps/map_5x5.txt"
-mapsize = 5
-tracker.print_diff()
-tune_runner(trainer, mapfile, name, mapsize)
-
-mapfile = "/maps/map_8x8.txt"
-mapsize = 8
-
-tune_runner(trainer, mapfile, name, mapsize)
-del(trainer)
-tracker.print_diff()
-################################################### #
-###-----------------##A3C##------------------------ #
-################################################### #
-
-name = "A3C"
-mapfile = "/maps/map_3x3.txt"
-mapsize = 3
-trainer = a3c.A3CTrainer
-
-tune_runner(trainer, mapfile, name, mapsize)
-
-mapfile = "/maps/map_5x5.txt"
-mapsize = 5
-
-tune_runner(trainer, mapfile, name, mapsize)
-
-mapfile = "/maps/map_8x8.txt"
-mapsize = 8
-
-tune_runner(trainer, mapfile, name, mapsize)
-
-del(trainer)
-
 tracker.print_diff()

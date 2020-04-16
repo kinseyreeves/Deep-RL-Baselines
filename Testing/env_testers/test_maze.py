@@ -9,7 +9,7 @@ from pympler.tracker import SummaryTracker
 tracker = SummaryTracker()
 
 
-config = { "mapfile" : "maps/map_8x8.txt", "encoded_state" : True, "fixed_goals" : True, "randomize_start": False, "num_goals":8, "capture_reward":True}
+config = { "mapfile" : "maps/map_5x5.txt", "encoded_state" : True, "fixed_goals" : True, "randomize_start": False, "num_goals":8, "capture_reward":True}
 env = gym.make('n-maze-v0',config = config)
 
 state = env.reset()

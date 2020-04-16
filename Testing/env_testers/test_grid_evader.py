@@ -9,7 +9,7 @@ from pympler.tracker import SummaryTracker
 tracker = SummaryTracker()
 
 print(os.getcwd())
-env = gym.make('n-grid_evaders-v0', config= {"mapfile" : "maps/map_3x3.txt", "encoded_state":True, "randomize_start":True, "randomize_goal" : True, "RL_evader":True, "full_state" : False, "normalize_state" : True})
+env = gym.make('n-grid_evaders-v0', config= {"mapfile" : "maps/map_5x5.txt", "encoded_state":True, "randomize_start":True, "randomize_goal" : True, "RL_evader":True, "full_state" : False, "normalize_state" : True})
 
 state = env.reset()
 i = 0
