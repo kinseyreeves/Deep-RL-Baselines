@@ -21,7 +21,6 @@ from gym_scalable.envs.grid.grid import *
 from gym_scalable.envs.grid.grid_env import *
 
 
-MAX_STEPS = 500
 
 INT_ACTION = True
 
@@ -91,7 +90,7 @@ class MazeEnv(gym.Env, GridEnv):
             if self.grid.num_goals() == 0:
                 self.done = True
 
-        if self.steps >= MAX_STEPS:
+        if self.steps >= self.max_steps:
             self.done = True
             return self.state, self.reward, self.done, {}
 

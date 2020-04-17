@@ -13,7 +13,7 @@ from pympler.tracker import SummaryTracker
 
 tracker = SummaryTracker()
 
-config = {"mapfile": "/home/krer/Documents/Deep-RL-Baselines/gym-scalable/gym_scalable/envs/grid/maps/map_5x5.txt",
+config = {"mapfile": "/home/krer/Documents/Deep-RL-Baselines/gym-scalable/gym_scalable/envs/grid/maps/map_8x8.txt",
           "normalize_state": True,"randomize_goals":True, "randomize_start": True, "num_goals": 3,
           "capture_reward": False}
 env = gym.make('n-maze-v0', config=config)
