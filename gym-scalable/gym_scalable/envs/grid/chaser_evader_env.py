@@ -103,7 +103,6 @@ class GridEvaderEnv(gym.Env, GridEnv):
                 self.reward = -1
             else:
                 self.reward = 1
-            print(self.steps)
 
     def set_state(self):
         if self.encoded_state:

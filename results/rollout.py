@@ -89,14 +89,14 @@ config_evader3 = {"mapfile": map_loader.get_3x3_map(),"RL_evader": True,"full_st
 config_chaser3 = {"mapfile": map_loader.get_3x3_map(),"RL_evader": False,"slowdown_step": True,"full_state": False, "normalize_state": True,"randomize_start":True, "randomize_goal": True}
 
 #5x5 evader/chaser configs
-config_evader5 = {"mapfile": map_loader.get_5x5_map(),"RL_evader": True, "slowdown_step": True, "full_state": False, "normalize_state": True,"randomize_start":True, "randomize_goal": True}
+config_evader5 = {"mapfile": map_loader.get_5x5_map(),"RL_evader": True, "slowdown_step": True, "full_state": False, "normalize_state": True,"randomize_start":True, "randomize_goals": True}
 
 
 config_chaser5 =  {"mapfile": map_loader.get_5x5_map(),
                                       "RL_evader":False,
                                       "encoded_state":True,
                                       "randomize_start":True,
-                                      "randomize_goal": True}
+                                      "randomize_goals": True}
 
 #Chaser vs evader envs
 config_evader_vs_chaser5 ={"mapfile": direc + map_loader.get_5x5_map(),"RL_evader": True, "slowdown_step": True, "full_state": False, "normalize_state": True,"randomize_start":True, "randomize_goal": True}
