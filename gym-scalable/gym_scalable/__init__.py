@@ -12,7 +12,7 @@ register(
 )
 
 register(
-    id='n-pathing-v0',
+    id='n-grid-v0',
     entry_point='gym_scalable.envs:PathingEnv',
 )
 

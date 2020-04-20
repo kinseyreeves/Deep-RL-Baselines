@@ -3,11 +3,15 @@ import pygame
 import numpy as np
 import collections
 
-from gym_scalable.envs.pathing.grid_entity import *
+from gym_scalable.envs.grid.grid_entity import *
 
 """
-Grid which serves as the lower level of all pathing environments
+Grid which serves as the lower level of all grid environments
 i.e. maze solver, chaser, evader etc
+Contains functionality for all environments and can be used to create
+new grid environments easily
+
+Kinsey Reeves 2020
 
 """
 
@@ -44,13 +48,13 @@ class GridMap:
     Includes setting/removing agent goals
     A* pathfinding between two points
 
-
     """
     map = []
     colours = {'O': (255, 255, 255), 'G': (0, 255, 0), 'X': (0, 0, 255),
                'S': (255, 0, 0), '-': (255, 0, 0),'+': (255, 0, 0)}
 
-    state_encoding = {' ':0,'G':2, '-':1, '|':1, '+':1, 'S': 0}
+    state_encoding_nonmaze = {' ':0,'G':0, '-':1, '|':1, '+':1, 'S': 0}
+    state_encoding_maze = {' ': 0, 'G': 2, '-': 1, '|': 1, '+': 1, 'S': 0}
 
     # All walkable positions
     walkable = set()
@@ -84,7 +88,7 @@ class GridMap:
         down = np.asarray([0, 0, 0, 1, 0])
         stay = np.asarray([0, 0, 0, 0, 1])
 
-        self.actions_table = {(-2, 0): left, (2, 0): right, (0, -2): up, (0, 2): down, (0, 0): stay}
+        self.actions_table = {(-2, 0): left, (2, 0): right, (0, -2): up, (0, 2): down}
 
     def render(self, screen):
         if (not self.screen):
@@ -129,7 +133,7 @@ class GridMap:
         self.text_rect.center = (self.screen_width - self.screen_width / 4, self.screen_width - self.screen_width / 20)
         screen.blit(self.text, self.text_rect)
 
-    def encode(self, rl_entity_pos=None, enemy_pos=None):
+    def encode(self, entities = None, maze=True):
         """
         Encodes the map. Note -1s and -2s are to reshape it to
         only take the inner grid
@@ -137,11 +141,17 @@ class GridMap:
         encoding = np.zeros((len(self.map)-2, len(self.map[0])-2))
         for y in range(1,len(self.map)-1):
             for x in range(1,len(self.map)-1):
-                encoding[y-1][x-1] = self.state_encoding[self.map[y][x]]
-        if rl_entity_pos:
-            encoding[rl_entity_pos[1]-1][rl_entity_pos[0]-1] = 3
-        if enemy_pos:
-            encoding[enemy_pos[1]-1][enemy_pos[0]-1] = 4
+                if(maze):
+                    encoding[y-1][x-1] = self.state_encoding_maze[self.map[y][x]]
+                else:
+                    encoding[y-1][x-1] = self.state_encoding_nonmaze[self.map[y][x]]
+
+
+        if entities:
+            n = 3
+            for e in entities:
+                e_pos = e.get_pos()
+                encoding[e_pos[1]-1][e_pos[0]-1] = n
         return encoding
 
     def get_encoding_shape(self):
@@ -186,14 +196,16 @@ class GridMap:
         Gets the converted action in one hot vector format
         """
         path = self.astar_path(pos[0], pos[1], goal[0], goal[1])
-        if len(path) <= 1:
-            return self.convert_action((0, 0))
-        path = path[1]
-        action = self.convert_action((pos[0] - path[0], pos[1] - path[1]))
+
+        if(len(path)<=1):
+            action = self.actions_table[random.choice(list(self.actions_table))]
+        else:
+            path = path[1]
+            action = self.convert_action((pos[0] - path[0], pos[1] - path[1]))
 
         return action
 
-    def get_astar_distance(self, pos, end):
+    def get_astar_dist(self, pos, end):
 
         path = self.astar_path(pos[0], pos[1], end[0], end[1])
         return len(path)-1
@@ -205,8 +217,12 @@ class GridMap:
         # TODO
         pass
 
-    def manhatten_dist(self, x, y, gX, gY):
-        return (abs(x - gX) + abs(y - gY)) / 2
+    def get_manhatten_dist(self, start, end):
+        x = start[0]
+        y = start[1]
+        gX = end[0]
+        gY = end[1]
+        return (abs(x - gX)/2 + abs(y - gY)/2)
 
     def get_astar_move(self, startX, startY, endX, endY):
         """
@@ -268,8 +284,8 @@ class GridMap:
                     continue
 
                 child.g = current_node.g + 1
-                child.h = self.manhatten_dist(child.position[0], child.position[1],
-                                              end_node.position[0], end_node.position[1])
+                child.h = self.get_manhatten_dist(child.position,
+                                              end_node.position)
                 child.f = child.g + child.h
                 open_list.add(child)
 
@@ -301,15 +317,13 @@ class GridMap:
         """
         coords_list = self.static_goals
         coords_list = [pos] + list(coords_list)
-        # num_pos = len(coords_list)
-        # mat = [[0 for _ in range(0, num_pos)] for _ in range(num_pos)]
-        # mat = np.zeros((num_pos,num_pos))
+
         dist_list = []
 
         for i,pos in enumerate(coords_list):
             for j in range(i+1, len(coords_list)):
                 pos2 = coords_list[j]
-                dist_list.append((i, j, self.get_astar_distance(pos, pos2)))
+                dist_list.append((i, j, self.get_astar_dist(pos, pos2)))
 
         return (coords_list, dist_list)
 
@@ -370,8 +384,9 @@ class GridMap:
     def get_random_walkable(self):
         return random.choice(list(self.walkable))
 
-    def get_random_walkable_non_goal(self):
-        return random.choice(list(self.walkable.difference(self.goals)))
+    def get_random_walkable_non_goal(self, entities):
+        all_entities = set([e.get_pos() for e in entities])
+        return random.choice(list(self.walkable.difference(self.goals).difference(all_entities)))
 
     def set_random_start(self):
         self.set_map(self.start[0], self.start[1], ' ')

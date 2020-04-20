@@ -218,7 +218,7 @@ class NJointArm(gym.Env):
         (therefore positive)
         :return: reward
         """
-        #dist_pen = -self.get_dist() / (S_WIDTH / 2)
+
         dist_pen = -self.get_dist() / self.normalize_len
 
 
@@ -226,7 +226,7 @@ class NJointArm(gym.Env):
         h = ((dist_pen * 2 + alpha * 2) ** (1 / 2) + alpha)
 
         r = dist_pen + action_pen
-        # r = (h + action_pen)
+
 
         # r = math.sqrt(dist**2 + alpha**2) + alpha + action_pen
         # print(f"dist: {dist}, action pen {action_pen}, reward {r}")

@@ -17,93 +17,66 @@ import time
 import gym
 from gym import spaces, utils
 from gym_scalable.envs import utils
-from gym_scalable.envs.pathing.grid import *
+from gym_scalable.envs.grid.grid import *
+from gym_scalable.envs.grid.grid_env import *
 
-S_WIDTH = 500
 
-MAX_STEPS = 500
 
 INT_ACTION = True
 
 
-class MazeEnv(gym.Env):
+class MazeEnv(gym.Env, GridEnv):
     metadata = {'render.modes': ['human']}
 
     '''
     Basic maze environment, get to the finish
     full state gives the
     '''
-    total_eps = 0
+    name = "Maze Env"
 
     def __init__(self, config):
+        GridEnv.__init__(self,config)
 
-        print(f"Starting MazeEnv with config {config}")
-
-        self.screen = None
         # Action space initialised to [-1,0,1] for each joint
 
         # Checking config otherwise use defaults
-        if "mapfile" in config:
-            self.map_file = config["mapfile"]
-        else:
-            print("Error : Please enter a mapfile")
-            exit(1)
 
-        self.randomize_start = config["randomize_start"] if "randomize_start" in config else False
-        self.normalize_state = config["normalize_state"] if "normalize_state" in config else False
         self.num_goals = config["num_goals"] if "num_goals" in config else False
         # Sets the reward to 1 when a goal is found, otherwise uses -ve goals remaining
-        self.capture_reward = config["capture_reward"] if "capture_reward" in config else False
-        self.randomize_goals = config["randomize_goals"] if "randomize_goals" in config else False
-        self.encoded_state = config["encoded_state"] if "encoded_state" in config else False
-
-        self.grid = GridMap(self.map_file, S_WIDTH)
 
         # Observation space boundaries
 
-        self.action_space = spaces.Discrete(4)
+        self.entity = Entity(self.grid.start[0], self.grid.start[1], self.grid)
+        self.entities.append(self.entity)
 
         if self.encoded_state:
-            self.observation_space = spaces.Box(low=0, high=6,shape=self.grid.get_encoding_shape(), dtype=np.float32)
+            self.observation_space = spaces.Box(low=0, high=6,
+                                                shape=self.grid.get_encoding_shape(),
+                                                dtype=np.float32)
         else:
             high = np.array([1, 1] + [1, 1] * self.num_goals)
             low = np.array([0, 0] + [0, 0] * self.num_goals)
             self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
 
-        self.centre_x = round(S_WIDTH / 2)
-        self.centre_y = round(S_WIDTH / 2)
-        self.steps = 0
-        self.reward = 0
-        self.done = False
-
-
-        if not self.randomize_goals:
-            goals = [self.grid.get_random_walkable_non_goal() for _ in range(self.num_goals - self.grid.num_goals())]
-            goals += [self.grid.goal]
+        if not self.randomize_goal:
+            goals = []
+            for _ in range(self.num_goals - self.grid.num_goals()):
+                goal = self.grid.get_random_walkable_non_goal(set(self.entities))
+                self.grid.add_goal(goal[0], goal[1])
+                goals.append(goal)
             self.static_goals = goals
-            for g in goals:
-                self.grid.add_goal(g[0], g[1])
+            self.static_goals.append(self.grid.goal)
         else:
             self.grid.add_random_goals(self.num_goals - self.grid.num_goals())
 
         self.grid.set_render_goals(True)
 
-        self.entity = Entity(self.grid.start[0], self.grid.start[1], self.grid)
-        self.state = self.reset()
-
     def step(self, action):
-
-        if INT_ACTION:
-            z_arr = np.zeros(self.action_space.n)
-            z_arr[action] = 1
-            action = z_arr
-
-        self.entity.update(action)
-
-        self.steps += 1
+        GridEnv.step(self, action)
 
         self.reward = 0 if self.capture_reward else -.1
 
+        self.entity.update(self.action)
         self.set_state()
 
         if self.grid.is_goal(self.entity.x, self.entity.y):
@@ -112,18 +85,16 @@ class MazeEnv(gym.Env):
             if self.capture_reward:
                 self.reward = 1
             else:
-                self.reward=1
+                self.reward = 1
 
             if self.grid.num_goals() == 0:
-                #self.reward = (MAX_STEPS-self.steps)*.05
                 self.done = True
 
-        if self.steps >= MAX_STEPS:
+        if self.steps >= self.max_steps:
             self.done = True
             return self.state, self.reward, self.done, {}
 
         return self.state, self.reward, self.done, {}
-
 
 
     def set_state(self):
@@ -131,7 +102,7 @@ class MazeEnv(gym.Env):
         Sets the state for maze.
         """
         if self.encoded_state:
-            self.state = self.grid.encode(rl_entity_pos=self.entity.get_pos())
+            self.state = self.grid.encode(self.entities)
         else:
             if self.normalize_state:
                 self.state = [utils.normalize(self.entity.x, 0, self.grid.size),
@@ -147,16 +118,9 @@ class MazeEnv(gym.Env):
             self.state = np.asarray(self.state)
 
     def reset(self):
+        GridEnv.reset(self)
 
-        self.reward = 0
-        self.steps = 0
-        self.done = False
-        self.total_eps+=1
-        # if(self.total_eps%10==0):
-        #     print(self.total_eps)
-
-
-        if not self.randomize_goals:
+        if not self.randomize_goal:
             self.grid.clear_goals()
             self.grid.add_goals(self.static_goals)
         else:
@@ -174,16 +138,14 @@ class MazeEnv(gym.Env):
         return self.state
 
     def render(self, mode='human', close=False):
-
-        # If screen isnt initiated, initiate it, fill it white
         if self.screen is None:
-            self.screen = pygame.display.set_mode((S_WIDTH, S_WIDTH))
-            self.screen.fill((255, 255, 255))
             pygame.init()
-        self.screen.fill((255, 255, 255))
-        self.entity.render_setup(self.screen)
-        self.grid.render(self.screen)
-        self.entity.render(self.screen, self.grid.block_width, self.grid.block_height)
+            self.entity.render_setup(self.screen)
+        GridEnv.render(self)
 
-        time.sleep(0.1)
+        self.entity.render(self.screen, self.grid.block_width, self.grid.block_height)
         pygame.display.update()
+
+
+
+
