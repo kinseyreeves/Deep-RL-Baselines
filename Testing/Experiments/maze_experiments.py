@@ -19,7 +19,7 @@ print(os.getcwd())
 from ray import tune
 from ray.tune.registry import register_env
 import argparse
-
+from gym_scalable.envs.grid.maps import map_loader
 from pympler.tracker import SummaryTracker
 
 tracker = SummaryTracker()
@@ -88,17 +88,19 @@ mapfile = "/maps/map_3x3.txt"
 mapsize = 3
 trainer = get_trainer(args)
 goals = 3
-tracker.print_diff()
+
+mapfile = map_loader.get_3x3_map()
+mapsize = 3
+
 tune_runner(trainer, mapfile, name, mapsize)
 
-mapfile = "/maps/map_5x5.txt"
+mapfile = map_loader.get_5x5_map()
 mapsize = 5
-tracker.print_diff()
+
 tune_runner(trainer, mapfile, name, mapsize)
 
-mapfile = "/maps/map_8x8.txt"
+mapfile = map_loader.get_8x8_map()
 mapsize = 8
-tracker.print_diff()
+
 tune_runner(trainer, mapfile, name, mapsize)
-del(trainer)
-tracker.print_diff()
+

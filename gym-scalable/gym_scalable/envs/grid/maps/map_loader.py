@@ -20,5 +20,5 @@ def get_8x8_map():
     return dir_path + "/map_8x8.txt"
 
 def get_empty_3x3_map():
-    return dir_path + "/map_empty3x3.txt"
+    return dir_path + "/map_3x3_empty.txt"
 

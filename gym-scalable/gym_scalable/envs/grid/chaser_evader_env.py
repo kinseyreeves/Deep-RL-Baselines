@@ -85,7 +85,7 @@ class GridEvaderEnv(gym.Env, GridEnv):
         if self.RL_evader:
             self.reward = 1
         else:
-            self.reward = -1
+            self.reward = -.1
 
         self.check_done()
         self.controlled_entity.update(self.action)
@@ -102,7 +102,7 @@ class GridEvaderEnv(gym.Env, GridEnv):
             if self.RL_evader:
                 self.reward = -1
             else:
-                self.reward = 10
+                self.reward = 1
 
     def set_state(self):
         if self.encoded_state:

@@ -32,7 +32,7 @@ while total<10000:
 
     #input()
     i += 1
-    #env.render()
+    env.render()
 
     action_size = env.action_space.n
 
@@ -41,14 +41,14 @@ while total<10000:
     action_ = np.nonzero(action_)[0][0]
     steps+=1
     state, reward, done, _ = env.step(action_)
-
+    time.sleep(0.1)
     if done:
         step_totals.append(steps)
         steps = 0
         total+=1
         env.reset()
 
-#print(step_totals)
+print(step_totals)
 output = np.average(step_totals)
 print(f"On average, the A* chaser takes {output} steps to reach the evader")
 

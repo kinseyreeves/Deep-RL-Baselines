@@ -1,5 +1,6 @@
 import gym
 import gym_scalable
+from gym_scalable.envs.grid.maps import map_loader
 import random
 import numpy as np
 import time
@@ -9,7 +10,7 @@ from pympler.tracker import SummaryTracker
 tracker = SummaryTracker()
 
 print(os.getcwd())
-env = gym.make('n-grid_evaders-v0', config= {"mapfile" : "maps/map_5x5.txt", "encoded_state":True, "randomize_start":True, "randomize_goal" : True, "RL_evader":True, "full_state" : False, "normalize_state" : True})
+env = gym.make('n-grid_evaders-v0', config= {"mapfile" : map_loader.get_8x8_map(), "encoded_state":True, "randomize_start":True, "randomize_goal" : True, "RL_evader":False})
 
 state = env.reset()
 i = 0

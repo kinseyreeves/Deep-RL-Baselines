@@ -3,13 +3,14 @@ import gym_scalable
 import random
 import numpy as np
 import time
+from gym_scalable.envs.grid.maps import map_loader
 
 from pympler.tracker import SummaryTracker
 
 tracker = SummaryTracker()
 
 
-config = { "mapfile" : "maps/map_8x8.txt", "encoded_state" : True, "fixed_goals" : True, "randomize_start": False, "num_goals":8, "capture_reward":True}
+config = { "mapfile" : map_loader.get_5x5_map(), "encoded_state" : True, "fixed_goals" : False, "randomize_start": False, "num_goals":3, "capture_reward":True}
 env = gym.make('n-maze-v0',config = config)
 
 state = env.reset()

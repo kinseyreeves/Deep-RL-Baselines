@@ -12,3 +12,10 @@ results/evader_results
 results/maze_results
 results/graphs
 results/chaser_vs_evader_results
+/results/500k_encoded_states_tests_neg_01_rsrg/
+/results/encoded_chaser_1r_rsrg_1ms/
+/results/encoded_evader_1r_rsrg_1ms/
+/results/encoded_maze_1reward_fsfg/
+/results/encoded_maze_1reward_rsrg/
+/results/encoded_maze_neg01_reward_rsrg/
+/results/.ipynb_checkpoints/

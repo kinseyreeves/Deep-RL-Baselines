@@ -87,7 +87,7 @@ class AStarChaser(Entity):
     Note: the evader must be initialized first
     """
 
-    def __init__(self, x, y, grid, randomness=0.1, env_controlled=False):
+    def __init__(self, x, y, grid, randomness=0.2, env_controlled=False):
         """
         :param x:
         :param y:

@@ -13,6 +13,7 @@ print(os.getcwd())
 from ray import tune
 from ray.tune.registry import register_env
 from gym_scalable.envs.grid.chaser_evader_env import GridEvaderEnv
+from gym_scalable.envs.grid.maps import map_loader
 import argparse
 
 parser = argparse.ArgumentParser(description='ChaserEvaser experiment runner')
@@ -39,7 +40,7 @@ def tune_runner(trainer, mapfile, name, mapsize):
 
     tune.run(trainer,
              config={"env": GridEvaderEnv,
-                     "env_config": {"mapfile": os.getcwd() + mapfile,
+                     "env_config": {"mapfile": mapfile,
                                       "RL_evader":args.rl_evader,
                                       "encoded_state":True,
                                       "randomize_start":args.random_start,
@@ -71,17 +72,17 @@ trainer = get_trainer(args)
 name = args.rl
 
 
-mapfile = "/maps/map_3x3.txt"
+mapfile = map_loader.get_3x3_map()
 mapsize = 3
 
 tune_runner(trainer, mapfile, name, mapsize)
 
-mapfile = "/maps/map_5x5.txt"
+mapfile = map_loader.get_5x5_map()
 mapsize = 5
 
 tune_runner(trainer, mapfile, name, mapsize)
 
-mapfile = "/maps/map_8x8.txt"
+mapfile = map_loader.get_8x8_map()
 mapsize = 8
 
 tune_runner(trainer, mapfile, name, mapsize)
