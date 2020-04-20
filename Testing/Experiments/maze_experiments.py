@@ -61,7 +61,7 @@ def tune_runner(trainer, mapfile, name, mapsize):
                                     "encoded_state": True,
                                     "randomize_start":args.random_start,
                                     "num_goals": goals,
-                                    "randomize_goals": args.random_goals,
+                                    "randomize_goal": args.random_goals,
                                     "capture_reward":args.reward}},
              checkpoint_freq=10, checkpoint_at_end=True, stop={"timesteps_total": args.steps},
              name=f"{args.name}_maze-{mapsize}x{mapsize}-{name}")
