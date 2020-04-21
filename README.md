@@ -63,24 +63,23 @@ config = {
 
 ```
 
-###Maze solver
+### Maze solver
     - Action space : discrete (scalable)
     - State space : discrete (grid coordinates of evader and chaser)
  
 Goal is to pick up the rewards in as few steps as possible. Baseline is based on A* and then a brute force TSP implementation. 
 
-####Config
+#### Config
 `
 #number of goals in the maze to pickup
 "num_goals" : 1
 `
 
-
-###Grid-Evader
+### Grid-Evader
  
-Goal is to evasde
+Goal is to evade the chaser as long as possible
     
-###Grid-Chaser
+### Grid-Chaser
     - Action space : discrete
     - State space : discrete (grid coordinates of evader and chaser)
 
