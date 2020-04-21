@@ -51,6 +51,10 @@ class GridEvaderEnv(gym.Env, GridEnv):
             self.observation_space = spaces.Box(low=0, high=6,
                                                 shape=self.grid.get_encoding_shape(),
                                                 dtype=np.float32)
+        elif self.nw_encoded_state:
+            self.observation_space = spaces.Box(low=0, high=6,
+                                                shape=self.grid.get_encoding_nowalls_shape(),
+                                                dtype=np.float32)
         else:
             high = np.array([1, 1, 1, 1])
             low = np.array([0, 0, 0, 0])
@@ -106,7 +110,9 @@ class GridEvaderEnv(gym.Env, GridEnv):
 
     def set_state(self):
         if self.encoded_state:
-            self.state = self.grid.encode(entities = self.entities, maze=False)
+            self.state = self.grid.encode(entities=self.entities)
+        elif self.nw_encoded_state:
+            self.state = self.grid.encode_no_walls(entities=self.entities)
         else:
             if self.normalize_state:
                 self.state = [utils.normalize(self.evader.x, 0, self.grid.size),

@@ -24,6 +24,7 @@ i = 0
 while i<200000:
     i += 1
     #env.render()
+    input()
     action_size = env.action_space.shape[0]
     #print(action_size)
     #exit(0)
@@ -41,11 +42,12 @@ while i<200000:
     # print(i)
     # print("reward : ", reward)
     # print(state)
+    env.render()
     if (done):
         #print("done")
         #a = input()
         env.reset()
 
-        #env.render()
+        env.render()
 
 tracker.print_diff()

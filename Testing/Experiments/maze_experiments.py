@@ -57,7 +57,7 @@ def tune_runner(trainer, mapfile, name, mapsize):
              config={"env": MazeEnv,
                      "num_workers":0,
                      "num_envs_per_worker": 1,
-                     "env_config": {"mapfile": os.getcwd() + mapfile,
+                     "env_config": {"mapfile": mapfile,
                                     "encoded_state": True,
                                     "randomize_start":args.random_start,
                                     "num_goals": goals,

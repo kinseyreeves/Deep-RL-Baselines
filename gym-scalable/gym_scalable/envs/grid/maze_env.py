@@ -9,18 +9,14 @@ X - boundary
 O - walkable tile
 S - start tile
 G - goal tile
-
 '''
 
 import time
-
 import gym
 from gym import spaces, utils
 from gym_scalable.envs import utils
 from gym_scalable.envs.grid.grid import *
 from gym_scalable.envs.grid.grid_env import *
-
-
 
 INT_ACTION = True
 
@@ -41,7 +37,7 @@ class MazeEnv(gym.Env, GridEnv):
 
         # Checking config otherwise use defaults
 
-        self.num_goals = config["num_goals"] if "num_goals" in config else False
+        self.num_goals = config["num_goals"] if "num_goals" in config else 1
         # Sets the reward to 1 when a goal is found, otherwise uses -ve goals remaining
 
         # Observation space boundaries
@@ -52,6 +48,10 @@ class MazeEnv(gym.Env, GridEnv):
         if self.encoded_state:
             self.observation_space = spaces.Box(low=0, high=6,
                                                 shape=self.grid.get_encoding_shape(),
+                                                dtype=np.float32)
+        elif self.nw_encoded_state:
+            self.observation_space = spaces.Box(low=0, high=6,
+                                                shape=self.grid.get_encoding_nowalls_shape(),
                                                 dtype=np.float32)
         else:
             high = np.array([1, 1] + [1, 1] * self.num_goals)
@@ -102,7 +102,9 @@ class MazeEnv(gym.Env, GridEnv):
         Sets the state for maze.
         """
         if self.encoded_state:
-            self.state = self.grid.encode(self.entities)
+            self.state = self.grid.encode(entities = self.entities)
+        elif self.nw_encoded_state:
+            self.state = self.grid.encode_no_walls(entities=self.entities)
         else:
             if self.normalize_state:
                 self.state = [utils.normalize(self.entity.x, 0, self.grid.size),
