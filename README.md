@@ -12,12 +12,24 @@ kreeves@student.unimelb.edu.au
 - Pygame
 - RLLib if testing environments
 
+**Installation** 
 
-**Environments:**
+Checkout this repositiory.
+In the top level of `gym-scalable` folder. 
+Run `pip install -e .` to install the gym.
+
+An example environment instatiation would be :
+```Python
+env = gym.make('n-joints-v0',  config = {"extra_joints": 1, "extra_state": False})
+```
+The available environments : 
+*A set of environments needs to be registered, todo.
+
+# Environment configurations
 
 Configurations are passed to the environments as `config` dictionaries. This is the format for RLLIB environments.
-
-## N-jointed arm
+Each environment can be started using the gym.
+### N-jointed arm
 - Environment consists of an arm of N-joints which must configure itself    to touch an objective
 
     - Action space : discrete (scalable) one hot, or continuous of number of free joints
@@ -29,8 +41,7 @@ Configurations are passed to the environments as `config` dictionaries. This is 
         - distance y from centre to objective
         
     e.g. 2 joints will consist of array of size 7
-###
-Config:
+### Config:
 ```python
 config = {
     #number of joints the arm has
