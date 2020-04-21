@@ -1,7 +1,7 @@
 # Deep Reinforcement Learning Baseline Environments
 
-Masters of computer science Masters project, implementing openai gyms to test various Deep RL algorithms against as baselines.
-These environments are designed to have scalable action and state space complexity. i.e. we can increase the complexity of the problem while keeping the number of possible actions the same, or vice versa
+Thesis project, implementing vairous gyms to test various Deep RL algorithms against as baselines.
+Each environment is able to scale in complexity of either total state space size or the inherent difficulty of the problem. 
 
 
 Kinsey Reeves
@@ -10,11 +10,14 @@ kreeves@student.unimelb.edu.au
 **Requirements**
 - OpenAI gym
 - Pygame
+- RLLib if testing environments
 
 
 **Environments:**
 
-- N-jointed arm
+Configurations are passed to the environments as `config` dictionaries. This is the format for RLLIB environments.
+
+## N-jointed arm
 - Environment consists of an arm of N-joints which must configure itself    to touch an objective
 
     - Action space : discrete (scalable) one hot, or continuous of number of free joints
@@ -26,15 +29,43 @@ kreeves@student.unimelb.edu.au
         - distance y from centre to objective
         
     e.g. 2 joints will consist of array of size 7
+###
+Config:
+```python
+    config = {
+    #number of joints the arm has
+    "num_joints" : 1,
+    #Full state information used for jacobian, basic state has just joint (x,y) positions
+    "full_state" : False,
 
-- N-Grid-Evaders
-    - Action space : discrete (scalable)
+}
+
+```
+    
+ ## Grid World
+ - Grid-Evader
+    - Action space : discrete
     - State space : discrete (grid coordinates of evader and chaser)
     
-- N-Grid-Chasers
+Overall config
+
+###Maze solver
+    - Action space : discrete (scalable)
+    - State space : discrete (grid coordinates of evader and chaser)
+ 
+Goal is to pick up the rewards in as few steps as possible. Baseline is based on A* and then a brute force TSP implementation. 
+
+####Config
 
 
-- N-Maze solver
+
+###Grid-Evader
+ 
+Goal is to evasde
+    
+###Grid-Chaser
+    - Action space : discrete
+    - State space : discrete (grid coordinates of evader and chaser)
 
 
 This is a work in progress.
