@@ -40,7 +40,7 @@ class GridEnv():
         self.capture_reward = config["capture_reward"] if "capture_reward" in config else False
         self.randomize_goal = config["randomize_goal"] if "randomize_goal" in config else False
         self.encoded_state = config["encoded_state"] if "encoded_state" in config else False
-        self.nw_encoded_state = config["nw_encoded_state"] if "encoded_state" in config else False
+        self.nw_encoded_state = config["nw_encoded_state"] if "nw_encoded_state" in config else False
         self.slowdown_step = config["slowdown_step"] if "slowdown_step" in config else False
 
         self.grid = GridMap(self.map_file, S_WIDTH)

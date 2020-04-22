@@ -6,7 +6,7 @@ Kinsey Reeves
 """
 import sys
 
-from ray.rllib.agents import ppo, ddpg, a3c, dqn
+from ray.rllib.agents import ppo, ddpg, dqn, a3c
 import gym
 import os
 print(os.getcwd())
@@ -55,8 +55,8 @@ def get_trainer(args):
     trainer = None
     if(args.rl == 'DQN'):
         trainer = dqn.DQNTrainer
-    elif(args.rl == 'A3C'):
-        trainer = a3c.A3CTrainer
+    elif(args.rl == 'A2C'):
+        trainer = a3c.A2CTrainer
     elif(args.rl == 'PPO'):
         trainer = ppo.PPOTrainer
     else:
