@@ -22,20 +22,20 @@
 
 python maze_experiments.py --rl PPO --steps 1000000 --name PPO_1reward_rstart_rgoal_1msteps_nwenc --random_goals --random_start --1reward
 python maze_experiments.py --rl DQN --steps 1000000 --name DQN_1reward_rstart_rgoal_1msteps_nwenc --random_goals --random_start --1reward
-python maze_experiments.py --rl A2C --steps 1000000 --name A2C_1reward_rstart_rgoal_1msteps_nwenc --random_goals --random_start --1reward
+#python maze_experiments.py --rl A2C --steps 1000000 --name A2C_1reward_rstart_rgoal_1msteps_nwenc --random_goals --random_start --1reward
 
-#
-########CHASER EVADER EXPERIMENTS##########
-#
-####CHASER, EACH ALGORITHM
-python chaser_evader_experiments.py --rl PPO --steps 1000000 --name PPO_chaser_rstart_rgoal_1msteps_nwenc --random_goals --random_start
-python chaser_evader_experiments.py --rl DQN --steps 1000000 --name DQN_chaser_rstart_rgoal_1msteps_nwenc --random_goals --random_start
-python chaser_evader_experiments.py --rl A2C --steps 1000000 --name A2C_chaser_rstart_rgoal_1msteps_nwenc --random_goals --random_start
-#
-####EVADER, EACH ALGORITHM
-python chaser_evader_experiments.py --rl PPO --steps 1000000 --name PPO_evader_rstart_rgoal_1msteps_nwenc --random_goals --random_start --rl_evader
-python chaser_evader_experiments.py --rl DQN --steps 1000000 --name DQN_evader_rstart_rgoal_1msteps_nwenc --random_goals --random_start --rl_evader
-python chaser_evader_experiments.py --rl A2C --steps 1000000 --name A2C_evader_rstart_rgoal_1msteps_nwenc --random_goals --random_start --rl_evader
+
+#########CHASER EVADER EXPERIMENTS##########
+##
+#####CHASER, EACH ALGORITHM
+#python chaser_evader_experiments.py --rl PPO --steps 1000000 --name PPO_chaser_rstart_rgoal_1msteps_nwenc --random_goals --random_start
+#python chaser_evader_experiments.py --rl DQN --steps 1000000 --name DQN_chaser_rstart_rgoal_1msteps_nwenc --random_goals --random_start
+#python chaser_evader_experiments.py --rl A2C --steps 1000000 --name A2C_chaser_rstart_rgoal_1msteps_nwenc --random_goals --random_start
+##
+#####EVADER, EACH ALGORITHM
+#python chaser_evader_experiments.py --rl PPO --steps 1000000 --name PPO_evader_rstart_rgoal_1msteps_nwenc --random_goals --random_start --rl_evader
+#python chaser_evader_experiments.py --rl DQN --steps 1000000 --name DQN_evader_rstart_rgoal_1msteps_nwenc --random_goals --random_start --rl_evader
+#python chaser_evader_experiments.py --rl A2C --steps 1000000 --name A2C_evader_rstart_rgoal_1msteps_nwenc --random_goals --random_start --rl_evader
 
 
 

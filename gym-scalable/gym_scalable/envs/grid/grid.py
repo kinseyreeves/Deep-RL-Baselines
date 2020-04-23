@@ -158,9 +158,7 @@ class GridMap:
         """
         Encodes the state without walls
         """
-        print(self.map)
         encoding = np.zeros((len(self.map)//2, len(self.map[0])//2))
-        print(encoding)
 
         for y in range(1, len(self.map) - 1):
             for x in range(1, len(self.map) - 1):
