@@ -138,24 +138,49 @@ class GridMap:
         Encodes the map. Note -1s and -2s are to reshape it to
         only take the inner grid
         """
-        encoding = np.zeros((len(self.map)-2, len(self.map[0])-2))
-        for y in range(1,len(self.map)-1):
-            for x in range(1,len(self.map)-1):
-                if(maze):
-                    encoding[y-1][x-1] = self.state_encoding_maze[self.map[y][x]]
+
+        encoding = np.zeros((len(self.map) - 2, len(self.map[0]) - 2))
+        for y in range(1, len(self.map) - 1):
+            for x in range(1, len(self.map) - 1):
+                if (maze):
+                    encoding[y - 1][x - 1] = self.state_encoding_maze[self.map[y][x]]
                 else:
-                    encoding[y-1][x-1] = self.state_encoding_nonmaze[self.map[y][x]]
-
-
+                    encoding[y - 1][x - 1] = self.state_encoding_nonmaze[self.map[y][x]]
         if entities:
             n = 3
             for e in entities:
                 e_pos = e.get_pos()
-                encoding[e_pos[1]-1][e_pos[0]-1] = n
+                encoding[e_pos[1] - 1][e_pos[0] - 1] = n
+
+        return encoding
+
+    def encode_no_walls(self, entities=None, maze = True):
+        """
+        Encodes the state without walls
+        """
+        print(self.map)
+        encoding = np.zeros((len(self.map)//2, len(self.map[0])//2))
+        print(encoding)
+
+        for y in range(1, len(self.map) - 1):
+            for x in range(1, len(self.map) - 1):
+                if y % 2 != 0 and x % 2 != 0:
+                    if maze:
+                        encoding[y//2][x//2] = self.state_encoding_maze[self.map[y][x]]
+                    else:
+                        encoding[y//2][x//2] = self.state_encoding_nonmaze[self.map[y][x]]
+        if entities:
+            n = 3
+            for e in entities:
+                e_pos = e.get_pos()
+                encoding[e_pos[1]//2][e_pos[0]//2] = n
         return encoding
 
     def get_encoding_shape(self):
-        return (len(self.map) - 2, len(self.map[0]) - 2)
+        return len(self.map) - 2, len(self.map[0]) - 2
+
+    def get_encoding_nowalls_shape(self):
+        return len(self.map) // 2, len(self.map) // 2
 
 
     def set_util_text(self, str):
@@ -204,6 +229,10 @@ class GridMap:
             action = self.convert_action((pos[0] - path[0], pos[1] - path[1]))
 
         return action
+
+    def convert_pos(self, pos):
+        ...
+
 
     def get_astar_dist(self, pos, end):
 
