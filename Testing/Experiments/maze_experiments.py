@@ -44,7 +44,7 @@ def tune_runner(trainer, mapfile, name, mapsize):
                      #"num_workers":0,
                      "num_envs_per_worker": 1,
                      "env_config": {"mapfile": mapfile,
-                                    "encoded_state": True,
+                                    "nw_encoded_state": True,
                                     "randomize_start":args.random_start,
                                     "num_goals": goals,
                                     "randomize_goal": args.random_goals,

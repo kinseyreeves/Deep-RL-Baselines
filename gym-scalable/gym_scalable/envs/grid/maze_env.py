@@ -54,7 +54,8 @@ class MazeEnv(gym.Env, GridEnv):
                                                 shape=self.grid.get_encoding_nowalls_shape(),
                                                 dtype=np.float32)
         else:
-            high = np.array([1, 1] + [1, 1] * self.num_goals)
+            m = self.grid.size
+            high = np.array([m, m] + [m, m] * self.num_goals)
             low = np.array([0, 0] + [0, 0] * self.num_goals)
             self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
 
