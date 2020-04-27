@@ -8,7 +8,7 @@ from gym_scalable.envs.grid.multi_chaser_evader_env import GridChaserVsEvaderEnv
 from gym_scalable.envs.grid.maps import map_loader
 
 print(os.getcwd())
-env = GridChaserVsEvaderEnv(config= {"mapfile" : "maps/map_8x8.txt", "RL_evader":False, "full_state" : False, "normalize_state" : True})
+env = GridChaserVsEvaderEnv(config= {"mapfile" : map_loader.get_8x8_map(), "RL_evader":False, "full_state" : False, "normalize_state" : True})
 
 state = env.reset()
 i = 0

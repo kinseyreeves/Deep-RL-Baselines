@@ -31,7 +31,7 @@ class MazeEnv(gym.Env, GridEnv):
     name = "Maze Env"
 
     def __init__(self, config):
-        GridEnv.__init__(self,config)
+        GridEnv.__init__(self, config)
 
         # Action space initialised to [-1,0,1] for each joint
 
@@ -97,13 +97,12 @@ class MazeEnv(gym.Env, GridEnv):
 
         return self.state, self.reward, self.done, {}
 
-
     def set_state(self):
         """
         Sets the state for maze.
         """
         if self.encoded_state:
-            self.state = self.grid.encode(entities = self.entities)
+            self.state = self.grid.encode(entities=self.entities)
         elif self.nw_encoded_state:
             self.state = self.grid.encode_no_walls(entities=self.entities)
         else:
@@ -148,7 +147,3 @@ class MazeEnv(gym.Env, GridEnv):
 
         self.entity.render(self.screen, self.grid.block_width, self.grid.block_height)
         pygame.display.update()
-
-
-
-

@@ -355,7 +355,7 @@ class GridMap:
         return (coords_list, dist_list)
 
     def is_walkable(self, x, y):
-        if (x >= len(self.map[0]) or y >= len(self.map)):
+        if x >= len(self.map[0]) or y >= len(self.map):
             return False
         if self.map[y][x] == ' ' or self.map[y][x] == 'G':
             return True

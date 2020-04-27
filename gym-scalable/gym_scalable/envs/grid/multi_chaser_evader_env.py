@@ -54,7 +54,7 @@ class GridChaserVsEvaderEnv(MultiAgentEnv, GridEnv):
         self.entities = [self.evader, self.chaser]
 
     def set_reward(self):
-        dist = self.grid.manhatten_dist(*self.evader.get_pos(), *self.chaser.get_pos())
+        dist = self.grid.get_manhatten_dist(self.evader.get_pos(), self.chaser.get_pos())
         # dist = self.grid.get_astar_distance(*self.evader.get_pos(), *self.chaser.get_pos())
         self.reward["evader"] = dist
         self.reward["chaser"] = -dist

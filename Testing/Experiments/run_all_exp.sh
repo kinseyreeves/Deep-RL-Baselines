@@ -38,7 +38,6 @@ python maze_experiments.py --rl DQN --steps 1000000 --name DQN_1reward_rstart_rg
 #python chaser_evader_experiments.py --rl A2C --steps 1000000 --name A2C_evader_rstart_rgoal_1msteps_nwenc --random_goals --random_start --rl_evader
 
 
-
 #python reacher_experiments.py
 
 #python chaser_evader_experiments.py
