@@ -47,7 +47,7 @@ class MazeEnv(gym.Env, GridEnv):
 
         if self.encoded_state:
             self.observation_space = spaces.Box(low=0, high=6,
-                                                shape=self.grid.get_encoding_shape(),
+                                                shape=self.grid.get_encoding_walls_shape(),
                                                 dtype=np.float32)
         elif self.nw_encoded_state:
             self.observation_space = spaces.Box(low=0, high=6,
@@ -59,7 +59,13 @@ class MazeEnv(gym.Env, GridEnv):
             low = np.array([0, 0] + [0, 0] * self.num_goals)
             self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
 
-        if not self.randomize_goal:
+        # Goal strategies, fixed, random or curriculum
+        if self.randomize_goal:
+            self.grid.add_random_goals(self.num_goals - self.grid.num_goals())
+        elif self.curriculum:
+            self.grid.add_random_goals(self.num_goals - self.grid.num_goals())
+            self.grid.set_curriculum_goals(self.grid.get_static_goals())
+        else:
             goals = []
             for _ in range(self.num_goals - self.grid.num_goals()):
                 goal = self.grid.get_random_walkable_non_goal(set(self.entities))
@@ -67,12 +73,14 @@ class MazeEnv(gym.Env, GridEnv):
                 goals.append(goal)
             self.static_goals = goals
             self.static_goals.append(self.grid.goal)
-        else:
-            self.grid.add_random_goals(self.num_goals - self.grid.num_goals())
 
         self.grid.set_render_goals(True)
 
     def step(self, action):
+        """
+        :param action:
+        :return: tuple containing (state, reward, done, info)
+        """
         GridEnv.step(self, action)
 
         self.reward = 0 if self.capture_reward else -.1
@@ -97,6 +105,47 @@ class MazeEnv(gym.Env, GridEnv):
 
         return self.state, self.reward, self.done, {}
 
+    def reset(self):
+        """
+        Resets the state to its initial state
+        :return:
+        """
+        GridEnv.reset(self)
+
+        #Random goals
+        if self.randomize_goal:
+            self.grid.clear_goals()
+            self.grid.add_random_goals(self.num_goals)
+        #Curriculum goals
+        elif self.curriculum:
+            self.update_curriculum_positions()
+            self.grid.clear_goals()
+            self.grid.add_goals(
+                random.sample(self.grid.get_curriculum_goal_positions(),
+                              self.num_goals))
+        #Fixed goals
+        else:
+            self.grid.clear_goals()
+            self.grid.add_goals(self.static_goals)
+
+        self.set_state()
+
+        if self.randomize_start:
+            self.grid.set_random_start()
+
+        self.entity.x = self.grid.start[0]
+        self.entity.y = self.grid.start[1]
+
+        return self.state
+
+    def render(self, mode='human', close=False):
+        if self.screen is None:
+            pygame.init()
+            self.entity.render_setup(self.screen)
+        GridEnv.render(self)
+        self.entity.render(self.screen, self.grid.block_width, self.grid.block_height)
+        pygame.display.update()
+
     def set_state(self):
         """
         Sets the state for maze.
@@ -119,31 +168,22 @@ class MazeEnv(gym.Env, GridEnv):
 
             self.state = np.asarray(self.state)
 
-    def reset(self):
-        GridEnv.reset(self)
+    def update_curriculum_positions(self, episode_amount=100):
+        """
+        Updates the positions for curriculum learning
+        :param episode_amount:
+        :return:
+        """
+        self.grid.mark_positions(self.grid.get_curriculum_goal_positions())
+        print(self.entity.get_pos())
+        if self.total_eps % episode_amount == 0:
+            self.grid.update_curriculum_goal_positions([self.entity.get_pos()])
 
-        if not self.randomize_goal:
-            self.grid.clear_goals()
-            self.grid.add_goals(self.static_goals)
-        else:
-            self.grid.clear_goals()
-            self.grid.add_random_goals(self.num_goals)
 
-        self.set_state()
 
-        if self.randomize_start:
-            self.grid.set_random_start()
 
-        self.entity.x = self.grid.start[0]
-        self.entity.y = self.grid.start[1]
 
-        return self.state
 
-    def render(self, mode='human', close=False):
-        if self.screen is None:
-            pygame.init()
-            self.entity.render_setup(self.screen)
-        GridEnv.render(self)
 
-        self.entity.render(self.screen, self.grid.block_width, self.grid.block_height)
-        pygame.display.update()
+
+

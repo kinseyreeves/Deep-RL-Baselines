@@ -49,7 +49,7 @@ class GridEvaderEnv(gym.Env, GridEnv):
 
         if self.encoded_state:
             self.observation_space = spaces.Box(low=0, high=6,
-                                                shape=self.grid.get_encoding_shape(),
+                                                shape=self.grid.get_encoding_walls_shape(),
                                                 dtype=np.float32)
         elif self.nw_encoded_state:
             self.observation_space = spaces.Box(low=0, high=6,
