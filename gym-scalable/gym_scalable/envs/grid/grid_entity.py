@@ -12,6 +12,22 @@ class Entity:
         self.grid = grid
         self.screen = None
         self.render_sub_text = False
+        self.randomness=0
+
+    def render_setup(self, screen):
+        self.screen = screen
+        self.render_text = "R"
+
+        self.render_sub_text = False
+
+        self.font = pygame.font.Font(None, 32)
+        self.text = self.font.render(self.render_text, True, (0, 0, 0), None)
+        self.text_rect = self.text.get_rect()
+
+        self.sub_font = pygame.font.Font(None, 20)
+        self.sub_text = self.font.render(self.render_text, True, (0, 0, 0), None)
+        self.sub_text_rect = self.text.get_rect()
+
 
     def update(self, action):
         if action[0] and self.grid.is_walkable(self.x + 1, self.y):
@@ -63,23 +79,11 @@ class Entity:
         action = self.grid.convert_action((self.x - new_pos[0], self.y - new_pos[1]))
         return action
 
-    def render_setup(self, screen):
-        self.screen = screen
-        self.render_text = "R"
-
-        self.render_sub_text = False
-
-        self.font = pygame.font.Font(None, 32)
-        self.text = self.font.render(self.render_text, True, (0, 0, 0), None)
-        self.text_rect = self.text.get_rect()
-
-        self.sub_font = pygame.font.Font(None, 20)
-        self.sub_text = self.font.render(self.render_text, True, (0, 0, 0), None)
-        self.sub_text_rect = self.text.get_rect()
-
     def set_randomness(self, r):
         self.randomness = r
 
+    def get_randomness(self):
+        return self.randomness
 
 class AStarChaser(Entity):
     """
@@ -138,7 +142,6 @@ class AStarEvader(Entity):
         super().__init__(x, y, grid, color=(200, 0, 100))
         self.evading = None
         self.randomness = randomness
-
 
     def update_auto(self):
 

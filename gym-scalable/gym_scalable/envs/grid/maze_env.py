@@ -175,7 +175,6 @@ class MazeEnv(gym.Env, GridEnv):
         :return:
         """
         self.grid.mark_positions(self.grid.get_curriculum_goal_positions())
-        print(self.entity.get_pos())
         if self.total_eps % episode_amount == 0:
             self.grid.update_curriculum_goal_positions([self.entity.get_pos()])
 

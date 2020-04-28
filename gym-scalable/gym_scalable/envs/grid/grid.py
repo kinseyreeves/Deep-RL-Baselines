@@ -98,6 +98,7 @@ class GridMap:
     def render(self, screen):
         """
         Grid rendering function, renders everything
+        #TODO refactor this
         """
         if (not self.screen):
             self.font = pygame.font.Font(None, 32)
@@ -137,7 +138,7 @@ class GridMap:
                                    round((((y - 1) / 2) * self.block_height + (self.block_height / 2))), 10, 10)
                         pygame.draw.rect(screen, (255, 50, 0), r_start)
 
-        #Render marked positions
+        # Render marked positions
         for pos in self.marked_positions:
             x = pos[0]
             y = pos[1]
