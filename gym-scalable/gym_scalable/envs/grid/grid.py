@@ -45,8 +45,12 @@ class GridMap:
     """
     Gridmap containing low level functionality for the grid.
     Contains functionality for the 2d rendered gridmap.
-    Includes setting/removing agent goals
-    A* pathfinding between two points
+    Includes
+    - setting/removing agent goals
+    - A* pathfinding between two points
+    - Curriculum learning functionality
+
+    Can be easily used for implementing new grid environments
 
     """
     map = []
@@ -59,9 +63,10 @@ class GridMap:
     # All walkable positions
     walkable = set()
     a_searched = set()
-    marked_blocks = set()
+    marked_positions = set()
     goals = set()
     static_goals = set()
+    curriculum_goals = set()
 
     entities = []
 
@@ -91,6 +96,10 @@ class GridMap:
         self.actions_table = {(-2, 0): left, (2, 0): right, (0, -2): up, (0, 2): down}
 
     def render(self, screen):
+        """
+        Grid rendering function, renders everything
+        #TODO refactor this
+        """
         if (not self.screen):
             self.font = pygame.font.Font(None, 32)
             self.text = self.font.render(None, True, (0, 0, 0), None)
@@ -121,13 +130,21 @@ class GridMap:
                 # Goal and start
                 if self.render_goals:
                     if self.map[y][x] == 'G':
-                        r_start = ((round(((x - 1) / 2) * self.block_width + (self.block_width / 2))),
+                        r_goal = ((round(((x - 1) / 2) * self.block_width + (self.block_width / 2))),
                                    round((((y - 1) / 2) * self.block_height + (self.block_height / 2))), 10, 10)
-                        pygame.draw.rect(screen, (50, 255, 0), r_start)
+                        pygame.draw.rect(screen, (50, 255, 0), r_goal)
                     if self.map[y][x] == 'S':
                         r_start = ((round(((x - 1) / 2) * self.block_width + (self.block_width / 2))),
                                    round((((y - 1) / 2) * self.block_height + (self.block_height / 2))), 10, 10)
                         pygame.draw.rect(screen, (255, 50, 0), r_start)
+
+        # Render marked positions
+        for pos in self.marked_positions:
+            x = pos[0]
+            y = pos[1]
+            rect = ((round(((x - 1) / 2) * self.block_width + (self.block_width / 2))),
+                       round((((y - 1) / 2) * self.block_height + (self.block_height / 2))), 10, 10)
+            pygame.draw.rect(screen, (10, 10, 10), rect)
 
         # Util rendering
         self.text_rect.center = (self.screen_width - self.screen_width / 4, self.screen_width - self.screen_width / 20)
@@ -154,13 +171,35 @@ class GridMap:
 
         return encoding
 
+    def get_curriculum_goal_positions(self):
+        """
+        :return: list : goal positions
+        """
+        return list(self.curriculum_goals)
+
+    def update_curriculum_goal_positions(self, entitity_positions=None):
+        """
+        Updates the new possible positions for curriculum learning
+        :return:
+        """
+        new_positions = set()
+        for pos in self.curriculum_goals:
+            neighbours = self.get_neighbours(*pos)
+            new_positions.update(set(neighbours))
+
+        self.curriculum_goals.update(new_positions)
+
+        if entitity_positions:
+            self.set_curriculum_goals(self.curriculum_goals.difference(set(entitity_positions)))
+
+        print(self.curriculum_goals)
+
     def encode_no_walls(self, entities=None, maze = True):
         """
-        Encodes the state without walls
+        Encodes the state without walls, so it is a 2D array of
+        walkable positions only, with encoding for each thing
         """
-        print(self.map)
         encoding = np.zeros((len(self.map)//2, len(self.map[0])//2))
-        print(encoding)
 
         for y in range(1, len(self.map) - 1):
             for x in range(1, len(self.map) - 1):
@@ -176,10 +215,36 @@ class GridMap:
                 encoding[e_pos[1]//2][e_pos[0]//2] = n
         return encoding
 
-    def get_encoding_shape(self):
+    def mark_position(self, pos):
+        """
+        Add a block to be marked and rendered, for debugging
+        """
+        self.marked_positions.add(pos)
+
+    def mark_positions(self, positions):
+        """
+        Updates the marked positions set, for debugging
+        :param positions:
+        :return:
+        """
+        self.marked_positions.update(positions)
+
+    def clear_marked_positions(self):
+        """
+        Delete all marked positions
+        """
+        self.marked_positions = set()
+
+    def get_encoding_walls_shape(self):
+        """
+        Get shape of the state, when its encoded with walls
+        """
         return len(self.map) - 2, len(self.map[0]) - 2
 
     def get_encoding_nowalls_shape(self):
+        """
+        Get the encoding shape without walls
+        """
         return len(self.map) // 2, len(self.map) // 2
 
 
@@ -211,6 +276,9 @@ class GridMap:
             self.static_goals.add(g)
 
     def num_goals(self):
+        """
+        Gets the number of goals present on the grid
+        """
         return len(self.goals)
 
     def num_static_goals(self):
@@ -231,7 +299,10 @@ class GridMap:
         return action
 
     def convert_pos(self, pos):
-        ...
+        """
+        Converts the position to actual coordinates
+        """
+        return (pos[0]//2, pos[1]//2)
 
 
     def get_astar_dist(self, pos, end):
@@ -240,6 +311,11 @@ class GridMap:
         return len(path)-1
 
     def add_entity(self, entity):
+        """
+
+        :param entity:
+        :return:
+        """
         self.entities.append(entity)
 
     def remove_entity(self):
@@ -247,11 +323,17 @@ class GridMap:
         pass
 
     def get_manhatten_dist(self, start, end):
+        """
+        Returns manhatten distance between two objects in real coords
+        :param start: Tuple : start position
+        :param end: Tuple : end position
+        :return: integer distance value
+        """
         x = start[0]
         y = start[1]
         gX = end[0]
         gY = end[1]
-        return (abs(x - gX)/2 + abs(y - gY)/2)
+        return abs(x - gX) / 2 + abs(y - gY) / 2
 
     def get_astar_move(self, startX, startY, endX, endY):
         """
@@ -266,7 +348,7 @@ class GridMap:
 
     def astar_path(self, startX, startY, endX, endY):
         """
-        A star path, returns the path as a list of block coordinates
+        A star path, returns the path as a list of block coordinates using the A* pathfinding algorithm
         :param startX:
         :param startY:
         :param endX:
@@ -332,7 +414,7 @@ class GridMap:
         :param y:
         :return:
         """
-        self.marked_blocks.add((x, y))
+        self.marked_positions.add((x, y))
 
     def get_dist_list(self,pos):
         """
@@ -343,6 +425,8 @@ class GridMap:
         coords list
         Pos: Position of the agent
         Return : (List of coordinates, list of coords index and the distance)
+        @param pos:
+        @return:
         """
         coords_list = self.static_goals
         coords_list = [pos] + list(coords_list)
@@ -357,7 +441,7 @@ class GridMap:
         return (coords_list, dist_list)
 
     def is_walkable(self, x, y):
-        if (x >= len(self.map[0]) or y >= len(self.map)):
+        if x >= len(self.map[0]) or y >= len(self.map):
             return False
         if self.map[y][x] == ' ' or self.map[y][x] == 'G':
             return True
@@ -452,3 +536,10 @@ class GridMap:
 
     def set_map(self, x, y, val):
         self.map[y][x] = val
+
+    def set_curriculum_goals(self, curriculum_goals):
+        self.curriculum_goals = curriculum_goals
+
+    def get_static_goals(self):
+        return self.static_goals
+

@@ -22,7 +22,7 @@ class GridEnv():
         self.reward = 0
         self.done = False
         self.action_space = spaces.Discrete(4)
-
+        self.curriculum_value = 1
         self.entities = []
 
         self.screen = None
@@ -42,6 +42,7 @@ class GridEnv():
         self.encoded_state = config["encoded_state"] if "encoded_state" in config else False
         self.nw_encoded_state = config["nw_encoded_state"] if "nw_encoded_state" in config else False
         self.slowdown_step = config["slowdown_step"] if "slowdown_step" in config else False
+        self.curriculum = config["curriculum"] if "curriculum" in config else False
 
         self.grid = GridMap(self.map_file, S_WIDTH)
 
@@ -52,11 +53,13 @@ class GridEnv():
             z_arr = np.zeros(self.action_space.n)
             z_arr[action] = 1
             self.action = z_arr
+
         self.steps += 1
         self.reward = 0
 
-
     def reset(self):
+        if self.curriculum:
+            self.update_curriculum()
         self.reward = 0
         self.steps = 0
         self.done = False
@@ -72,4 +75,11 @@ class GridEnv():
         self.screen.fill((255, 255, 255))
         self.grid.render(self.screen)
         time.sleep(0.1)
+
+    def update_curriculum(self, decay_value=0.9995, min_value=0.2):
+        self.curriculum_value = max(min_value, self.curriculum_value * decay_value)
+
+    def get_curriculum_value(self):
+        return self.curriculum_value
+
 

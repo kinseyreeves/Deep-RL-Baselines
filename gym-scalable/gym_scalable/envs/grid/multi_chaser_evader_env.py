@@ -34,7 +34,7 @@ class GridChaserVsEvaderEnv(MultiAgentEnv, GridEnv):
 
         if self.encoded_state:
             self.observation_space = spaces.Box(low=0, high=6,
-                                                shape=self.grid.get_encoding_shape(),
+                                                shape=self.grid.get_encoding_walls_shape(),
                                                 dtype=np.float32)
         else:
             high = np.array([1, 1, 1, 1])
@@ -54,7 +54,7 @@ class GridChaserVsEvaderEnv(MultiAgentEnv, GridEnv):
         self.entities = [self.evader, self.chaser]
 
     def set_reward(self):
-        dist = self.grid.manhatten_dist(*self.evader.get_pos(), *self.chaser.get_pos())
+        dist = self.grid.get_manhatten_dist(self.evader.get_pos(), self.chaser.get_pos())
         # dist = self.grid.get_astar_distance(*self.evader.get_pos(), *self.chaser.get_pos())
         self.reward["evader"] = dist
         self.reward["chaser"] = -dist
@@ -151,3 +151,5 @@ class GridChaserVsEvaderEnv(MultiAgentEnv, GridEnv):
             e.render(self.screen, self.grid.block_width, self.grid.block_height)
 
         pygame.display.update()
+
+

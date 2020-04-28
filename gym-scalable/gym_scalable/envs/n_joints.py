@@ -164,7 +164,6 @@ class NJointArm(gym.Env):
         arms. If RELATIVE is False, a former arm will not
         result in latter arms global angles being changed
         '''
-
         def update_arms(zip_changes, dtheta):
             for _, arm in zip_changes:
                 arm.move_arm(dtheta)
