@@ -14,6 +14,7 @@ from ray import tune
 from ray.tune.registry import register_env
 from gym_scalable.envs.grid.chaser_evader_env import GridEvaderEnv
 from gym_scalable.envs.grid.maps import map_loader
+import rllib_trainers
 import argparse
 
 parser = argparse.ArgumentParser(description='ChaserEvaser experiment runner')
@@ -51,26 +52,12 @@ def tune_runner(trainer, mapfile, name, mapsize):
 
                  name=f"{args.name}-{mapsize}x{mapsize}-{name}")
 
-def get_trainer(args):
-    trainer = None
-    if(args.rl == 'DQN'):
-        trainer = dqn.DQNTrainer
-    elif(args.rl == 'A2C'):
-        trainer = a3c.A2CTrainer
-    elif(args.rl == 'PPO'):
-        trainer = ppo.PPOTrainer
-    else:
-        print("please enter valid trainer")
-        exit(0)
-    return trainer
-
 
 # ##################################################### #
 # # -----------------##Training##---------------------- #
 # # ################################################### #
-trainer = get_trainer(args)
 name = args.rl
-
+trainer = rllib_trainers.get_trainer(name)
 
 mapfile = map_loader.get_3x3_map()
 mapsize = 3

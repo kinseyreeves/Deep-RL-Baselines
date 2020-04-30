@@ -7,8 +7,20 @@ from ray import tune
 import argparse
 from gym_scalable.envs.grid.maps import map_loader
 from pympler.tracker import SummaryTracker
-
+import rllib_trainers
 tracker = SummaryTracker()
+
+
+#Things to tune
+"""
+learning rate
+gamma
+clip param in ppo
+lambda
+train batch size
+sgd minibatch size
+num sgd iter
+"""
 
 
 parser = argparse.ArgumentParser(description='Maze experiment runner')
@@ -56,23 +68,10 @@ def tune_runner(trainer, mapfile, name, mapsize):
 # ################################################### #
 # # -----------------##Training##-------------------- #
 # # ################################################# #
-def get_trainer(args):
-    trainer = None
-    if(args.rl == 'DQN'):
-        trainer = dqn.DQNTrainer
-    elif (args.rl == 'A2C'):
-        trainer = a3c.A2CTrainer
-    elif(args.rl == 'PPO'):
-        trainer = ppo.PPOTrainer
-    else:
-        print("please enter valid trainer")
-        exit(0)
-    return trainer
+
 
 name = args.rl
-mapfile = "/maps/map_3x3.txt"
-mapsize = 3
-trainer = get_trainer(args)
+trainer = rllib_trainers.get_trainer(name)
 goals = 3
 
 mapfile = map_loader.get_3x3_map()
