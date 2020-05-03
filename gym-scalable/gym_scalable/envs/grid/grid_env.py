@@ -17,6 +17,7 @@ class GridEnv():
     total_eps = 0
 
     def __init__(self, config):
+        random.seed(1)
 
         self.steps = 0
         self.reward = 0

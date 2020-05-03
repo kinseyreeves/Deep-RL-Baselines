@@ -10,6 +10,9 @@ from pympler.tracker import SummaryTracker
 import rllib_trainers
 tracker = SummaryTracker()
 
+from ray.tune import register_trainable, grid_search, run_experiments
+
+
 
 #Things to tune
 """
@@ -53,8 +56,12 @@ def tune_runner(trainer, mapfile, name, mapsize):
         goals = mapsize
     tune.run(trainer,
              config={"env": MazeEnv,
-                     #"num_workers":0,
-                     "num_envs_per_worker": 1,
+                     #"num_workers":4,
+                     #"num_envs_per_worker": 1,
+                     'model': {
+                         #'fcnet_hiddens': grid_search([[128, 128], [256,256]])
+                         'fcnet_hiddens': [256, 256],
+                     },
                      "env_config": {"mapfile": mapfile,
                                     "nw_encoded_state": True,
                                     "randomize_start":args.random_start,

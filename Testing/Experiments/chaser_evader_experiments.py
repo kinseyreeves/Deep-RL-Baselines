@@ -12,7 +12,7 @@ import os
 print(os.getcwd())
 from ray import tune
 from ray.tune.registry import register_env
-from gym_scalable.envs.grid.chaser_evader_env import GridEvaderEnv
+from gym_scalable.envs.grid.chaser_evader_env import ChaserEvaderEnv
 from gym_scalable.envs.grid.maps import map_loader
 import rllib_trainers
 import argparse
@@ -40,7 +40,7 @@ def tune_runner(trainer, mapfile, name, mapsize):
         return
 
     tune.run(trainer,
-             config={"env": GridEvaderEnv,
+             config={"env": ChaserEvaderEnv,
                      "env_config": {"mapfile": mapfile,
                                       "RL_evader":args.rl_evader,
                                       "nw_encoded_state":True,

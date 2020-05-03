@@ -31,6 +31,8 @@ class MazeEnv(gym.Env, GridEnv):
     name = "Maze Env"
 
     def __init__(self, config):
+
+
         GridEnv.__init__(self, config)
 
         # Action space initialised to [-1,0,1] for each joint

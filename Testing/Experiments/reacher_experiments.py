@@ -27,8 +27,6 @@ parser.add_argument('--extra_joints', type = int, default = 1)
 parser.add_argument('--rl', type = str, default = "PPO")
 parser.add_argument('--steps', type = int, default = 1000)
 
-
-
 args = parser.parse_args()
 
 def nj_runner(trainer, name, nj):
@@ -42,7 +40,7 @@ def ddpg_nj_runner(trainer, name, nj):
              config={"env": NJointArm,
                      #"buffer_size": 5000,
                      #"smooth_target_policy":True,
-                     #"exploration_config":{"type":"GaussianNoise"},
+                     "exploration_config":{"type":"GaussianNoise"},
                      #"timesteps_per_iteration": 1000,
                      #"exploration_should_anneal": True,
                      #"exploration_noise_type": "gaussian",

@@ -32,7 +32,7 @@ from gym_scalable.envs.grid.grid_entity import *
 from gym_scalable.envs.grid.grid_env import *
 
 
-class GridEvaderEnv(gym.Env, GridEnv):
+class ChaserEvaderEnv(gym.Env, GridEnv):
     metadata = {'render.modes': ['human']}
 
     '''
