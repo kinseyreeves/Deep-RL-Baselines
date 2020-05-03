@@ -8,6 +8,18 @@
 #random goals, random start
 #python maze_experiments.py --steps 200000 --name encoded_3goals_1reward_on_goal_rgoal_rstart --1reward --random_goals --random_start --num_goals 3
 
+###### Reacher Experiments ##########
+
+python reacher_experiments.py --rl DDPG --extra_joints 1 --steps 100000
+python reacher_experiments.py --rl DDPG --extra_joints 2 --steps 100000
+python reacher_experiments.py --rl DDPG --extra_joints 4 --steps 100000
+
+python reacher_experiments.py --rl TD3 --extra_joints 1 --steps 100000
+python reacher_experiments.py --rl TD3 --extra_joints 2 --steps 100000
+python reacher_experiments.py --rl TD3 --extra_joints 4 --steps 100000
+
+
+
 ##### MAZE EXPERIMENTS ################
 
 #Maze 5x5 ALL ALGORITHMS

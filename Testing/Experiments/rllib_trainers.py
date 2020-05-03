@@ -10,6 +10,8 @@ def get_trainer(arg):
         trainer = dqn.ApexTrainer
     elif arg == 'TD3':
         trainer = ddpg.TD3Trainer
+    elif arg == 'DDPG':
+        trainer = ddpg.DDPGTrainer
     elif arg == 'A2C':
         trainer = a3c.A2CTrainer
     elif arg == 'PPO':
