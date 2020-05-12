@@ -32,7 +32,6 @@ parser.add_argument('--encode_state', dest='encode_state', action='store_true', 
 parser.add_argument('--curriculum', dest='curriculum', action='store_true', default = False)
 parser.add_argument('--curriculum_eps', type=int, default = 100)
 
-
 args = parser.parse_args()
 
 map_sizes = [3,5,8]

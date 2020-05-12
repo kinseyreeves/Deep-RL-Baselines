@@ -56,8 +56,9 @@ class GridEvaderEnv(gym.Env, GridEnv):
                                                 shape=self.grid.get_encoding_nowalls_shape(),
                                                 dtype=np.float32)
         else:
-            high = np.array([1, 1, 1, 1])
-            low = np.array([0, 0, 0, 0])
+            m = self.grid.get_tabular_encoding_size()
+            high = np.array([m,m])
+            low = np.array([0,0])
             self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
 
 
@@ -114,13 +115,11 @@ class GridEvaderEnv(gym.Env, GridEnv):
         elif self.nw_encoded_state:
             self.state = self.grid.encode_no_walls(entities=self.entities)
         else:
+            encoding = self.grid.encode_tabular([e.get_pos() for e in self.entities])
             if self.normalize_state:
-                self.state = [utils.normalize(self.evader.x, 0, self.grid.size),
-                              utils.normalize(self.evader.y, 0, self.grid.size),
-                              utils.normalize(self.chaser.x, 0, self.grid.size),
-                              utils.normalize(self.chaser.y, 0, self.grid.size)]
+                self.state = utils.normalize(encoding, 0, self.grid.get_tabular_encoding_size())
             else:
-                self.state = [self.evader.x, self.evader.y, self.chaser.x, self.chaser.y]
+                self.state = encoding
 
     def reset(self):
         GridEnv.reset(self)

@@ -56,9 +56,9 @@ class MazeEnv(gym.Env, GridEnv):
                                                 shape=self.grid.get_encoding_nowalls_shape(),
                                                 dtype=np.float32)
         else:
-            m = self.grid.size
-            high = np.array([m, m] + [m, m] * self.num_goals)
-            low = np.array([0, 0] + [0, 0] * self.num_goals)
+            m = self.grid.get_tabular_encoding_size()
+            high = np.array([m] + [m] * self.num_goals)
+            low = np.array([0] + [0] * self.num_goals)
             self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
 
         # Goal strategies, fixed, random or curriculum
@@ -114,18 +114,18 @@ class MazeEnv(gym.Env, GridEnv):
         """
         GridEnv.reset(self)
 
-        #Random goals
+        # Random goals
         if self.randomize_goal:
             self.grid.clear_goals()
             self.grid.add_random_goals(self.num_goals)
-        #Curriculum goals
+        # Curriculum goals
         elif self.curriculum:
             self.update_curriculum_positions(curriculum_eps = self.curriculum_steps)
             self.grid.clear_goals()
             self.grid.add_goals(
                 random.sample(self.grid.get_curriculum_goal_positions(),
                               self.num_goals))
-        #Fixed goals
+        # Fixed goals
         else:
             self.grid.clear_goals()
             self.grid.add_goals(self.static_goals)
@@ -157,18 +157,11 @@ class MazeEnv(gym.Env, GridEnv):
         elif self.nw_encoded_state:
             self.state = self.grid.encode_no_walls(entities=self.entities)
         else:
+            encoding = self.grid.encode_tabular([e.get_pos() for e in self.entities])
             if self.normalize_state:
-                self.state = [utils.normalize(self.entity.x, 0, self.grid.size),
-                              utils.normalize(self.entity.y, 0, self.grid.size)]
-                for goal in self.grid.static_goals:
-                    self.state += [utils.normalize(goal[0], 0, self.grid.size),
-                                   utils.normalize(goal[1], 0, self.grid.size)]
+                self.state = utils.normalize(encoding, 0, self.grid.get_tabular_encoding_size())
             else:
-                self.state = [self.entity.x, self.entity.y]
-                for goal in self.grid.static_goals:
-                    self.state += [goal[0], goal[1]]
-
-            self.state = np.asarray(self.state)
+                self.state = encoding
 
     def update_curriculum_positions(self, curriculum_eps=100):
         """

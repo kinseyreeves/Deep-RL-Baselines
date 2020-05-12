@@ -79,9 +79,11 @@ class GridEnv():
         time.sleep(0.1)
 
     def update_curriculum(self, curriculum_eps = 100, decay_value=0.99, min_value=0.2):
-        self.curriculum_value = max(min_value, self.curriculum_value * decay_value)
+        if self.total_eps % curriculum_eps == 0:
+            self.curriculum_value = max(min_value, self.curriculum_value * decay_value)
 
     def get_curriculum_value(self):
         return self.curriculum_value
+
 
 

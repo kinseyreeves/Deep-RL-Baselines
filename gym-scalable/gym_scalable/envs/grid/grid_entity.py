@@ -148,7 +148,6 @@ class AStarEvader(Entity):
             best_pos = (self.x, self.y)
             best_dist = 0
 
-
             #TODO this should be smarter
 
             if self.grid.get_manhatten_dist(self.get_pos(), self.evading.get_pos()) < self.evader_thresh:

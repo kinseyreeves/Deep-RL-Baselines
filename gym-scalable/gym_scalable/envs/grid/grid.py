@@ -55,9 +55,9 @@ class GridMap:
     """
     map = []
     colours = {'O': (255, 255, 255), 'G': (0, 255, 0), 'X': (0, 0, 255),
-               'S': (255, 0, 0), '-': (255, 0, 0),'+': (255, 0, 0)}
+               'S': (255, 0, 0), '-': (255, 0, 0), '+': (255, 0, 0)}
 
-    state_encoding_nonmaze = {' ':0,'G':0, '-':1, '|':1, '+':1, 'S': 0}
+    state_encoding_nonmaze = {' ': 0, 'G': 0, '-': 1, '|': 1, '+': 1, 'S': 0}
     state_encoding_maze = {' ': 0, 'G': 2, '-': 1, '|': 1, '+': 1, 'S': 0}
 
     # All walkable positions
@@ -115,8 +115,9 @@ class GridMap:
                         continue
                     if self.map[y][x] == '-':
                         r = (
-                        ((x - 1) / 2) * self.block_width - WALL_WIDTH / 2, (y / 2) * self.block_height - WALL_WIDTH / 2,
-                        self.block_width + WALL_WIDTH / 2, WALL_WIDTH)
+                            ((x - 1) / 2) * self.block_width - WALL_WIDTH / 2,
+                            (y / 2) * self.block_height - WALL_WIDTH / 2,
+                            self.block_width + WALL_WIDTH / 2, WALL_WIDTH)
                         pygame.draw.rect(screen, WALL_COLOUR, r)
 
                 # Either columns or walls
@@ -130,7 +131,7 @@ class GridMap:
                 if self.render_goals:
                     if self.map[y][x] == 'G':
                         r_goal = ((round(((x - 1) / 2) * self.block_width + (self.block_width / 2))),
-                                   round((((y - 1) / 2) * self.block_height + (self.block_height / 2))), 10, 10)
+                                  round((((y - 1) / 2) * self.block_height + (self.block_height / 2))), 10, 10)
                         pygame.draw.rect(screen, (50, 255, 0), r_goal)
                     if self.map[y][x] == 'S':
                         r_start = ((round(((x - 1) / 2) * self.block_width + (self.block_width / 2))),
@@ -142,14 +143,14 @@ class GridMap:
             x = pos[0]
             y = pos[1]
             rect = ((round(((x - 1) / 2) * self.block_width + (self.block_width / 2))),
-                       round((((y - 1) / 2) * self.block_height + (self.block_height / 2))), 3, 3)
+                    round((((y - 1) / 2) * self.block_height + (self.block_height / 2))), 3, 3)
             pygame.draw.rect(screen, (10, 10, 10), rect)
 
         # Util rendering
         self.text_rect.center = (self.screen_width - self.screen_width / 4, self.screen_width - self.screen_width / 20)
         screen.blit(self.text, self.text_rect)
 
-    def encode(self, entities = None, maze=True):
+    def encode(self, entities=None, maze=True):
         """
         Encodes the map. Note -1s and -2s are to reshape it to
         only take the inner grid
@@ -170,14 +171,38 @@ class GridMap:
 
         return encoding
 
-    def encode_tabular(self):
+    def convert_table_position(self, pos):
+        """
+        Used for tabular encoding, converts an x,y coord to a
+        single integer, ordered from top left to bottom right
+        (screen rendering order)
+        Indexing starts at 1 so 0 works as
+        x,y -- > y*width + x
+        :param pos:
+        :return: position integer
+        """
+        pos = self.convert_pos(pos)
+        encoding = pos[1] * self.get_nowall_size() + pos[0] + 1
+        return encoding
+
+    def encode_tabular(self, entitity_positions=None):
         """
         Encodes for a tabular learning algorithm. Returns a hashable
         tuple of the entities, and goals positions as single integers. i.e.
         x,y -- > y*width + x
+        If the postions are from the maze environment, the positions are
+        sorted
         :return:
         """
-        ...
+        state = np.zeros(len(entitity_positions))
+        for i in range(0, len(state)):
+            state[i] = self.convert_table_position(entitity_positions[i])
+        current_goals = self.get_goals().intersection(self.get_static_goals())
+        goal_state = np.zeros(len(self.get_static_goals()))
+        if current_goals:
+            for i, goal in enumerate(current_goals):
+                goal_state[i] = self.convert_table_position(goal)
+        return np.concatenate([state, sorted(goal_state, reverse=True)])
 
     def get_curriculum_goal_positions(self):
         """
@@ -200,27 +225,27 @@ class GridMap:
         if entitity_positions:
             self.set_curriculum_goals(self.curriculum_goals.difference(set(entitity_positions)))
 
-        #print(self.curriculum_goals)
+        # print(self.curriculum_goals)
 
-    def encode_no_walls(self, entities=None, maze = True):
+    def encode_no_walls(self, entities=None, maze=True):
         """
         Encodes the state without walls, so it is a 2D array of
         walkable positions only, with encoding for each thing
         """
-        encoding = np.zeros((len(self.map)//2, len(self.map[0])//2))
+        encoding = np.zeros((len(self.map) // 2, len(self.map[0]) // 2))
 
         for y in range(1, len(self.map) - 1):
             for x in range(1, len(self.map) - 1):
                 if y % 2 != 0 and x % 2 != 0:
                     if maze:
-                        encoding[y//2][x//2] = self.state_encoding_maze[self.map[y][x]]
+                        encoding[y // 2][x // 2] = self.state_encoding_maze[self.map[y][x]]
                     else:
-                        encoding[y//2][x//2] = self.state_encoding_nonmaze[self.map[y][x]]
+                        encoding[y // 2][x // 2] = self.state_encoding_nonmaze[self.map[y][x]]
         if entities:
             n = 3
             for e in entities:
                 e_pos = e.get_pos()
-                encoding[e_pos[1]//2][e_pos[0]//2] = n
+                encoding[e_pos[1] // 2][e_pos[0] // 2] = n
         return encoding
 
     def mark_position(self, pos):
@@ -254,7 +279,6 @@ class GridMap:
         Get the encoding shape without walls
         """
         return len(self.map) // 2, len(self.map) // 2
-
 
     def set_util_text(self, str):
         if self.screen:
@@ -298,7 +322,7 @@ class GridMap:
         """
         path = self.astar_path(pos[0], pos[1], goal[0], goal[1])
 
-        if(len(path)<=1):
+        if (len(path) <= 1):
             action = self.actions_table[random.choice(list(self.actions_table))]
         else:
             path = path[1]
@@ -310,13 +334,12 @@ class GridMap:
         """
         Converts the position to actual coordinates
         """
-        return (pos[0]//2, pos[1]//2)
-
+        return (pos[0] // 2, pos[1] // 2)
 
     def get_astar_dist(self, pos, end):
 
         path = self.astar_path(pos[0], pos[1], end[0], end[1])
-        return len(path)-1
+        return len(path) - 1
 
     def add_entity(self, entity):
         """
@@ -404,7 +427,7 @@ class GridMap:
 
                 child.g = current_node.g + 1
                 child.h = self.get_manhatten_dist(child.position,
-                                              end_node.position)
+                                                  end_node.position)
                 child.f = child.g + child.h
                 open_list.add(child)
 
@@ -424,7 +447,7 @@ class GridMap:
         """
         self.marked_positions.add((x, y))
 
-    def get_dist_list(self,pos):
+    def get_dist_list(self, pos):
         """
         Distance list calculated by A*.
         Used for computing TSP/Minimum spanning tree
@@ -441,14 +464,20 @@ class GridMap:
 
         dist_list = []
 
-        for i,pos in enumerate(coords_list):
-            for j in range(i+1, len(coords_list)):
+        for i, pos in enumerate(coords_list):
+            for j in range(i + 1, len(coords_list)):
                 pos2 = coords_list[j]
                 dist_list.append((i, j, self.get_astar_dist(pos, pos2)))
 
         return (coords_list, dist_list)
 
     def is_walkable(self, x, y):
+        """
+        Whether a position is walkable or not
+        :param x:
+        :param y:
+        :return:
+        """
         if x >= len(self.map[0]) or y >= len(self.map):
             return False
         if self.map[y][x] == ' ' or self.map[y][x] == 'G':
@@ -539,15 +568,23 @@ class GridMap:
 
         return out
 
-    def get_walkable_positions(self):
-        return self.walkable
-
     def set_map(self, x, y, val):
         self.map[y][x] = val
 
     def set_curriculum_goals(self, curriculum_goals):
         self.curriculum_goals = curriculum_goals
 
+    def get_walkable_positions(self):
+        return self.walkable
+
     def get_static_goals(self):
         return self.static_goals
 
+    def get_nowall_size(self):
+        return self.size // 2
+
+    def get_size(self):
+        return self.size
+
+    def get_tabular_encoding_size(self):
+        return self.get_nowall_size() ** 2
