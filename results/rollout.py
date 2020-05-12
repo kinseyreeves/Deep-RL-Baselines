@@ -38,7 +38,7 @@ import gym_scalable
 from ray.tune.registry import register_env
 from gym_scalable.envs.n_joints import NJointArm
 from gym_scalable.envs.grid.maze_env import MazeEnv
-from gym_scalable.envs.grid.chaser_evader_env import GridEvaderEnv
+from gym_scalable.envs.grid.chaser_evader_env import ChaserEvaderEnv
 from gym_scalable.envs.grid.multi_chaser_evader_env import GridChaserVsEvaderEnv
 
 from gym_scalable.envs.grid.maze_env import MazeEnv
@@ -134,11 +134,11 @@ ray.tune.register_env('njarm', lambda config: NJointArm(config_arm1))
 
 ray.tune.register_env('maze3x3', lambda config_maze: MazeEnv(config_maze3))
 
-ray.tune.register_env('chaser3x3', lambda config_maze: GridEvaderEnv(config_chaser3))
-ray.tune.register_env('evader3x3', lambda config_maze: GridEvaderEnv(config_evader3))
+ray.tune.register_env('chaser3x3', lambda config_maze: ChaserEvaderEnv(config_chaser3))
+ray.tune.register_env('evader3x3', lambda config_maze: ChaserEvaderEnv(config_evader3))
 
-ray.tune.register_env('chaser5x5', lambda config_maze: GridEvaderEnv(config_chaser5))
-ray.tune.register_env('evader5x5', lambda config_maze: GridEvaderEnv(config_evader5))
+ray.tune.register_env('chaser5x5', lambda config_maze: ChaserEvaderEnv(config_chaser5))
+ray.tune.register_env('evader5x5', lambda config_maze: ChaserEvaderEnv(config_evader5))
 
 ray.tune.register_env('evadervschaser5x5', lambda config_maze: GridChaserVsEvaderEnv(config_evader_vs_chaser5))
 

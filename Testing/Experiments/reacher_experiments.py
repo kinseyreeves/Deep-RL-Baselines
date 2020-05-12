@@ -20,7 +20,9 @@ from ray.rllib.agents.ddpg import DDPGTrainer
 import sys
 import argparse
 import rllib_trainers
+
 from ray.tune import register_trainable, grid_search, run_experiments
+
 
 
 parser = argparse.ArgumentParser(description='Reacher experiment runner')
@@ -33,6 +35,7 @@ args = parser.parse_args()
 
 def nj_runner(trainer, name, nj):
     tune.run(trainer,
+
              config={"env": NJointArm,
                      'lr': grid_search([0.0001]),
                      'model': {
@@ -66,13 +69,4 @@ trainer = rllib_trainers.get_trainer(args.rl)
 name = args.rl
 joints = args.extra_joints
 nj_runner(trainer, name, joints)
-
-
-
-
-
-
-
-
-
 

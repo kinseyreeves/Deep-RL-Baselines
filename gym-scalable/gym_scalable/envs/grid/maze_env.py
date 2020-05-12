@@ -20,7 +20,6 @@ from gym_scalable.envs.grid.grid_env import *
 
 INT_ACTION = True
 
-
 class MazeEnv(gym.Env, GridEnv):
     metadata = {'render.modes': ['human']}
 
@@ -172,12 +171,4 @@ class MazeEnv(gym.Env, GridEnv):
         self.grid.mark_positions(self.grid.get_curriculum_goal_positions())
         if self.total_eps % curriculum_eps == 0:
             self.grid.update_curriculum_goal_positions([self.entity.get_pos()])
-
-
-
-
-
-
-
-
 

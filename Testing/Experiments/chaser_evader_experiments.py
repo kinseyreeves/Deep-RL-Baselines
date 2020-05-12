@@ -16,6 +16,7 @@ from gym_scalable.envs.grid.chaser_evader_env import ChaserEvaderEnv
 from gym_scalable.envs.grid.maps import map_loader
 import rllib_trainers
 from ray.tune import register_trainable, grid_search, run_experiments
+
 import argparse
 
 parser = argparse.ArgumentParser(description='ChaserEvaser experiment runner')
@@ -49,6 +50,7 @@ def tune_runner(trainer, mapfile, name, mapsize):
                          # 'fcnet_hiddens': grid_search([[128, 128], [256,256]])
                          'fcnet_hiddens': [256, 256],
                      },
+
                      "env_config": {"mapfile": mapfile,
                                       "RL_evader":args.rl_evader,
                                       "nw_encoded_state":True,

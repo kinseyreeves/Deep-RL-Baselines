@@ -32,7 +32,7 @@ from gym_scalable.envs.grid.grid_entity import *
 from gym_scalable.envs.grid.grid_env import *
 
 
-class GridEvaderEnv(gym.Env, GridEnv):
+class ChaserEvaderEnv(gym.Env, GridEnv):
     metadata = {'render.modes': ['human']}
 
     '''
@@ -42,7 +42,7 @@ class GridEvaderEnv(gym.Env, GridEnv):
     def __init__(self, config):
         GridEnv.__init__(self, config)
         self.RL_evader = config["RL_evader"] if "RL_evader" in config else True
-        if(self.RL_evader):
+        if (self.RL_evader):
             print(f"Started RL evader environment with config:{config}")
         else:
             print(f"Started RL Chaser environment with config:{config}")
@@ -61,7 +61,6 @@ class GridEvaderEnv(gym.Env, GridEnv):
             low = np.array([0,0])
             self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
 
-
         self.grid.set_render_goals(False)
 
         # Initialize Entities
@@ -78,10 +77,13 @@ class GridEvaderEnv(gym.Env, GridEnv):
             self.evader.set_evading(self.chaser)
             self.ai_entity = self.evader
 
+        if self.curriculum:
+            self.controlled_entity.set_randomness(self.get_curriculum_value())
+
         self.entities = [self.evader, self.chaser]
 
     def step(self, action):
-        GridEnv.step(self,action)
+        GridEnv.step(self, action)
 
         if self.steps >= self.max_steps:
             self.done = True
@@ -122,10 +124,12 @@ class GridEvaderEnv(gym.Env, GridEnv):
                 self.state = encoding
 
     def reset(self):
-        GridEnv.reset(self)
 
+        GridEnv.reset(self)
         self.set_state()
 
+        if self.curriculum:
+            self.controlled_entity.set_randomness(self.get_curriculum_value())
         if self.randomize_goal:
             self.grid.set_random_goal_spawn()
         if self.randomize_start:
@@ -158,3 +162,33 @@ class GridEvaderEnv(gym.Env, GridEnv):
             e.render(self.screen, self.grid.block_width, self.grid.block_height)
 
         pygame.display.update()
+
+    def check_done(self):
+        """
+        Checks if the state is complete by evaluating entity positons
+        :return:
+        """
+        if self.chaser.get_pos() == self.evader.get_pos():
+            self.done = True
+            if self.RL_evader:
+                self.reward = -1
+            else:
+                self.reward = 1
+
+    def set_state(self):
+        """
+        Sets the state
+        :return:
+        """
+        if self.encoded_state:
+            self.state = self.grid.encode(entities=self.entities)
+        elif self.nw_encoded_state:
+            self.state = self.grid.encode_no_walls(entities=self.entities)
+        else:
+            if self.normalize_state:
+                self.state = [utils.normalize(self.evader.x, 0, self.grid.size),
+                              utils.normalize(self.evader.y, 0, self.grid.size),
+                              utils.normalize(self.chaser.x, 0, self.grid.size),
+                              utils.normalize(self.chaser.y, 0, self.grid.size)]
+            else:
+                self.state = [self.evader.x, self.evader.y, self.chaser.x, self.chaser.y]

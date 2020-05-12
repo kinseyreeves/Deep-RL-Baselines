@@ -151,3 +151,5 @@ class GridChaserVsEvaderEnv(MultiAgentEnv, GridEnv):
             e.render(self.screen, self.grid.block_width, self.grid.block_height)
 
         pygame.display.update()
+
+

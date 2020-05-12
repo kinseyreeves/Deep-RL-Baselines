@@ -12,7 +12,6 @@ tracker = SummaryTracker()
 
 from ray.tune import register_trainable, grid_search, run_experiments
 
-
 #Things to tune
 """
 learning rate
@@ -23,6 +22,7 @@ train batch size
 sgd minibatch size
 num sgd iter
 """
+
 
 parser = argparse.ArgumentParser(description='Maze experiment runner')
 parser.add_argument('--steps', type=int, default = 200)
@@ -64,6 +64,7 @@ def tune_runner(trainer, mapfile, name, mapsize):
                      #"num_envs_per_worker": 1,
                      #'lr' : grid_search([0.0001, 0.001, 0.01]),
                      #'lr': grid_search([0.0001]),
+
                      'model': {
                          #'fcnet_hiddens': grid_search([[128, 128], [256,256]])
                          'fcnet_hiddens': [256, 256],

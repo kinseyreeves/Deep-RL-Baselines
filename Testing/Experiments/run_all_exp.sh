@@ -22,6 +22,7 @@
 #python reacher_experiments.py --rl PPO --extra_joints 2 --steps 100000
 #python reacher_experiments.py --rl PPO --extra_joints 4 --steps 100000
 
+
 ##### MAZE EXPERIMENTS ################
 
 #Maze 5x5 ALL ALGORITHMS
@@ -60,7 +61,6 @@ python chaser_evader_experiments.py --rl DQN --steps 500000 --name DQN_chaser_rs
 python chaser_evader_experiments.py --rl A2C --steps 500000 --name A2C_chaser_rsrg_500k_smenc --random_goals --random_start
 python chaser_evader_experiments.py --rl APEX-DQN --steps 500000 --name APEX-DQN_chaser_rsrg_500k_smenc --random_goals --random_start
 python chaser_evader_experiments.py --rl PG --steps 500000 --name PG_chaser_rsrg_1msteps_smenc --random_goals --random_start
-
 
 #####EVADER, EACH ALGORITHM
 python chaser_evader_experiments.py --rl PPO --steps 500000 --name chaser_rsrg_500k_smenc --random_goals --random_start --rl_evader

@@ -1,7 +1,7 @@
 # Deep Reinforcement Learning Baseline Environments
 
-Masters of computer science Masters project, implementing openai gyms to test various Deep RL algorithms against as baselines.
-These environments are designed to have scalable action and state space complexity. i.e. we can increase the complexity of the problem while keeping the number of possible actions the same, or vice versa
+Thesis project, implementing vairous gyms to test various Deep RL algorithms against as baselines.
+Each environment is able to scale in complexity of either total state space size or the inherent difficulty of the problem. 
 
 
 Kinsey Reeves
@@ -10,11 +10,26 @@ kreeves@student.unimelb.edu.au
 **Requirements**
 - OpenAI gym
 - Pygame
+- RLLib if testing environments
 
+**Installation** 
 
-**Environments:**
+Checkout this repositiory.
+In the top level of `gym-scalable` folder. 
+Run `pip install -e .` to install the gym.
 
-- N-jointed arm
+An example environment instatiation would be :
+```Python
+env = gym.make('n-joints-v0',  config = {"extra_joints": 1, "extra_state": False})
+```
+The available environments : 
+*A set of environments needs to be registered, todo.
+
+# Environment configurations
+
+Configurations are passed to the environments as `config` dictionaries. This is the format for RLLIB environments.
+Each environment can be started using the gym.
+### N-jointed arm
 - Environment consists of an arm of N-joints which must configure itself    to touch an objective
 
     - Action space : discrete (scalable) one hot, or continuous of number of free joints
@@ -26,15 +41,58 @@ kreeves@student.unimelb.edu.au
         - distance y from centre to objective
         
     e.g. 2 joints will consist of array of size 7
+### Config:
+```python
+config = {
+    #number of joints the arm has
+    "num_joints" : 1,
+    #Full state information used for jacobian, basic state has just joint (x,y) positions
+    "full_state" : False,
+}
 
-- N-Grid-Evaders
-    - Action space : discrete (scalable)
+```
+    
+ ## Grid World
+ - Grid-Evader
+    - Action space : discrete
     - State space : discrete (grid coordinates of evader and chaser)
     
-- N-Grid-Chasers
+Overall config
 
+```python
+config = {
+    # Whether or not to randomize the start position and goal / enemy positions
+    "randomize_start" : False,
+    "randomize_goal" : False,
+    #If we want to use the full state encoding, or just positions of interest
+    "encoded_state" : False,
+    #Do we want to use 1 rewards where available, e.g. if false -0.1 rewards used, as outlined in Sutton 2018
+    "capture_reward" : False,
+    #whether we want to slowdown for testing purposes / when evaluating
+    "slowdown_step" : False
+}
 
-- N-Maze solver
+```
+
+### Maze solver
+    - Action space : discrete (scalable)
+    - State space : discrete (grid coordinates of evader and chaser)
+ 
+Goal is to pick up the rewards in as few steps as possible. Baseline is based on A* and then a brute force TSP implementation. 
+
+#### Config
+`
+#number of goals in the maze to pickup
+"num_goals" : 1
+`
+
+### Grid-Evader
+ 
+Goal is to evade the chaser as long as possible
+    
+### Grid-Chaser
+    - Action space : discrete
+    - State space : discrete (grid coordinates of evader and chaser)
 
 
 This is a work in progress.
