@@ -18,51 +18,55 @@ from gym_scalable.envs.n_joints import NJointArm
 from ray.rllib.agents.ppo import PPOTrainer
 from ray.rllib.agents.ddpg import DDPGTrainer
 import sys
+import argparse
+import rllib_trainers
+from ray.tune import register_trainable, grid_search, run_experiments
+
+
+parser = argparse.ArgumentParser(description='Reacher experiment runner')
+
+parser.add_argument('--extra_joints', type = int, default = 1)
+parser.add_argument('--rl', type = str, default = "PPO")
+parser.add_argument('--steps', type = int, default = 1000)
+
+args = parser.parse_args()
 
 def nj_runner(trainer, name, nj):
     tune.run(trainer,
-             config={"env": NJointArm, "env_config": {"extra_joints": nj, "full_state": False, "normalize_state": True}},
-             checkpoint_freq=10, checkpoint_at_end=True, stop={"timesteps_total": total_steps},
+             config={"env": NJointArm,
+                     'lr': grid_search([0.0001]),
+                     'model': {
+                         # 'fcnet_hiddens': grid_search([[128, 128], [256,256]])
+                         'fcnet_hiddens': [256, 256],
+                     },
+                     "env_config":
+                         {"extra_joints": nj,
+                          "full_state": False,
+                          "normalize_state": True}},
+             checkpoint_freq=10, checkpoint_at_end=True, stop={"timesteps_total": args.steps},
              name=f"{nj}-joints-{name}")
 
 def ddpg_nj_runner(trainer, name, nj):
     tune.run(trainer,
              config={"env": NJointArm,
-                     "buffer_size": 5000,
-                     "smooth_target_policy":True,
-                     #"exploration_config":{"type":"GaussianNoise"},
+                     #"buffer_size": 5000,
+                     #"smooth_target_policy":True,
+                     "exploration_config":{"type":"GaussianNoise"},
                      #"timesteps_per_iteration": 1000,
-                     "exploration_should_anneal": True,
+                     #"exploration_should_anneal": True,
                      #"exploration_noise_type": "gaussian",
                      "env_config": {"extra_joints": nj, "full_state": False, "normalize_state": True}},
-             checkpoint_freq=10, checkpoint_at_end=True, stop={"timesteps_total": total_steps},
+             checkpoint_freq=10, checkpoint_at_end=True, stop={"timesteps_total": args.steps},
              name=f"{nj}-joints-{name}",)
-###DDPG RUNS
-total_steps = int(sys.argv[1])
-trainer = DDPGTrainer
-name = "DDPG"
-joints = 1
-ddpg_nj_runner(trainer, name, joints)
-joints = 2
-ddpg_nj_runner(trainer, name, joints)
-joints = 4
-ddpg_nj_runner(trainer, name, joints)
-del(trainer)
 
-#
-# ###PPO RUNS
-# tune_runner(ddpg.DDPGTrainer, "PPO")
-name = "PPO"
 
-trainer = PPOTrainer
-joints = 1
-nj_runner(trainer, name, joints)
-joints = 2
-nj_runner(trainer, name, joints)
-joints = 4
+trainer = rllib_trainers.get_trainer(args.rl)
+
+###Experiments
+name = args.rl
+joints = args.extra_joints
 nj_runner(trainer, name, joints)
 
-del(trainer)
 
 
 
