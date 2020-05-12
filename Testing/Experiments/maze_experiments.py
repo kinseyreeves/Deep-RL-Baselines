@@ -13,7 +13,6 @@ tracker = SummaryTracker()
 from ray.tune import register_trainable, grid_search, run_experiments
 
 
-
 #Things to tune
 """
 learning rate
@@ -24,7 +23,6 @@ train batch size
 sgd minibatch size
 num sgd iter
 """
-
 
 parser = argparse.ArgumentParser(description='Maze experiment runner')
 parser.add_argument('--steps', type=int, default = 200)
@@ -38,7 +36,9 @@ parser.add_argument('--random_start', dest='random_start', action='store_true', 
 parser.add_argument('--curriculum', dest='curriculum', action='store_true', default = False)
 parser.add_argument('--curriculum_eps', type=int, default = 100)
 
+
 args = parser.parse_args()
+encoding = None
 
 
 logdir = "~/ray_results/maze"
@@ -69,7 +69,7 @@ def tune_runner(trainer, mapfile, name, mapsize):
                          'fcnet_hiddens': [256, 256],
                      },
                      "env_config": {"mapfile": mapfile,
-                                    "nw_encoded_state": True,
+                                    #"nw_encoded_state": True,
                                     "randomize_start":args.random_start,
                                     "num_goals": goals,
                                     "randomize_goal": args.random_goals,
