@@ -8,7 +8,6 @@ THRESH = 10
 dist_per_update = 60
 N_EPS = 10000
 
-
 def get_state_data(state, nj):
     obj = state[0:2]
     joint_poss = state[2:((nj + 1) * 2)]

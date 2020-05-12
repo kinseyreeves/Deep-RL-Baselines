@@ -66,7 +66,7 @@ def run():
             state = new_state
             episode_reward += reward
             #env.render()
-            if ep_n > 200:
+            if ep_n > 100:
                env.render()
 
             if done or step == MAX_EP_STEPS:

@@ -197,7 +197,6 @@ class NJointArm(gym.Env):
                     update_arms(action_arms[i + 1:], change)
         # check distance from goal of end arm, if less than thresh episode done
         reward = self.calc_reward(action)
-
         state = self.get_state()
 
         if (USE_MOUSE and self.screen and pygame.mouse.get_focused()):
@@ -207,6 +206,11 @@ class NJointArm(gym.Env):
 
         if (self.steps > MAX_STEPS):
             self.done = True
+
+        if self.get_dist() < DIST_THRESH and (not self.done):
+            self.at_objective_n += 1
+            if self.at_objective_n > HOLD_COUNT:
+                self.done = True
 
         return np.array(state), reward, self.done, {}
 
@@ -226,7 +230,6 @@ class NJointArm(gym.Env):
 
         r = dist_pen + action_pen
 
-
         # r = math.sqrt(dist**2 + alpha**2) + alpha + action_pen
         # print(f"dist: {dist}, action pen {action_pen}, reward {r}")
         # r = -(dist / (S_WIDTH/2))
@@ -234,12 +237,7 @@ class NJointArm(gym.Env):
         #     self.done=True
         #     r -= 10
         #     return r
-        # if dist < DIST_THRESH and (not self.done):
-        #     r += 2.0
-        #     self.at_objective_n += 1
-        #     if self.at_objective_n > HOLD_COUNT:
-        #         r +=END_REWARD
-        #         self.done = True
+        #
         # elif dist > DIST_THRESH:
         #     self.at_objective_n = 0
         #     self.done = False
