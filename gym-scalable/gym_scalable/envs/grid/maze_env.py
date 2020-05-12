@@ -31,6 +31,8 @@ class MazeEnv(gym.Env, GridEnv):
     name = "Maze Env"
 
     def __init__(self, config):
+
+
         GridEnv.__init__(self, config)
 
         # Action space initialised to [-1,0,1] for each joint
@@ -118,7 +120,7 @@ class MazeEnv(gym.Env, GridEnv):
             self.grid.add_random_goals(self.num_goals)
         #Curriculum goals
         elif self.curriculum:
-            self.update_curriculum_positions()
+            self.update_curriculum_positions(curriculum_eps = self.curriculum_steps)
             self.grid.clear_goals()
             self.grid.add_goals(
                 random.sample(self.grid.get_curriculum_goal_positions(),
@@ -168,15 +170,14 @@ class MazeEnv(gym.Env, GridEnv):
 
             self.state = np.asarray(self.state)
 
-    def update_curriculum_positions(self, episode_amount=100):
+    def update_curriculum_positions(self, curriculum_eps=100):
         """
         Updates the positions for curriculum learning
         :param episode_amount:
         :return:
         """
         self.grid.mark_positions(self.grid.get_curriculum_goal_positions())
-        print(self.entity.get_pos())
-        if self.total_eps % episode_amount == 0:
+        if self.total_eps % curriculum_eps == 0:
             self.grid.update_curriculum_goal_positions([self.entity.get_pos()])
 
 

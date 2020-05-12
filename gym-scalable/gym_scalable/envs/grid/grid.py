@@ -73,7 +73,6 @@ class GridMap:
     render_goals = False
 
     def __init__(self, mapfile, screen_width):
-        # print(mapfile)
 
         self.screen = None
         self.map = self.read_map(mapfile)
@@ -98,6 +97,7 @@ class GridMap:
     def render(self, screen):
         """
         Grid rendering function, renders everything
+        #TODO refactor this
         """
         if (not self.screen):
             self.font = pygame.font.Font(None, 32)
@@ -137,12 +137,12 @@ class GridMap:
                                    round((((y - 1) / 2) * self.block_height + (self.block_height / 2))), 10, 10)
                         pygame.draw.rect(screen, (255, 50, 0), r_start)
 
-        #Render marked positions
+        # Render marked positions
         for pos in self.marked_positions:
             x = pos[0]
             y = pos[1]
             rect = ((round(((x - 1) / 2) * self.block_width + (self.block_width / 2))),
-                       round((((y - 1) / 2) * self.block_height + (self.block_height / 2))), 10, 10)
+                       round((((y - 1) / 2) * self.block_height + (self.block_height / 2))), 3, 3)
             pygame.draw.rect(screen, (10, 10, 10), rect)
 
         # Util rendering
@@ -170,6 +170,15 @@ class GridMap:
 
         return encoding
 
+    def encode_tabular(self):
+        """
+        Encodes for a tabular learning algorithm. Returns a hashable
+        tuple of the entities, and goals positions as single integers. i.e.
+        x,y -- > y*width + x
+        :return:
+        """
+        ...
+
     def get_curriculum_goal_positions(self):
         """
         :return: list : goal positions
@@ -191,7 +200,7 @@ class GridMap:
         if entitity_positions:
             self.set_curriculum_goals(self.curriculum_goals.difference(set(entitity_positions)))
 
-        print(self.curriculum_goals)
+        #print(self.curriculum_goals)
 
     def encode_no_walls(self, entities=None, maze = True):
         """
