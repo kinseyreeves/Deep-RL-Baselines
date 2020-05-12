@@ -20,3 +20,4 @@ def get_trainer(arg):
         print("please enter valid trainer")
         exit(0)
     return trainer
+

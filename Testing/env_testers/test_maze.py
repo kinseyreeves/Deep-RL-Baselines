@@ -9,8 +9,7 @@ from pympler.tracker import SummaryTracker
 
 tracker = SummaryTracker()
 
-
-config = { "mapfile" : map_loader.get_5x5_map(), "nw_encoded_state" : True, "randomize_start": True,"curriculum": True, "num_goals":3, "capture_reward":True}
+config = { "mapfile" : map_loader.get_3x3_map(),"randomize_start": True,"curriculum": True, "num_goals":5, "capture_reward":True}
 env = gym.make('n-maze-v0',config = config)
 
 state = env.reset()
@@ -20,24 +19,19 @@ print(env.observation_space)
 print(env.action_space)
 
 while i < 100000:
-
     i += 1
     #env.render()
     start = time.time()
     action = env.action_space.sample()
+    #print(env.entity.get_pos())
 
     action_size = env.action_space.n
     env.render()
     a = input()
-    env.reset()
-    continue
-    #print(env.grid.encode())
-    #print(env.grid.get_encoding_shape())
-    if(len(state)!=8):
-        print(state)
-        input()
+
+
     state, reward, done, _ = env.step(action)
-    #print(f"{state}, {reward}, {done}")
+    print(f"{state}, {reward}, {done}")
     if(done):
         print(f"finished {i}")
 

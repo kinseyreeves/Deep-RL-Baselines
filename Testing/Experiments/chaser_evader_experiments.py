@@ -15,6 +15,8 @@ from ray.tune.registry import register_env
 from gym_scalable.envs.grid.chaser_evader_env import ChaserEvaderEnv
 from gym_scalable.envs.grid.maps import map_loader
 import rllib_trainers
+from ray.tune import register_trainable, grid_search, run_experiments
+
 import argparse
 
 parser = argparse.ArgumentParser(description='ChaserEvaser experiment runner')
@@ -28,6 +30,8 @@ parser.add_argument('--rl_evader', dest='rl_evader', action='store_true', defaul
 parser.add_argument('--random_goals', dest='random_goals', action='store_true', default = False)
 parser.add_argument('--random_start', dest='random_start', action='store_true', default = False)
 parser.add_argument('--encode_state', dest='encode_state', action='store_true', default = False)
+parser.add_argument('--curriculum', dest='curriculum', action='store_true', default = False)
+parser.add_argument('--curriculum_eps', type=int, default = 100)
 
 args = parser.parse_args()
 
@@ -41,11 +45,20 @@ def tune_runner(trainer, mapfile, name, mapsize):
 
     tune.run(trainer,
              config={"env": ChaserEvaderEnv,
+                     'lr': grid_search([0.0001]),
+                     'model': {
+                         # 'fcnet_hiddens': grid_search([[128, 128], [256,256]])
+                         'fcnet_hiddens': [256, 256],
+                     },
+
                      "env_config": {"mapfile": mapfile,
                                       "RL_evader":args.rl_evader,
                                       "nw_encoded_state":True,
                                       "randomize_start":args.random_start,
-                                      "randomize_goal": args.random_goals}},
+                                      "randomize_goal": args.random_goals,
+                                      "curriculum": args.curriculum,
+                                      "curriculum_eps": args.curriculum_eps
+                                    }},
                      checkpoint_freq=10,
                      checkpoint_at_end=True,
                      stop={"timesteps_total": args.steps},

@@ -21,6 +21,10 @@ import sys
 import argparse
 import rllib_trainers
 
+from ray.tune import register_trainable, grid_search, run_experiments
+
+
+
 parser = argparse.ArgumentParser(description='Reacher experiment runner')
 
 parser.add_argument('--extra_joints', type = int, default = 1)
@@ -31,7 +35,17 @@ args = parser.parse_args()
 
 def nj_runner(trainer, name, nj):
     tune.run(trainer,
-             config={"env": NJointArm, "env_config": {"extra_joints": nj, "full_state": False, "normalize_state": True}},
+
+             config={"env": NJointArm,
+                     'lr': grid_search([0.0001]),
+                     'model': {
+                         # 'fcnet_hiddens': grid_search([[128, 128], [256,256]])
+                         'fcnet_hiddens': [256, 256],
+                     },
+                     "env_config":
+                         {"extra_joints": nj,
+                          "full_state": False,
+                          "normalize_state": True}},
              checkpoint_freq=10, checkpoint_at_end=True, stop={"timesteps_total": args.steps},
              name=f"{nj}-joints-{name}")
 
@@ -53,20 +67,6 @@ trainer = rllib_trainers.get_trainer(args.rl)
 
 ###Experiments
 name = args.rl
-joints = 1
+joints = args.extra_joints
 nj_runner(trainer, name, joints)
-joints = 2
-nj_runner(trainer, name, joints)
-joints = 4
-nj_runner(trainer, name, joints)
-joints = 8
-
-
-
-
-
-
-
-
-
 

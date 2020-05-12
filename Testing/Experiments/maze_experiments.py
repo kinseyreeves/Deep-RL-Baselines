@@ -12,8 +12,6 @@ tracker = SummaryTracker()
 
 from ray.tune import register_trainable, grid_search, run_experiments
 
-
-
 #Things to tune
 """
 learning rate
@@ -34,7 +32,13 @@ parser.add_argument('--name', type = str, default = 'test_run')
 parser.add_argument('--num_goals', type = int, default = 3)
 parser.add_argument('--random_goals', dest='random_goals', action='store_true', default = False)
 parser.add_argument('--random_start', dest='random_start', action='store_true', default = False)
+
+parser.add_argument('--curriculum', dest='curriculum', action='store_true', default = False)
+parser.add_argument('--curriculum_eps', type=int, default = 100)
+
+
 args = parser.parse_args()
+encoding = None
 
 
 logdir = "~/ray_results/maze"
@@ -58,16 +62,21 @@ def tune_runner(trainer, mapfile, name, mapsize):
              config={"env": MazeEnv,
                      #"num_workers":4,
                      #"num_envs_per_worker": 1,
+                     #'lr' : grid_search([0.0001, 0.001, 0.01]),
+                     #'lr': grid_search([0.0001]),
+
                      'model': {
                          #'fcnet_hiddens': grid_search([[128, 128], [256,256]])
                          'fcnet_hiddens': [256, 256],
                      },
                      "env_config": {"mapfile": mapfile,
-                                    "nw_encoded_state": True,
+                                    #"nw_encoded_state": True,
                                     "randomize_start":args.random_start,
                                     "num_goals": goals,
                                     "randomize_goal": args.random_goals,
-                                    "capture_reward":args.reward}},
+                                    "capture_reward":args.reward,
+                                    "curriculum": args.curriculum,
+                                    "curriculum_eps": args.curriculum_eps}},
              checkpoint_freq=10, checkpoint_at_end=True, stop={"timesteps_total": args.steps},
              name=f"{args.name}_maze-{mapsize}x{mapsize}-{name}")
 

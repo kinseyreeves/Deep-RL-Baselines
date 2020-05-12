@@ -44,6 +44,7 @@ class GridEnv():
         self.nw_encoded_state = config["nw_encoded_state"] if "nw_encoded_state" in config else False
         self.slowdown_step = config["slowdown_step"] if "slowdown_step" in config else False
         self.curriculum = config["curriculum"] if "curriculum" in config else False
+        self.curriculum_steps = config["curriculum_eps"] if "curriculum_eps" in config else 100
 
         self.grid = GridMap(self.map_file, S_WIDTH)
 
@@ -77,10 +78,12 @@ class GridEnv():
         self.grid.render(self.screen)
         time.sleep(0.1)
 
-    def update_curriculum(self, decay_value=0.9995, min_value=0.2):
-        self.curriculum_value = max(min_value, self.curriculum_value * decay_value)
+    def update_curriculum(self, curriculum_eps = 100, decay_value=0.99, min_value=0.2):
+        if self.total_eps % curriculum_eps == 0:
+            self.curriculum_value = max(min_value, self.curriculum_value * decay_value)
 
     def get_curriculum_value(self):
         return self.curriculum_value
+
 
 
