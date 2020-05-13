@@ -22,12 +22,15 @@ CRITIC_UPDATE = 1
 writer = SummaryWriter(logdir="../runs/" + "DDPG" + time.strftime("%Y%m%d-%H%M%S"))
 
 
-def run():
+def run(extra_joints=1):
     rewards = []
     avg_rewards = []
-
+    ep_steps = []
+    ep_rewards = []
+    total_steps = 0
+    all_steps = []
     extra_j = 1
-    env = gym.make('n-joints-v0', config = {"extra_joints":1, "extra_state":False})
+    env = gym.make('n-joints-v0', config = {"extra_joints":extra_joints, "extra_state":False})
 
     # action_size = env.action_space.shape[0]
     # state_size = env.observation_space.shape[0]
@@ -39,14 +42,14 @@ def run():
     # print(env.observation_space.shape )
 
     var = 2
-    total_steps = 0
 
-    for ep_n in range(0, N_EPISODES):
+    while total_steps < 200000:
         state = env.reset()
         episode_reward = 0
         # noise.reset()
 
         for step in range(MAX_EP_STEPS + 1):
+            total_steps+=1
             action = ddpg_agent.get_action(state)[0]
             action = np.clip(np.random.normal(action, var), -1, 1)
 
@@ -71,10 +74,15 @@ def run():
 
             if done or step == MAX_EP_STEPS:
                 writer.add_scalar('ddpg/ep_reward', episode_reward, ep_n)
-                print(f"Episode {ep_n}, finished:  {done}, reward : {episode_reward:.2f}, LR : {var:.2f}")
+                print(f"Episode {ep_n}, finished:  {done}, reward : {episode_reward:.2f}, LR : {var:.2f} {total_steps}")
+                all_steps.append(total_steps)
+                ep_steps.append(step)
+                ep_rewards.append(reward)
                 break
 
             rewards.append(episode_reward)
             avg_rewards.append(np.mean(rewards[-10:]))
 
-run()
+run(extra_joints=1)
+run(extra_joints=2)
+run(extra_joints=4)

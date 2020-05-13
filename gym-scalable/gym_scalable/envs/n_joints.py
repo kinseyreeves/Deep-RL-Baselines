@@ -36,7 +36,7 @@ ARM_RADS_CHANGE = 0.1
 # Whether or not the arm movements are relative. Read step()
 RELATIVE = False
 
-RESET_ARM_ANGS = True
+RESET_ARM_ANGS = False
 
 # -------------------ENV PARAMS----------------------######
 
@@ -126,7 +126,6 @@ class NJointArm(gym.Env):
         # Initialise the default single arm
         self.arm = Arm(self.centre_x, S_HEIGHT / 2, ARM_ANGLE, ARM_LENGTH, None)
         self.arms = [self.arm]
-
 
         # Intialise the extra arms
         for i in range(1, self.extra_joints + 1):
