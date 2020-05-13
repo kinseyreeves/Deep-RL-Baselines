@@ -4,6 +4,7 @@ import agent
 import gym_scalable
 from tensorboardX import SummaryWriter
 import time
+import pandas as pd
 
 
 BATCH_SIZE = 16
@@ -21,7 +22,7 @@ CRITIC_UPDATE = 1
 
 writer = SummaryWriter(logdir="../runs/" + "DDPG" + time.strftime("%Y%m%d-%H%M%S"))
 
-
+out_df = pd.DataFrame()
 def run(extra_joints=1):
     rewards = []
     avg_rewards = []
@@ -42,7 +43,7 @@ def run(extra_joints=1):
     # print(env.observation_space.shape )
 
     var = 2
-
+    ep_n = 0
     while total_steps < 200000:
         state = env.reset()
         episode_reward = 0
@@ -73,15 +74,21 @@ def run(extra_joints=1):
                env.render()
 
             if done or step == MAX_EP_STEPS:
+                ep_n +=1
                 writer.add_scalar('ddpg/ep_reward', episode_reward, ep_n)
                 print(f"Episode {ep_n}, finished:  {done}, reward : {episode_reward:.2f}, LR : {var:.2f} {total_steps}")
                 all_steps.append(total_steps)
                 ep_steps.append(step)
-                ep_rewards.append(reward)
+                ep_rewards.append(episode_reward)
                 break
 
             rewards.append(episode_reward)
             avg_rewards.append(np.mean(rewards[-10:]))
+    out_df['total_steps'] = all_steps
+    out_df['episode_rewards'] = ep_rewards
+    out_df['episode_len'] = ep_steps
+
+    out_df.to_csv(f"{extra_joints}_df.csv")
 
 run(extra_joints=1)
 run(extra_joints=2)

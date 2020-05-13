@@ -96,7 +96,7 @@ for test in range(1, 8):
             time.sleep(0.001)
             # print("here")
 
-    f.write("\n")
+    #f.write("\n")
     out_df[f"{test}joints"] = all_steps
 for col in out_df:
     print(col)
