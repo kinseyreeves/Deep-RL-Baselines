@@ -91,7 +91,6 @@ for test in range(1, 8):
             state, reward, done, _ = env.step(action)
             # print(reward)
             rewards.append(reward)
-
             # print(rewards)
             time.sleep(0.001)
             # print("here")

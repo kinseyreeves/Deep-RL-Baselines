@@ -129,8 +129,12 @@ config_chaser5 =  {"mapfile": map_loader.get_5x5_map(),
 config_evader_vs_chaser5 ={"mapfile": direc + map_loader.get_5x5_map(),"RL_evader": True, "slowdown_step": True, "full_state": False, "normalize_state": True,"randomize_start":True, "randomize_goal": True}
 
 config_arm1 = {"extra_joints": 1, "extra_state": False, "normalize_state": True}
+config_arm2 = {"extra_joints": 2, "extra_state": False, "normalize_state": True}
 
-ray.tune.register_env('njarm', lambda config: NJointArm(config_arm1))
+
+
+ray.tune.register_env('njarm1', lambda config: NJointArm(config_arm1))
+ray.tune.register_env('njarm2', lambda config: NJointArm(config_arm2))
 
 ray.tune.register_env('maze3x3', lambda config_maze: MazeEnv(config_maze3))
 

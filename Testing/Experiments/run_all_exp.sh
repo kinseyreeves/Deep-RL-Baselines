@@ -10,17 +10,21 @@
 
 ###### Reacher Experiments ##########
 
-python reacher_experiments.py --rl DDPG --extra_joints 1 --steps 200000
-python reacher_experiments.py --rl DDPG --extra_joints 2 --steps 200000
-python reacher_experiments.py --rl DDPG --extra_joints 4 --steps 200000
+#python reacher_experiments.py --rl DDPG --extra_joints 1 --steps 200000
+#python reacher_experiments.py --rl DDPG --extra_joints 2 --steps 200000
+#python reacher_experiments.py --rl DDPG --extra_joints 4 --steps 200000
+#
+#python reacher_experiments.py --rl TD3 --extra_joints 1 --steps 200000
+#python reacher_experiments.py --rl TD3 --extra_joints 2 --steps 200000
+#python reacher_experiments.py --rl TD3 --extra_joints 4 --steps 200000
+#
+#python reacher_experiments.py --rl PPO --extra_joints 1 --steps 200000
+#python reacher_experiments.py --rl PPO --extra_joints 2 --steps 200000
+#python reacher_experiments.py --rl PPO --extra_joints 4 --steps 200000
 
-python reacher_experiments.py --rl TD3 --extra_joints 1 --steps 200000
-python reacher_experiments.py --rl TD3 --extra_joints 2 --steps 200000
-python reacher_experiments.py --rl TD3 --extra_joints 4 --steps 200000
-
-python reacher_experiments.py --rl PPO --extra_joints 1 --steps 200000
-python reacher_experiments.py --rl PPO --extra_joints 2 --steps 200000
-python reacher_experiments.py --rl PPO --extra_joints 4 --steps 200000
+python reacher_experiments.py --rl A2C --extra_joints 1 --steps 200000
+python reacher_experiments.py --rl A2C --extra_joints 2 --steps 200000
+python reacher_experiments.py --rl A2C --extra_joints 4 --steps 200000
 
 ##### MAZE EXPERIMENTS ################
 

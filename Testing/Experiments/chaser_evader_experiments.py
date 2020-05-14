@@ -16,7 +16,6 @@ from gym_scalable.envs.grid.chaser_evader_env import ChaserEvaderEnv
 from gym_scalable.envs.grid.maps import map_loader
 import rllib_trainers
 from ray.tune import register_trainable, grid_search, run_experiments
-
 import argparse
 
 parser = argparse.ArgumentParser(description='ChaserEvaser experiment runner')
@@ -32,6 +31,8 @@ parser.add_argument('--random_start', dest='random_start', action='store_true', 
 parser.add_argument('--encode_state', dest='encode_state', action='store_true', default = False)
 parser.add_argument('--curriculum', dest='curriculum', action='store_true', default = False)
 parser.add_argument('--curriculum_eps', type=int, default = 100)
+parser.add_argument('--encoding', type = str, default = "pos")
+
 
 args = parser.parse_args()
 
@@ -53,7 +54,7 @@ def tune_runner(trainer, mapfile, name, mapsize):
 
                      "env_config": {"mapfile": mapfile,
                                       "RL_evader":args.rl_evader,
-                                      #"nw_encoded_state":True,
+                                      "state_encoding" : args.encoding,
                                       "randomize_start":args.random_start,
                                       "randomize_goal": args.random_goals,
                                       "curriculum": args.curriculum,

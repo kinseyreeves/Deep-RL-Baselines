@@ -36,6 +36,8 @@ parser.add_argument('--random_start', dest='random_start', action='store_true', 
 parser.add_argument('--curriculum', dest='curriculum', action='store_true', default = False)
 parser.add_argument('--curriculum_eps', type=int, default = 100)
 
+parser.add_argument('--encoding', type = str, default = "pos")
+
 
 args = parser.parse_args()
 encoding = None
@@ -70,7 +72,7 @@ def tune_runner(trainer, mapfile, name, mapsize):
                          'fcnet_hiddens': [256, 256],
                      },
                      "env_config": {"mapfile": mapfile,
-                                    #"nw_encoded_state": True,
+                                    "state_encoding" : args.encoding,
                                     "randomize_start":args.random_start,
                                     "num_goals": goals,
                                     "randomize_goal": args.random_goals,

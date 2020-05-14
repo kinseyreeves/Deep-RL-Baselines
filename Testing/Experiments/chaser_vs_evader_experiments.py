@@ -30,8 +30,10 @@ def tune_runner(trainer, mapfile, total_steps, name, mapsize):
                          "evader": (None, obs_space, action_space, {"gamma": 0.99})
                      },
                     "env_config": {"mapfile": os.getcwd() + mapfile,
-                                   "full_state": False, "normalize_state": True,
-                                   "randomize_start":True, "randomize_goal": True}
+                                   "full_state": False,
+                                   "normalize_state": True,
+                                   "randomize_start":True,
+                                   "randomize_goal": True}
                      },
              checkpoint_freq=10, checkpoint_at_end=True, stop={"timesteps_total": total_steps},
              name=f"{EXP_NAME}-{mapsize}x{mapsize}-{name}")

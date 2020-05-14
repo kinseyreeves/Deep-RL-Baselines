@@ -16,7 +16,7 @@ import pygame
 import math
 import random
 import itertools
-
+import time
 import numpy as np
 
 # ----------------------------------------------------#####
@@ -96,6 +96,7 @@ class NJointArm(gym.Env):
         """
         self.extra_joints = config["extra_joints"] if "extra_joints" in config else 1
         self.extra_state = config["extra_state"] if "extra_state" in config else False
+        self.slowdown_step = config["slowdown_step"] if "slowdown_step" in config else False
         
         print(f"N-jointed arm started with {self.extra_joints+1} joints")
         self.screen = None
@@ -172,6 +173,9 @@ class NJointArm(gym.Env):
             for i in range(0, len(disc_actions)):
                 if disc_actions[i]:
                     return list(self.non_discrete_actions[i])
+
+        if(self.slowdown_step):
+            time.sleep(0.01)
 
         action = np.clip(action, -1, 1)
 
