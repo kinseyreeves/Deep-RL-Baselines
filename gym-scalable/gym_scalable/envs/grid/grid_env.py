@@ -25,6 +25,8 @@ class GridEnv():
         self.action_space = spaces.Discrete(4)
         self.curriculum_value = 1
         self.entities = []
+        self.encoded_state = False
+        self.nw_encoded_state = False
 
         self.screen = None
         print(f"Starting  with config {config}")
@@ -40,13 +42,18 @@ class GridEnv():
         self.normalize_state = config["normalize_state"] if "normalize_state" in config else False
         self.capture_reward = config["capture_reward"] if "capture_reward" in config else False
         self.randomize_goal = config["randomize_goal"] if "randomize_goal" in config else False
-        self.encoded_state = config["encoded_state"] if "encoded_state" in config else False
-        self.nw_encoded_state = config["nw_encoded_state"] if "nw_encoded_state" in config else False
+        self.state_encoding = config["state_encoding"] if "state_encoding" in config else "nw"
         self.slowdown_step = config["slowdown_step"] if "slowdown_step" in config else False
         self.curriculum = config["curriculum"] if "curriculum" in config else False
         self.curriculum_steps = config["curriculum_eps"] if "curriculum_eps" in config else 100
 
         self.grid = GridMap(self.map_file, S_WIDTH)
+
+        if self.state_encoding == "nw":
+            self.nw_encoded_state = True
+        elif self.state_encoding == "w":
+            self.encoded_state = True
+
 
     def step(self, action):
         if self.slowdown_step:

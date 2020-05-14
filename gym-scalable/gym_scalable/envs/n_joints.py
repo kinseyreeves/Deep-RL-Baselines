@@ -16,7 +16,7 @@ import pygame
 import math
 import random
 import itertools
-
+import time
 import numpy as np
 
 # ----------------------------------------------------#####
@@ -36,7 +36,7 @@ ARM_RADS_CHANGE = 0.1
 # Whether or not the arm movements are relative. Read step()
 RELATIVE = False
 
-RESET_ARM_ANGS = True
+RESET_ARM_ANGS = False
 
 # -------------------ENV PARAMS----------------------######
 
@@ -96,6 +96,7 @@ class NJointArm(gym.Env):
         """
         self.extra_joints = config["extra_joints"] if "extra_joints" in config else 1
         self.extra_state = config["extra_state"] if "extra_state" in config else False
+        self.slowdown_step = config["slowdown_step"] if "slowdown_step" in config else False
         
         print(f"N-jointed arm started with {self.extra_joints+1} joints")
         self.screen = None
@@ -126,7 +127,6 @@ class NJointArm(gym.Env):
         # Initialise the default single arm
         self.arm = Arm(self.centre_x, S_HEIGHT / 2, ARM_ANGLE, ARM_LENGTH, None)
         self.arms = [self.arm]
-
 
         # Intialise the extra arms
         for i in range(1, self.extra_joints + 1):
@@ -174,6 +174,9 @@ class NJointArm(gym.Env):
                 if disc_actions[i]:
                     return list(self.non_discrete_actions[i])
 
+        if(self.slowdown_step):
+            time.sleep(0.01)
+
         action = np.clip(action, -1, 1)
 
         self.time_pen -= 1
@@ -197,7 +200,6 @@ class NJointArm(gym.Env):
                     update_arms(action_arms[i + 1:], change)
         # check distance from goal of end arm, if less than thresh episode done
         reward = self.calc_reward(action)
-
         state = self.get_state()
 
         if (USE_MOUSE and self.screen and pygame.mouse.get_focused()):
@@ -207,6 +209,11 @@ class NJointArm(gym.Env):
 
         if (self.steps > MAX_STEPS):
             self.done = True
+
+        if self.get_dist() < DIST_THRESH and (not self.done):
+            self.at_objective_n += 1
+            if self.at_objective_n > HOLD_COUNT:
+                self.done = True
 
         return np.array(state), reward, self.done, {}
 
@@ -226,7 +233,6 @@ class NJointArm(gym.Env):
 
         r = dist_pen + action_pen
 
-
         # r = math.sqrt(dist**2 + alpha**2) + alpha + action_pen
         # print(f"dist: {dist}, action pen {action_pen}, reward {r}")
         # r = -(dist / (S_WIDTH/2))
@@ -234,12 +240,7 @@ class NJointArm(gym.Env):
         #     self.done=True
         #     r -= 10
         #     return r
-        # if dist < DIST_THRESH and (not self.done):
-        #     r += 2.0
-        #     self.at_objective_n += 1
-        #     if self.at_objective_n > HOLD_COUNT:
-        #         r +=END_REWARD
-        #         self.done = True
+        #
         # elif dist > DIST_THRESH:
         #     self.at_objective_n = 0
         #     self.done = False

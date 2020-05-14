@@ -38,6 +38,7 @@ def nj_runner(trainer, name, nj):
 
              config={"env": NJointArm,
                      'lr': grid_search([0.0001]),
+                     #"exploration_config": {"type": "GaussianNoise"},
                      'model': {
                          # 'fcnet_hiddens': grid_search([[128, 128], [256,256]])
                          'fcnet_hiddens': [256, 256],
