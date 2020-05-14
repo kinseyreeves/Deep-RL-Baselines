@@ -20,3 +20,4 @@ results/chaser_vs_evader_results
 /results/encoded_maze_1reward_rsrg/
 /results/encoded_maze_neg01_reward_rsrg/
 /results/.ipynb_checkpoints/
+/experiments/run_all_exp.sh
