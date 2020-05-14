@@ -1,39 +1,37 @@
-
-
 """
 
 Single evader (RL controlled) with single chaser (A* controlled) experiments
 Kinsey Reeves
 """
 
-from ray.rllib.agents import ppo, ddpg, a3c, dqn
-import gym
 import os
+
+from ray.rllib.agents import ppo, a3c, dqn
+
 print(os.getcwd())
 from ray import tune
-from ray.tune.registry import register_env
 from gym_scalable.envs.grid.multi_chaser_evader_env import GridChaserVsEvaderEnv
 import sys
-from gym_scalable.envs.grid.maps import map_loader
-
 
 total_steps = int(sys.argv[1])
 EXP_NAME = "ChaserVsEvader"
 action_space = GridChaserVsEvaderEnv.action_space
 obs_space = GridChaserVsEvaderEnv.observation_space
+
+
 def tune_runner(trainer, mapfile, total_steps, name, mapsize):
     print(mapfile)
     tune.run(trainer,
              config={"env": GridChaserVsEvaderEnv,
                      "multiagent": {
-                         "chaser":(None, obs_space, action_space, {"gamma":0.99}),
+                         "chaser": (None, obs_space, action_space, {"gamma": 0.99}),
                          "evader": (None, obs_space, action_space, {"gamma": 0.99})
                      },
-                    "env_config": {"mapfile": os.getcwd() + mapfile,
-                                   "full_state": False,
-                                   "normalize_state": True,
-                                   "randomize_start":True,
-                                   "randomize_goal": True}
+                     "env_config": {"mapfile": os.getcwd() + mapfile,
+                                    "full_state": False,
+                                    "normalize_state": True,
+                                    "randomize_start": True,
+                                    "randomize_goal": True}
                      },
              checkpoint_freq=10, checkpoint_at_end=True, stop={"timesteps_total": total_steps},
              name=f"{EXP_NAME}-{mapsize}x{mapsize}-{name}")
@@ -53,7 +51,6 @@ mapfile = "/maps/map_5x5.txt"
 mapsize = 5
 
 tune_runner(trainer, mapfile, total_steps, name, mapsize)
-
 
 mapfile = "/maps/map_8x8.txt"
 mapsize = 8
@@ -80,7 +77,6 @@ mapsize = 8
 
 tune_runner(trainer, mapfile, total_steps, name, mapsize)
 
-
 ## ################################################### #
 ## -----------------##A3C##--------------------------- #
 ## ################################################### #
@@ -101,5 +97,3 @@ mapfile = "/maps/map_8x8.txt"
 mapsize = 8
 
 tune_runner(trainer, mapfile, total_steps, name, mapsize)
-
-
