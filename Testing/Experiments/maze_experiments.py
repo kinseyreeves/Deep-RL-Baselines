@@ -74,8 +74,9 @@ def tune_runner(trainer, mapfile, name, mapsize):
                                     "capture_reward": args.reward,
                                     "curriculum": args.curriculum,
                                     "curriculum_eps": args.curriculum_eps}},
-             checkpoint_freq=10, checkpoint_at_end=True, stop={"timesteps_total": args.steps},
-             name=f"{args.name}_maze-{mapsize}x{mapsize}-{name}")
+             checkpoint_freq=10, checkpoint_at_end=True,
+             #stop={"timesteps_total": args.steps},
+             name=f"{args.name}_maze-{mapsize}x{mapsize}-{name}-{args.encoding}")
 
 
 # ################################################### #

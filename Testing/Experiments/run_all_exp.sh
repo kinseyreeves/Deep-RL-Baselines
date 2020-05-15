@@ -10,29 +10,31 @@
 
 ###### Reacher Experiments ##########
 
-#python reacher_experiments.py --rl DDPG --extra_joints 1 --steps 200000
-#python reacher_experiments.py --rl DDPG --extra_joints 2 --steps 200000
-#python reacher_experiments.py --rl DDPG --extra_joints 4 --steps 200000
-#
-#python reacher_experiments.py --rl TD3 --extra_joints 1 --steps 200000
-#python reacher_experiments.py --rl TD3 --extra_joints 2 --steps 200000
-#python reacher_experiments.py --rl TD3 --extra_joints 4 --steps 200000
-#
-#python reacher_experiments.py --rl PPO --extra_joints 1 --steps 200000
-#python reacher_experiments.py --rl PPO --extra_joints 2 --steps 200000
-#python reacher_experiments.py --rl PPO --extra_joints 4 --steps 200000
+#/usr/bin/timeout 1800s python reacher_experiments.py --rl A2C --extra_joints 1
 
-python reacher_experiments.py --rl A2C --extra_joints 1 --steps 200000
-python reacher_experiments.py --rl A2C --extra_joints 2 --steps 200000
-python reacher_experiments.py --rl A2C --extra_joints 4 --steps 200000
+/usr/bin/timeout 1800s python reacher_experiments.py --rl DDPG --extra_joints 1
+/usr/bin/timeout 1800s python reacher_experiments.py --rl DDPG --extra_joints 2
+/usr/bin/timeout 1800s python reacher_experiments.py --rl DDPG --extra_joints 4
+
+/usr/bin/timeout 1800s python reacher_experiments.py --rl TD3 --extra_joints 1
+/usr/bin/timeout 1800s python reacher_experiments.py --rl TD3 --extra_joints 2
+/usr/bin/timeout 1800s python reacher_experiments.py --rl TD3 --extra_joints 4
+
+/usr/bin/timeout 1800s python reacher_experiments.py --rl PPO --extra_joints 1
+/usr/bin/timeout 1800s python reacher_experiments.py --rl PPO --extra_joints 2
+/usr/bin/timeout 1800s python reacher_experiments.py --rl PPO --extra_joints 4
+
+/usr/bin/timeout 1800s python reacher_experiments.py --rl A2C --extra_joints 1
+/usr/bin/timeout 1800s python reacher_experiments.py --rl A2C --extra_joints 2
+/usr/bin/timeout 1800s python reacher_experiments.py --rl A2C --extra_joints 4
 
 ##### MAZE EXPERIMENTS ################
 
 #Maze 5x5 ALL ALGORITHMS
-#python maze_experiments.py --rl PPO --steps 500000 --name 1r_rsrg_5g_500k_smenc --random_goals --random_start --1reward --num_goals 5
-#python maze_experiments.py --rl PG --steps 500000 --name 1r_rsrg_5g_500k_smenc --random_goals --random_start --1reward --num_goals 5
-#python maze_experiments.py --rl A2C --steps 500000 --name 1r_rsrg_5g_500k_smenc --random_goals --random_start --1reward --num_goals 5
-#python maze_experiments.py --rl DQN --steps 500000 --name 1r_rsrg_5g_500k_smenc --random_goals --random_start --1reward --num_goals 5
+#python maze_experiments.py --rl PPO --name 1r_rsrg_5g_500k_smenc --random_goals --random_start --1reward --num_goals 3
+#python maze_experiments.py --rl PG --name 1r_rsrg_5g_500k_smenc --random_goals --random_start --1reward --num_goals 3
+#python maze_experiments.py --rl A2C --name 1r_rsrg_5g_500k_smenc --random_goals --random_start --1reward --num_goals 3
+#python maze_experiments.py --rl DQN --name 1r_rsrg_5g_500k_smenc --random_goals --random_start --1reward --num_goals 3
 
 #maze experiments with changing number of goals
 #python maze_experiments.py --rl PPO --steps 1000000 --name PPO_1reward_rstart_rgoal_1msteps --random_goals --random_start --1reward --num_goals 1

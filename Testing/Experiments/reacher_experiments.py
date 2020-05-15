@@ -13,10 +13,8 @@ parser.add_argument('--steps', type=int, default=1000)
 
 args = parser.parse_args()
 
-
 def nj_runner(trainer, name, nj):
     tune.run(trainer,
-
              config={"env": NJointArm,
                      'lr': grid_search([0.0001]),
                      # "exploration_config": {"type": "GaussianNoise"},
@@ -28,7 +26,8 @@ def nj_runner(trainer, name, nj):
                          {"extra_joints": nj,
                           "full_state": False,
                           "normalize_state": True}},
-             checkpoint_freq=10, checkpoint_at_end=True, stop={"timesteps_total": args.steps},
+             checkpoint_freq=10, checkpoint_at_end=True,
+             #stop={"timesteps_total": args.steps},
              name=f"{nj}-joints-{name}")
 
 
