@@ -37,25 +37,25 @@
 ##### ################### MAZE EXPERIMENTS ##########################################
 
 ######TEST  Maze ALL ALGORITHMS all encodings experiment changing encodings
-/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name 1r_rsrg_3g_30min_enc --random_goals --random_start --1reward --num_goals 3 --maze_size 5
-/usr/bin/timeout 1800s python maze_experiments.py --rl A2C --name 1r_rsrg_3g_30min_enc --random_goals --random_start --1reward --num_goals 3 --maze_size 5
-/usr/bin/timeout 1800s python maze_experiments.py --rl DQN --name 1r_rsrg_3g_30min_enc --random_goals --random_start --1reward --num_goals 3 --maze_size 5
+/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name 1r_rsrg_3g_30min_enc --random_goals --random_start --1reward --num_goals 3 --map_size 5
+/usr/bin/timeout 1800s python maze_experiments.py --rl A2C --name 1r_rsrg_3g_30min_enc --random_goals --random_start --1reward --num_goals 3 --map_size 5
+/usr/bin/timeout 1800s python maze_experiments.py --rl DQN --name 1r_rsrg_3g_30min_enc --random_goals --random_start --1reward --num_goals 3 --map_size 5
 
-/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name 1r_rsrg_3g_30min_enc --random_goals --random_start --1reward --num_goals 3 --maze_size 5 --encoding w
-/usr/bin/timeout 1800s python maze_experiments.py --rl A2C --name 1r_rsrg_3g_30min_enc --random_goals --random_start --1reward --num_goals 3 --maze_size 5 --encoding w
-/usr/bin/timeout 1800s python maze_experiments.py --rl DQN --name 1r_rsrg_3g_30min_enc --random_goals --random_start --1reward --num_goals 3 --maze_size 5 --encoding w
+/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name 1r_rsrg_3g_30min_enc --random_goals --random_start --1reward --num_goals 3 --map_size 5 --encoding w
+/usr/bin/timeout 1800s python maze_experiments.py --rl A2C --name 1r_rsrg_3g_30min_enc --random_goals --random_start --1reward --num_goals 3 --map_size 5 --encoding w
+/usr/bin/timeout 1800s python maze_experiments.py --rl DQN --name 1r_rsrg_3g_30min_enc --random_goals --random_start --1reward --num_goals 3 --map_size 5 --encoding w
 
-/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name 1r_rsrg_3g_30min_enc --random_goals --random_start --1reward --num_goals 3 --maze_size 5 --encoding nw
-/usr/bin/timeout 1800s python maze_experiments.py --rl A2C --name 1r_rsrg_3g_30min_enc --random_goals --random_start --1reward --num_goals 3 --maze_size 5 --encoding nw
-/usr/bin/timeout 1800s python maze_experiments.py --rl DQN --name 1r_rsrg_3g_30min_enc --random_goals --random_start --1reward --num_goals 3 --maze_size 5 --encoding nw
-######
+/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name 1r_rsrg_3g_30min_enc --random_goals --random_start --1reward --num_goals 3 --map_size 5 --encoding nw
+/usr/bin/timeout 1800s python maze_experiments.py --rl A2C --name 1r_rsrg_3g_30min_enc --random_goals --random_start --1reward --num_goals 3 --map_size 5 --encoding nw
+/usr/bin/timeout 1800s python maze_experiments.py --rl DQN --name 1r_rsrg_3g_30min_enc --random_goals --random_start --1reward --num_goals 3 --map_size 5 --encoding nw
+
 #TEST Fixed vs random states
-/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name rsrg --random_goals --random_start --1reward --num_goals 3 --maze_size 5 --encoding nw
-/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name fsfg --1reward --num_goals 3 --maze_size 5 --encoding nw
+/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name rsrg --random_goals --random_start --1reward --num_goals 3 --map_size 5 --encoding nw
+/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name fsfg --1reward --num_goals 3 --map_size 5 --encoding nw
 
 #TEST -ve 1 reward vs 1 reward
-/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name rsrg --random_goals --random_start --1reward --num_goals 3 --maze_size 5 --encoding nw
-/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name rsrg --random_goals --random_start --num_goals 3 --maze_size 5 --encoding nw
+/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name rsrg --random_goals --random_start --1reward --num_goals 3 --map_size 5 --encoding nw
+/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name rsrg --random_goals --random_start --num_goals 3 --map_size 5 --encoding nw
 
 #python maze_experiments.py --rl PPO --name PPO_1reward_rstart_rgoal_1msteps --random_goals --random_start --1reward --num_goals 1
 
