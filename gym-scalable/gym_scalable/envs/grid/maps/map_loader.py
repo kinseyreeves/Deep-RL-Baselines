@@ -3,6 +3,9 @@ import os
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 
+def get_size_map(size):
+    return dir_path + f"/map_{size}x{size}.txt"
+
 def get_3x3_map():
     return dir_path + "/map_3x3.txt"
 
