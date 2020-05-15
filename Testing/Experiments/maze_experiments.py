@@ -42,14 +42,9 @@ logdir = "~/ray_results/maze"
 
 a = os.getcwd() + "/maps/map_3x3.txt"
 
-map_sizes = args.map_sizes
-
 def tune_runner(trainer, mapfile, name, mapsize):
-    global map_sizes
     global args
 
-    if mapsize not in map_sizes:
-        return
     if (args.num_goals):
         goals = args.num_goals
     else:
