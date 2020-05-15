@@ -33,6 +33,7 @@ parser.add_argument('--curriculum', dest='curriculum', action='store_true', defa
 parser.add_argument('--curriculum_eps', type=int, default=100)
 
 parser.add_argument('--encoding', type=str, default="pos")
+parser.add_argument('--map_size', type=int)
 
 args = parser.parse_args()
 encoding = None
@@ -41,8 +42,7 @@ logdir = "~/ray_results/maze"
 
 a = os.getcwd() + "/maps/map_3x3.txt"
 
-map_sizes = [3, 5, 8]
-
+map_sizes = args.map_sizes
 
 def tune_runner(trainer, mapfile, name, mapsize):
     global map_sizes
@@ -50,7 +50,6 @@ def tune_runner(trainer, mapfile, name, mapsize):
 
     if mapsize not in map_sizes:
         return
-
     if (args.num_goals):
         goals = args.num_goals
     else:
@@ -74,30 +73,18 @@ def tune_runner(trainer, mapfile, name, mapsize):
                                     "capture_reward": args.reward,
                                     "curriculum": args.curriculum,
                                     "curriculum_eps": args.curriculum_eps}},
-             checkpoint_freq=10, checkpoint_at_end=True, stop={"timesteps_total": args.steps},
-             name=f"{args.name}_maze-{mapsize}x{mapsize}-{name}")
+             checkpoint_freq=10, checkpoint_at_end=True,
+             #stop={"timesteps_total": args.steps},
+             name=f"{args.name}_maze-{mapsize}x{mapsize}-{goals}goals-{name}-{args.encoding}")
 
 
 # ################################################### #
 # # -----------------##Training##-------------------- #
 # # ################################################# #
 
+mapfile = map_loader.get_size_map(args.map_size)
 
 name = args.rl
 trainer = rllib_trainers.get_trainer(name)
-goals = 3
 
-mapfile = map_loader.get_3x3_map()
-mapsize = 3
-
-tune_runner(trainer, mapfile, name, mapsize)
-
-mapfile = map_loader.get_5x5_map()
-mapsize = 5
-
-tune_runner(trainer, mapfile, name, mapsize)
-
-mapfile = map_loader.get_8x8_map()
-mapsize = 8
-
-tune_runner(trainer, mapfile, name, mapsize)
+tune_runner(trainer, mapfile, name, args.map_size)

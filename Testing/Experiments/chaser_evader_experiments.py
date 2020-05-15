@@ -58,9 +58,9 @@ def tune_runner(trainer, mapfile, name, mapsize):
                                     }},
              checkpoint_freq=10,
              checkpoint_at_end=True,
-             stop={"timesteps_total": args.steps},
+             #stop={"timesteps_total": args.steps},
 
-             name=f"{args.name}-{mapsize}x{mapsize}-{name}")
+             name=f"{args.name}-{mapsize}x{mapsize}-{name}-{args.encoding}")
 
 
 # ##################################################### #

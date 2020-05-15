@@ -1,44 +1,69 @@
 
 
-#python maze_experiments.py --steps 1000000 --1reward --name 3goals_capture_reward_200max --num_goals 3
-#Fixed goals, fixed start
-#python maze_experiments.py --steps 200000 --name encoded_3goals_1_reward_on_goal_200max --1reward --num_goals 3
-#python maze_experiments.py --steps 200000 --name encoded_3goals_neg01_reward_on_goal_200max --num_goals 3
 
-#random goals, random start
-#python maze_experiments.py --steps 200000 --name encoded_3goals_1reward_on_goal_rgoal_rstart --1reward --random_goals --random_start --num_goals 3
+################################# Reacher Experiments #####################################
 
-###### Reacher Experiments ##########
 
-#python reacher_experiments.py --rl DDPG --extra_joints 1 --steps 200000
-#python reacher_experiments.py --rl DDPG --extra_joints 2 --steps 200000
-#python reacher_experiments.py --rl DDPG --extra_joints 4 --steps 200000
-#
-#python reacher_experiments.py --rl TD3 --extra_joints 1 --steps 200000
-#python reacher_experiments.py --rl TD3 --extra_joints 2 --steps 200000
-#python reacher_experiments.py --rl TD3 --extra_joints 4 --steps 200000
-#
-#python reacher_experiments.py --rl PPO --extra_joints 1 --steps 200000
-#python reacher_experiments.py --rl PPO --extra_joints 2 --steps 200000
-#python reacher_experiments.py --rl PPO --extra_joints 4 --steps 200000
+#/usr/bin/timeout 1800s python reacher_experiments.py --rl A2C --extra_joints 1
 
-python reacher_experiments.py --rl A2C --extra_joints 1 --steps 200000
-python reacher_experiments.py --rl A2C --extra_joints 2 --steps 200000
-python reacher_experiments.py --rl A2C --extra_joints 4 --steps 200000
+#TEST all algorithms all joints
+/usr/bin/timeout 1800s python reacher_experiments.py --rl DDPG --extra_joints 1
+/usr/bin/timeout 1800s python reacher_experiments.py --rl DDPG --extra_joints 2
+/usr/bin/timeout 1800s python reacher_experiments.py --rl DDPG --extra_joints 4
+/usr/bin/timeout 1800s python reacher_experiments.py --rl DDPG --extra_joints 8
 
-##### MAZE EXPERIMENTS ################
+/usr/bin/timeout 1800s python reacher_experiments.py --rl TD3 --extra_joints 1
+/usr/bin/timeout 1800s python reacher_experiments.py --rl TD3 --extra_joints 2
+/usr/bin/timeout 1800s python reacher_experiments.py --rl TD3 --extra_joints 4
+/usr/bin/timeout 1800s python reacher_experiments.py --rl TD3 --extra_joints 8
 
-#Maze 5x5 ALL ALGORITHMS
-#python maze_experiments.py --rl PPO --steps 500000 --name 1r_rsrg_5g_500k_smenc --random_goals --random_start --1reward --num_goals 5
-#python maze_experiments.py --rl PG --steps 500000 --name 1r_rsrg_5g_500k_smenc --random_goals --random_start --1reward --num_goals 5
-#python maze_experiments.py --rl A2C --steps 500000 --name 1r_rsrg_5g_500k_smenc --random_goals --random_start --1reward --num_goals 5
-#python maze_experiments.py --rl DQN --steps 500000 --name 1r_rsrg_5g_500k_smenc --random_goals --random_start --1reward --num_goals 5
+/usr/bin/timeout 1800s python reacher_experiments.py --rl PPO --extra_joints 1
+/usr/bin/timeout 1800s python reacher_experiments.py --rl PPO --extra_joints 2
+/usr/bin/timeout 1800s python reacher_experiments.py --rl PPO --extra_joints 4
+/usr/bin/timeout 1800s python reacher_experiments.py --rl PPO --extra_joints 8
+
+/usr/bin/timeout 1800s python reacher_experiments.py --rl A2C --extra_joints 1
+/usr/bin/timeout 1800s python reacher_experiments.py --rl A2C --extra_joints 2
+/usr/bin/timeout 1800s python reacher_experiments.py --rl A2C --extra_joints 4
+/usr/bin/timeout 1800s python reacher_experiments.py --rl A2C --extra_joints 8
+
+#Test gaussian vs OU noise
+
+#TEST todo hyperparam tuning
+
+#TEST population based learning
+
+
+##### ################### MAZE EXPERIMENTS ##########################################
+
+######TEST  Maze ALL ALGORITHMS all encodings experiment changing encodings
+/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name 1r_rsrg_3g_30min_enc --random_goals --random_start --1reward --num_goals 3 --maze_size 5
+/usr/bin/timeout 1800s python maze_experiments.py --rl A2C --name 1r_rsrg_3g_30min_enc --random_goals --random_start --1reward --num_goals 3 --maze_size 5
+/usr/bin/timeout 1800s python maze_experiments.py --rl DQN --name 1r_rsrg_3g_30min_enc --random_goals --random_start --1reward --num_goals 3 --maze_size 5
+
+/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name 1r_rsrg_3g_30min_enc --random_goals --random_start --1reward --num_goals 3 --maze_size 5 --encoding w
+/usr/bin/timeout 1800s python maze_experiments.py --rl A2C --name 1r_rsrg_3g_30min_enc --random_goals --random_start --1reward --num_goals 3 --maze_size 5 --encoding w
+/usr/bin/timeout 1800s python maze_experiments.py --rl DQN --name 1r_rsrg_3g_30min_enc --random_goals --random_start --1reward --num_goals 3 --maze_size 5 --encoding w
+
+/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name 1r_rsrg_3g_30min_enc --random_goals --random_start --1reward --num_goals 3 --maze_size 5 --encoding nw
+/usr/bin/timeout 1800s python maze_experiments.py --rl A2C --name 1r_rsrg_3g_30min_enc --random_goals --random_start --1reward --num_goals 3 --maze_size 5 --encoding nw
+/usr/bin/timeout 1800s python maze_experiments.py --rl DQN --name 1r_rsrg_3g_30min_enc --random_goals --random_start --1reward --num_goals 3 --maze_size 5 --encoding nw
+######
+#TEST Fixed vs random states
+/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name rsrg --random_goals --random_start --1reward --num_goals 3 --maze_size 5 --encoding nw
+/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name fsfg --1reward --num_goals 3 --maze_size 5 --encoding nw
+
+#TEST -ve 1 reward vs 1 reward
+/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name rsrg --random_goals --random_start --1reward --num_goals 3 --maze_size 5 --encoding nw
+/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name rsrg --random_goals --random_start --num_goals 3 --maze_size 5 --encoding nw
+
+#python maze_experiments.py --rl PPO --name PPO_1reward_rstart_rgoal_1msteps --random_goals --random_start --1reward --num_goals 1
 
 #maze experiments with changing number of goals
-#python maze_experiments.py --rl PPO --steps 1000000 --name PPO_1reward_rstart_rgoal_1msteps --random_goals --random_start --1reward --num_goals 1
-#python maze_experiments.py --rl PPO --steps 1000000 --name PPO_1reward_rstart_rgoal_1msteps --random_goals --random_start --1reward --num_goals 2
-#python maze_experiments.py --rl PPO --steps 1000000 --name PPO_1reward_rstart_rgoal_1msteps --random_goals --random_start --1reward --num_goals 4
-#python maze_experiments.py --rl PPO --steps 1000000 --name PPO_1reward_rstart_rgoal_1msteps --random_goals --random_start --1reward --num_goals 8
+#python maze_experiments.py --rl PPO --name PPO_1reward_rstart_rgoal_1msteps --random_goals --random_start --1reward --num_goals 1
+#python maze_experiments.py --rl PPO --name PPO_1reward_rstart_rgoal_1msteps --random_goals --random_start --1reward --num_goals 2
+#python maze_experiments.py --rl PPO --name PPO_1reward_rstart_rgoal_1msteps --random_goals --random_start --1reward --num_goals 4
+#python maze_experiments.py --rl PPO --name PPO_1reward_rstart_rgoal_1msteps --random_goals --random_start --1reward --num_goals 8
 ######
 #python maze_experiments.py --rl DQN --steps 100000 --name DQN_1reward_rstart_rgoal_1msteps --random_goals --random_start --1reward
 
