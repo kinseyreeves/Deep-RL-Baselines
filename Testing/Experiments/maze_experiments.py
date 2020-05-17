@@ -34,7 +34,7 @@ parser.add_argument('--curriculum', dest='curriculum', action='store_true', defa
 parser.add_argument('--curriculum_eps', type=int, default=100)
 
 parser.add_argument('--encoding', type=str, default="pos")
-parser.add_argument('--map_size', type=int)
+parser.add_argument('--map_size', type=int, default = 5)
 
 args = parser.parse_args()
 encoding = None
@@ -105,11 +105,11 @@ def PPO_tune_runner(trainer, mapfile, name, mapsize, args):
              config={"env": MazeEnv,
                      # "num_workers":4,
                      # "num_envs_per_worker": 1,
-                     'lr' : grid_search([0.0001, 0.001, 0.01]),
+                     #'lr' : grid_search([0.0001, 0.001, 0.01]),
                      # 'lr': grid_search([0.0001]),
-                     'model': {
-                         'fcnet_hiddens': grid_search([[128, 128], [256,256], [256]])
-                     },
+                     # 'model': {
+                     #     'fcnet_hiddens': grid_search([[128, 128], [256,256], [256]])
+                     # },
                      "env_config": get_env_config(mapfile, args, goals)},
              checkpoint_freq=10, checkpoint_at_end=True,
              #stop={"timesteps_total": args.steps},
