@@ -48,7 +48,7 @@ def get_jacobian(nj, eff_coords, joints):
 
 #Run tests
 out_df = pd.DataFrame()
-for test in range(1, 8):
+for test in range(7, 10):
     extra_j = test
     env = gym.make('n-joints-v0', config={"extra_joints": extra_j, "extra_state": True})
     # f.write(str(extra_j) + ",")
@@ -86,8 +86,8 @@ for test in range(1, 8):
             if (math.sqrt((obj_pos[0] - eff_pos[0]) ** 2 + (obj_pos[1] - eff_pos[1]) ** 2)) < THRESH:
                 action *= 0
 
-            #env.render()
-            #time.sleep(0.01)
+            env.render()
+            time.sleep(0.01)
             state, reward, done, _ = env.step(action)
             # print(reward)
             rewards.append(reward)

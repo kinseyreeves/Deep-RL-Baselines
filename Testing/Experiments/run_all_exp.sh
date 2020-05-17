@@ -35,11 +35,11 @@
 
 #TEST population based learning
 
-
 ##### ################### MAZE EXPERIMENTS ##########################################
 
 ######TEST  Maze ALL ALGORITHMS all encodings experiment changing encodings
-/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name 1r_rsrg_3g_30min_enc --random_goals --random_start --1reward --num_goals 3 --map_size 5
+
+#/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name 1r_rsrg_3g_30min_enc --random_goals --random_start --1reward --num_goals 3 --map_size 5
 #/usr/bin/timeout 1800s python maze_experiments.py --rl A2C --name 1r_rsrg_3g_30min_enc --random_goals --random_start --1reward --num_goals 3 --map_size 5
 #/usr/bin/timeout 1800s python maze_experiments.py --rl DQN --name 1r_rsrg_3g_30min_enc --random_goals --random_start --1reward --num_goals 3 --map_size 5
 #
