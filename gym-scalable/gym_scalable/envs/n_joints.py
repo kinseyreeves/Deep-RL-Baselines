@@ -227,7 +227,6 @@ class NJointArm(gym.Env):
 
         dist_pen = -self.get_dist() / self.normalize_len
 
-
         action_pen = sum(-beta * abs(action))
         h = ((dist_pen * 2 + alpha * 2) ** (1 / 2) + alpha)
 

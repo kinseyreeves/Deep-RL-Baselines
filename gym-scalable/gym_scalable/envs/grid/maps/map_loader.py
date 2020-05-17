@@ -9,7 +9,6 @@ def get_size_map(size):
 def get_3x3_map():
     return dir_path + "/map_3x3.txt"
 
-
 def get_4x4_map():
     return dir_path + "/map_4x4.txt"
 

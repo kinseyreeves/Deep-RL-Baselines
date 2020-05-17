@@ -1,6 +1,5 @@
 from ray.rllib.agents import ppo, ddpg, a3c, dqn, pg
 
-
 def get_trainer(arg):
     trainer = None
     if arg == 'DQN':
