@@ -14,12 +14,12 @@ param_noise = None
 action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), sigma=float(0.5) * np.ones(n_actions))
 
 model = DDPG(MlpPolicy, env, verbose=1, param_noise=param_noise, action_noise=action_noise)
-model.learn(total_timesteps=1000)
-model.save("nj")
+model.learn(total_timesteps=400000)
+model.save("ddpg_mountain")
 
 del model # remove to demonstrate saving and loading
 
-model = DDPG.load("nj")
+model = DDPG.load("ddpg_mountain")
 
 obs = env.reset()
 while True:

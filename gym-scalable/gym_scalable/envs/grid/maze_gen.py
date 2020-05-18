@@ -1,13 +1,13 @@
 """
 Script to generaze maps of differing complexity
+Based on Prims algorithm
 
 """
 
 from random import shuffle, randrange
 import pygame
 
-SIZE = 15
-
+SIZE = 4
 
 def make_maze(w=SIZE, h=SIZE):
     vis = [[0] * w + [1] for _ in range(h)] + [[1] * (w + 1)]
