@@ -87,7 +87,7 @@ class MazeEnv(gym.Env, GridEnv):
         self.reward = 0 if self.capture_reward else -.1
 
         self.entity.update(self.action)
-        self.set_state()
+
 
         if self.grid.is_goal(self.entity.x, self.entity.y):
             self.grid.remove_goal(self.entity.x, self.entity.y)
@@ -99,6 +99,8 @@ class MazeEnv(gym.Env, GridEnv):
 
             if self.grid.num_goals() == 0:
                 self.done = True
+
+        self.set_state()
 
         if self.steps >= self.max_steps:
             self.done = True
@@ -129,13 +131,13 @@ class MazeEnv(gym.Env, GridEnv):
             self.grid.clear_goals()
             self.grid.add_goals(self.static_goals)
 
-        self.set_state()
-
         if self.randomize_start:
             self.grid.set_random_start()
 
         self.entity.x = self.grid.start[0]
         self.entity.y = self.grid.start[1]
+
+        self.set_state()
 
         return self.state
 
