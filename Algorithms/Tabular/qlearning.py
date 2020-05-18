@@ -54,7 +54,7 @@ class Q_Dict:
         if state in self.vals:
             return np.argmax(self.vals[state])
         else:
-            self.vals[state] = np.zeros(self.action_size)
+            self.vals[state] = np.ones(self.action_size)*0.1
             return np.argmax(self.vals[state])
 
     def get_qval(self, state, action):
@@ -63,7 +63,7 @@ class Q_Dict:
         if state in self.vals:
             return self.vals[state][action]
         else:
-            self.vals[state] = np.zeros(self.action_size)
+            self.vals[state] = np.ones(self.action_size)*0.1
             return self.vals[state][action]
 
     def convert_state(self, lst):
@@ -137,6 +137,7 @@ def eval(env, qt):
         action = qt.get_action(s)
         s, reward, done, info = env.step(action)
         rewards.append(reward)
+        print(s)
 
         if (done):
             i += 1
@@ -164,35 +165,34 @@ env = gym.make('n-maze-v0', config=config)
 
 qt = QLearning(env, 10000, 0.3, 0.1, 0.99)
 print("done size 3")
-eval(env, qt)
+# eval(env, qt)
+#
+# input()
 
-input()
-#
-# config["mapfile"] = map_loader.get_4x4_map()
-# env = gym.make('n-maze-v0', config=config)
-# qt = QLearning(env, 5000, 0.2, 0.1, 0.99)
-# print("done size 4")
-#
-# config["mapfile"] = map_loader.get_5x5_map()
-# env = gym.make('n-maze-v0', config=config)
-# qt = QLearning(env, 5000, 0.2, 0.1, 0.99)
-# print("done size 5")
-#
-# config["mapfile"] = map_loader.get_6x6_map()
-# env = gym.make('n-maze-v0', config=config)
-# qt = QLearning(env, 5000, 0.2, 0.1, 0.99)
-# print("done size 6")
-#
-# config["mapfile"] = map_loader.get_7x7_map()
-# env = gym.make('n-maze-v0', config=config)
-# qt = QLearning(env, 5000, 0.2, 0.1, 0.99)
-# print("done size 8")
-#
-# config["mapfile"] = map_loader.get_7x7_map()
-# env = gym.make('n-maze-v0', config=config)
-# qt = QLearning(env, 5000, 0.2, 0.1, 0.99)
-#
-# #eval(env, qt)
-#
+config["mapfile"] = map_loader.get_4x4_map()
+env = gym.make('n-maze-v0', config=config)
+qt = QLearning(env, 10000, 0.2, 0.1, 0.99)
+print("done size 4")
+
+config["mapfile"] = map_loader.get_5x5_map()
+env = gym.make('n-maze-v0', config=config)
+qt = QLearning(env, 10000, 0.2, 0.1, 0.99)
+print("done size 5")
+
+config["mapfile"] = map_loader.get_6x6_map()
+env = gym.make('n-maze-v0', config=config)
+qt = QLearning(env, 10000, 0.2, 0.1, 0.99)
+print("done size 6")
+
+config["mapfile"] = map_loader.get_7x7_map()
+env = gym.make('n-maze-v0', config=config)
+qt = QLearning(env, 10000, 0.2, 0.1, 0.99)
+print("done size 8")
+
+config["mapfile"] = map_loader.get_7x7_map()
+env = gym.make('n-maze-v0', config=config)
+qt = QLearning(env, 10000, 0.2, 0.1, 0.99)
+
+
 
 res_df.to_csv("tabular_results.csv")

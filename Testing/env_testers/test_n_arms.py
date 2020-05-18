@@ -14,7 +14,6 @@ i = 0
 # print(type(env.action_space))
 # print(type(env.observation_space))
 # state = env.reset()
-#
 # input()
 # print("shape : " , env.observation_space.shape[0])
 
