@@ -31,12 +31,13 @@ VAR_RED = 0.99995
 
 ACTOR_UPDATE = 1
 CRITIC_UPDATE = 1
-checkpoint = 1000
+checkpoint = 2
 writer = SummaryWriter(logdir="../runs/" + "DDPG" + time.strftime("%Y%m%d-%H%M%S"))
 
-out_df = pd.DataFrame()
 
 def run(extra_joints=1):
+    out_df = pd.DataFrame(columns=["total_steps", "episode_rewards", "episode_len"])
+
     rewards = []
     avg_rewards = []
     ep_steps = []
@@ -93,16 +94,18 @@ def run(extra_joints=1):
                 all_steps.append(total_steps)
                 ep_steps.append(step)
                 ep_rewards.append(episode_reward)
+                out_df = out_df.append({"total_steps":total_steps, "episode_rewards":episode_reward, "episode_len":step}, ignore_index=True)
+
                 break
 
             rewards.append(episode_reward)
             avg_rewards.append(np.mean(rewards[-10:]))
-        if(ep_n % checkpoint == 0):
-            out_df['total_steps'] = all_steps
-            out_df['episode_rewards'] = ep_rewards
-            out_df['episode_len'] = ep_steps
 
-        out_df.to_csv(f"{extra_joints}_df.csv")
+        if(ep_n % checkpoint == 0):
+            #print(out_df)
+            print("Saving data")
+
+            out_df.to_csv(f"{extra_joints}_df.csv")
 
 
 run(extra_joints=int(sys.argv[1]))
