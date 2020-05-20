@@ -31,11 +31,12 @@ VAR_RED = 0.99995
 
 ACTOR_UPDATE = 1
 CRITIC_UPDATE = 1
-checkpoint = 2
+checkpoint = 10
 writer = SummaryWriter(logdir="../runs/" + "DDPG" + time.strftime("%Y%m%d-%H%M%S"))
-
+TAU = float(sys.argv[2])
 
 def run(extra_joints=1):
+    print(f"Running with {TAU} and {extra_joints} joints")
     out_df = pd.DataFrame(columns=["total_steps", "episode_rewards", "episode_len"])
 
     rewards = []
@@ -51,7 +52,7 @@ def run(extra_joints=1):
     # state_size = env.observation_space.shape[0]
     state_size = env.observation_space.shape[0]
     action_size = env.action_space.shape[0]
-    ddpg_agent = agent.DDPGAgent(state_size, action_size, hidden_size=HIDDEN_SIZE)
+    ddpg_agent = agent.DDPGAgent(state_size, action_size, hidden_size=HIDDEN_SIZE, tau=TAU)
     # memory = util.ReplayMemory()
     # noise = util.OUNoise(env.action_space)
     # print(env.observation_space.shape )
@@ -83,9 +84,6 @@ def run(extra_joints=1):
 
             state = new_state
             episode_reward += reward
-            #env.render()
-            # if ep_n > 100:
-            #    env.render()
 
             if done or step == MAX_EP_STEPS:
                 ep_n +=1
@@ -101,11 +99,10 @@ def run(extra_joints=1):
             rewards.append(episode_reward)
             avg_rewards.append(np.mean(rewards[-10:]))
 
-        if(ep_n % checkpoint == 0):
-            #print(out_df)
+        if ep_n % checkpoint == 0:
             print("Saving data")
 
-            out_df.to_csv(f"{extra_joints}_df.csv")
+            out_df.to_csv(f"{extra_joints}_{TAU}df.csv")
 
 
 run(extra_joints=int(sys.argv[1]))
