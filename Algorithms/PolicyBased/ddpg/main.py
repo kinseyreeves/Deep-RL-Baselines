@@ -5,7 +5,19 @@ import gym_scalable
 from tensorboardX import SummaryWriter
 import time
 import pandas as pd
+import sys
 
+"""
+DDPG implementation using pytorch
+Based on Deepminds paper continuous control 
+Kinsey Reeves
+2020
+usage : 
+python main.py {extra_joints} 
+for an arm with 1 free joint (2 joints)
+"""
+
+checkpoint = 5
 
 BATCH_SIZE = 16
 N_EPISODES = 2000
@@ -19,11 +31,14 @@ VAR_RED = 0.99995
 
 ACTOR_UPDATE = 1
 CRITIC_UPDATE = 1
-
+checkpoint = 10
 writer = SummaryWriter(logdir="../runs/" + "DDPG" + time.strftime("%Y%m%d-%H%M%S"))
+TAU = float(sys.argv[2])
 
-out_df = pd.DataFrame()
 def run(extra_joints=1):
+    print(f"Running with {TAU} and {extra_joints} joints")
+    out_df = pd.DataFrame(columns=["total_steps", "episode_rewards", "episode_len"])
+
     rewards = []
     avg_rewards = []
     ep_steps = []
@@ -37,14 +52,14 @@ def run(extra_joints=1):
     # state_size = env.observation_space.shape[0]
     state_size = env.observation_space.shape[0]
     action_size = env.action_space.shape[0]
-    ddpg_agent = agent.DDPGAgent(state_size, action_size, hidden_size=HIDDEN_SIZE)
+    ddpg_agent = agent.DDPGAgent(state_size, action_size, hidden_size=HIDDEN_SIZE, tau=TAU)
     # memory = util.ReplayMemory()
     # noise = util.OUNoise(env.action_space)
     # print(env.observation_space.shape )
 
     var = 2
     ep_n = 0
-    while total_steps < 200000:
+    while True:
         state = env.reset()
         episode_reward = 0
         # noise.reset()
@@ -69,9 +84,6 @@ def run(extra_joints=1):
 
             state = new_state
             episode_reward += reward
-            #env.render()
-            if ep_n > 100:
-               env.render()
 
             if done or step == MAX_EP_STEPS:
                 ep_n +=1
@@ -80,16 +92,17 @@ def run(extra_joints=1):
                 all_steps.append(total_steps)
                 ep_steps.append(step)
                 ep_rewards.append(episode_reward)
+                out_df = out_df.append({"total_steps":total_steps, "episode_rewards":episode_reward, "episode_len":step}, ignore_index=True)
+
                 break
 
             rewards.append(episode_reward)
             avg_rewards.append(np.mean(rewards[-10:]))
-    out_df['total_steps'] = all_steps
-    out_df['episode_rewards'] = ep_rewards
-    out_df['episode_len'] = ep_steps
 
-    out_df.to_csv(f"{extra_joints}_df.csv")
+        if ep_n % checkpoint == 0:
+            print("Saving data")
 
-run(extra_joints=1)
-run(extra_joints=2)
-run(extra_joints=4)
+            out_df.to_csv(f"{extra_joints}_{TAU}df.csv")
+
+
+run(extra_joints=int(sys.argv[1]))

@@ -97,7 +97,6 @@ class DDPGAgent():
         self.critic_criterion = nn.MSELoss()
         self.actor_optimizer = optim.Adam(self.actor.parameters(), lr=self.a_lr)
         self.critic_optimizer = optim.Adam(self.critic.parameters(), lr = self.c_lr)
-        #optim.RMSprop()
 
     def get_action(self, state):
         state_var = Variable(torch.from_numpy(state).float().unsqueeze(0))
@@ -120,9 +119,9 @@ class DDPGAgent():
         next_actions = self.actor_target.forward(states_)
         next_Q = self.critic_target.forward(states_, next_actions.detach())
         Qprime = rewards + self.gamma * next_Q
-        #print(Qprime.shape)
+
+        #MSE LOSS
         critic_loss = self.critic_criterion(Qvals, Qprime)
-        #a = input()
 
         # Actor loss
         policy_loss = -self.critic.forward(states, self.actor.forward(states)).mean()
@@ -138,13 +137,13 @@ class DDPGAgent():
         self.critic_optimizer.step()
 
     def upate_actor_target(self):
-        self.tau = 0
+        #self.tau = 0.002
         for target_param, param in zip(self.actor_target.parameters(), self.actor.parameters()):
             target_param.data.copy_(param.data * self.tau + target_param.data * (1.0 - self.tau))
             #target_param.data.copy_(param.data)
 
     def update_critic_target(self):
-        self.tau = 0
+        #self.tau = 0.002
         for target_param, param in zip(self.critic_target.parameters(), self.critic.parameters()):
             #target_param.data.copy_(param.data)
             target_param.data.copy_(param.data * self.tau + target_param.data * (1.0 - self.tau))
