@@ -5,7 +5,19 @@ import gym_scalable
 from tensorboardX import SummaryWriter
 import time
 import pandas as pd
+import sys
 
+"""
+DDPG implementation using pytorch
+Based on Deepminds paper continuous control 
+Kinsey Reeves
+2020
+usage : 
+python main.py {extra_joints} 
+for an arm with 1 free joint (2 joints)
+"""
+
+checkpoint = 5
 
 BATCH_SIZE = 16
 N_EPISODES = 2000
@@ -19,10 +31,11 @@ VAR_RED = 0.99995
 
 ACTOR_UPDATE = 1
 CRITIC_UPDATE = 1
-
+checkpoint = 1000
 writer = SummaryWriter(logdir="../runs/" + "DDPG" + time.strftime("%Y%m%d-%H%M%S"))
 
 out_df = pd.DataFrame()
+
 def run(extra_joints=1):
     rewards = []
     avg_rewards = []
@@ -44,7 +57,7 @@ def run(extra_joints=1):
 
     var = 2
     ep_n = 0
-    while total_steps < 200000:
+    while True:
         state = env.reset()
         episode_reward = 0
         # noise.reset()
@@ -70,8 +83,8 @@ def run(extra_joints=1):
             state = new_state
             episode_reward += reward
             #env.render()
-            if ep_n > 100:
-               env.render()
+            # if ep_n > 100:
+            #    env.render()
 
             if done or step == MAX_EP_STEPS:
                 ep_n +=1
@@ -84,12 +97,12 @@ def run(extra_joints=1):
 
             rewards.append(episode_reward)
             avg_rewards.append(np.mean(rewards[-10:]))
-    out_df['total_steps'] = all_steps
-    out_df['episode_rewards'] = ep_rewards
-    out_df['episode_len'] = ep_steps
+        if(ep_n % checkpoint == 0):
+            out_df['total_steps'] = all_steps
+            out_df['episode_rewards'] = ep_rewards
+            out_df['episode_len'] = ep_steps
 
-    out_df.to_csv(f"{extra_joints}_df.csv")
+        out_df.to_csv(f"{extra_joints}_df.csv")
 
-run(extra_joints=1)
-run(extra_joints=2)
-run(extra_joints=4)
+
+run(extra_joints=int(sys.argv[1]))

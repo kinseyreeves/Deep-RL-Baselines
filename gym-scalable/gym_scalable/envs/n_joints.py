@@ -297,7 +297,7 @@ class NJointArm(gym.Env):
         self.screen.fill((255, 255, 255))
 
         # Draw the objective
-        pygame.draw.circle(self.screen, (100, 100, 10), (self.ob_x, self.ob_y), DIST_THRESH)
+        pygame.draw.circle(self.screen, (10, 100, 10), (self.ob_x, self.ob_y), DIST_THRESH)
 
         # Render joints ontop of arms
         for arm in self.arms:
@@ -306,7 +306,7 @@ class NJointArm(gym.Env):
             arm.render_joint(self.screen)
 
         # Draw the center circle
-        pygame.draw.circle(self.screen, (0, 0, 255), (S_WIDTH // 2, S_HEIGHT // 2), 5)
+        pygame.draw.circle(self.screen, (182, 182, 182), (S_WIDTH // 2, S_HEIGHT // 2), 8)
         # draw the objective
 
         pygame.display.update()
@@ -395,14 +395,14 @@ class Arm:
         TODO update to a rectangle to avoid weird width
         '''
 
-        pygame.draw.line(screen, (255, 0, 0), self.origin, self.end, 5)
+        pygame.draw.line(screen, (128, 128, 128), self.origin, self.end, 8)
 
     def render_joint(self, screen):
         '''
         Renders the joint at the end of the arm
         '''
         end = (round(self.end[0]), round(self.end[1]))
-        pygame.draw.circle(screen, (0, 255, 0), end, 5)
+        pygame.draw.circle(screen, (20, 20, 20), end, 6)
 
     def setAngle(self, angle):
         '''
