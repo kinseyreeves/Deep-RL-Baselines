@@ -20,6 +20,7 @@ from gym_scalable.envs.grid.grid_env import *
 
 INT_ACTION = True
 
+
 class MazeEnv(gym.Env, GridEnv):
     metadata = {'render.modes': ['human']}
 
@@ -30,7 +31,6 @@ class MazeEnv(gym.Env, GridEnv):
     name = "Maze Env"
 
     def __init__(self, config):
-
 
         GridEnv.__init__(self, config)
 
@@ -55,8 +55,9 @@ class MazeEnv(gym.Env, GridEnv):
                                                 shape=self.grid.get_encoding_nowalls_shape(),
                                                 dtype=np.float32)
         elif self.stack_encoded_state:
-            self.observation_space = spaces.Box(low = 0, high = 1,
-                                                shape = self.grid.get_encoding_nowalls_shape(),
+            self.observation_space = spaces.Box(low=0, high=1,
+                                                shape=self.grid.get_encoding_stacked_shape(
+                                                    self.num_goals),
                                                 dtype=np.float32)
         else:
             m = self.grid.get_tabular_encoding_size()
@@ -92,7 +93,6 @@ class MazeEnv(gym.Env, GridEnv):
 
         self.entity.update(self.action)
 
-
         if self.grid.is_goal(self.entity.x, self.entity.y):
             self.grid.remove_goal(self.entity.x, self.entity.y)
             captured_goal = True
@@ -105,7 +105,7 @@ class MazeEnv(gym.Env, GridEnv):
             if self.grid.num_goals() == 0:
                 self.done = True
 
-        self.set_state(goal = captured_goal)
+        self.set_state(goal=captured_goal)
 
         if self.steps >= self.max_steps:
             self.done = True
@@ -126,7 +126,7 @@ class MazeEnv(gym.Env, GridEnv):
             self.grid.add_random_goals(self.num_goals)
         # Curriculum goals
         elif self.curriculum:
-            self.update_curriculum_positions(curriculum_eps = self.curriculum_steps)
+            self.update_curriculum_positions(curriculum_eps=self.curriculum_steps)
             self.grid.clear_goals()
             self.grid.add_goals(
                 random.sample(self.grid.get_curriculum_goal_positions(),
@@ -164,7 +164,7 @@ class MazeEnv(gym.Env, GridEnv):
             self.state = self.grid.encode_no_walls(entities=self.entities)
         elif self.stack_encoded_state:
             self.state = self.grid.encode_stacked(
-                entity_positions = [e.get_pos() for e in self.entities])
+                entity_positions=[e.get_pos() for e in self.entities])
         else:
             encoding = self.grid.encode_tabular(
                 [e.get_pos() for e in self.entities], captured_goal=goal)
@@ -182,4 +182,3 @@ class MazeEnv(gym.Env, GridEnv):
         self.grid.mark_positions(self.grid.get_curriculum_goal_positions())
         if self.total_eps % curriculum_eps == 0:
             self.grid.update_curriculum_goal_positions([self.entity.get_pos()])
-

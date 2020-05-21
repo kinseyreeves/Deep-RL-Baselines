@@ -34,6 +34,7 @@
 #TEST todo hyperparam tuning
 
 #TEST population based learning
+python maze_experiments.py --rl PPO --name PPO_1reward_rstart_rgoal_1msteps --random_goals --random_start --1reward --num_goals 1 --encoding st
 
 ##### ################### MAZE EXPERIMENTS ##########################################
 
@@ -61,16 +62,16 @@
 
 
 #python maze_experiments.py --rl PPO --name PPO_1reward_rstart_rgoal_1msteps --random_goals --random_start --1reward --num_goals 1
-
-#maze experiments with changing number of goals
-/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name PPO_1reward_rstart_rgoal_1msteps --random_goals --random_start --1reward --num_goals 1 --encoding nw
-/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name PPO_1reward_rstart_rgoal_1msteps --random_goals --random_start --1reward --num_goals 2 --encoding nw
-/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name PPO_1reward_rstart_rgoal_1msteps --random_goals --random_start --1reward --num_goals 4 --encoding nw
-/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name PPO_1reward_rstart_rgoal_1msteps --random_goals --random_start --1reward --num_goals 6 --encoding nw
-/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name PPO_1reward_rstart_rgoal_1msteps --random_goals --random_start --1reward --num_goals 8 --encoding nw
-/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name PPO_1reward_rstart_rgoal_1msteps --random_goals --random_start --1reward --num_goals 10 --encoding nw
-
-/usr/bin/timeout 1800s python maze_experiments.py --rl DQN --steps 100000 --name DQN_full_parameter_grid --random_goals --random_start --1reward
+#
+##maze experiments with changing number of goals
+#/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name PPO_1reward_rstart_rgoal_1msteps --random_goals --random_start --1reward --num_goals 1 --encoding nw
+#/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name PPO_1reward_rstart_rgoal_1msteps --random_goals --random_start --1reward --num_goals 2 --encoding nw
+#/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name PPO_1reward_rstart_rgoal_1msteps --random_goals --random_start --1reward --num_goals 4 --encoding nw
+#/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name PPO_1reward_rstart_rgoal_1msteps --random_goals --random_start --1reward --num_goals 6 --encoding nw
+#/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name PPO_1reward_rstart_rgoal_1msteps --random_goals --random_start --1reward --num_goals 8 --encoding nw
+#/usr/bin/timeout 1800s python maze_experiments.py --rl PPO --name PPO_1reward_rstart_rgoal_1msteps --random_goals --random_start --1reward --num_goals 10 --encoding nw
+#
+#/usr/bin/timeout 1800s python maze_experiments.py --rl DQN --steps 100000 --name DQN_full_parameter_grid --random_goals --random_start --1reward
 
 
 ######
