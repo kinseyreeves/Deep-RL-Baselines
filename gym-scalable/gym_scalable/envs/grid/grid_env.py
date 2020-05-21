@@ -27,6 +27,7 @@ class GridEnv():
         self.entities = []
         self.encoded_state = False
         self.nw_encoded_state = False
+        self.stack_encoded_state = False
 
         self.screen = None
         print(f"Starting  with config {config}")
@@ -53,7 +54,8 @@ class GridEnv():
             self.nw_encoded_state = True
         elif self.state_encoding == "w":
             self.encoded_state = True
-
+        elif self.state_encoding == "st":
+            self.stack_encoded_state = True
 
     def step(self, action):
         if self.slowdown_step:

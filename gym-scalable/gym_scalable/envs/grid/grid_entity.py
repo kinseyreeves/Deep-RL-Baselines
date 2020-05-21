@@ -6,6 +6,7 @@ import numpy as np
 class Entity:
     # Basic class for defining circle object
     def __init__(self, x, y, grid, color=(0, 200, 100)):
+        self.encode_val = 3
         self.x = x
         self.y = y
         self.color = color
@@ -85,6 +86,9 @@ class Entity:
     def get_randomness(self):
         return self.randomness
 
+    def get_encode_val(self):
+        return self.encode_val
+
 class AStarChaser(Entity):
     """
     Chaser using A*
@@ -102,6 +106,7 @@ class AStarChaser(Entity):
         """
         super().__init__(x, y, grid, color=(255, 0, 0))
         # super().setText("C")
+        self.encode_val = 4
         self.evading = None
         self.chased_entities = None
         self.randomness = randomness
@@ -140,6 +145,7 @@ class AStarEvader(Entity):
         :return:
         """
         super().__init__(x, y, grid, color=(200, 0, 100))
+        self.encode_val = 4
         self.evading = None
         self.randomness = randomness
 

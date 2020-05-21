@@ -83,7 +83,7 @@ class MazeEnv(gym.Env, GridEnv):
         :return: tuple containing (state, reward, done, info)
         """
         GridEnv.step(self, action)
-
+        captured_goal = False
         self.reward = 0 if self.capture_reward else -.1
 
         self.entity.update(self.action)
@@ -91,6 +91,7 @@ class MazeEnv(gym.Env, GridEnv):
 
         if self.grid.is_goal(self.entity.x, self.entity.y):
             self.grid.remove_goal(self.entity.x, self.entity.y)
+            captured_goal = True
 
             if self.capture_reward:
                 self.reward = 1
@@ -100,7 +101,7 @@ class MazeEnv(gym.Env, GridEnv):
             if self.grid.num_goals() == 0:
                 self.done = True
 
-        self.set_state()
+        self.set_state(goal = captured_goal)
 
         if self.steps >= self.max_steps:
             self.done = True
@@ -149,7 +150,7 @@ class MazeEnv(gym.Env, GridEnv):
         self.entity.render(self.screen, self.grid.block_width, self.grid.block_height)
         pygame.display.update()
 
-    def set_state(self):
+    def set_state(self, goal=False):
         """
         Sets the state for maze.
         """
@@ -157,8 +158,12 @@ class MazeEnv(gym.Env, GridEnv):
             self.state = self.grid.encode(entities=self.entities)
         elif self.nw_encoded_state:
             self.state = self.grid.encode_no_walls(entities=self.entities)
+        elif self.stack_encoded_state:
+            self.state = self.grid.encode_stacked(
+                entity_positions = [e.get_pos() for e in self.entities])
         else:
-            encoding = self.grid.encode_tabular([e.get_pos() for e in self.entities])
+            encoding = self.grid.encode_tabular(
+                [e.get_pos() for e in self.entities], captured_goal=goal)
             if self.normalize_state:
                 self.state = utils.normalize(encoding, 0, self.grid.get_tabular_encoding_size())
             else:
