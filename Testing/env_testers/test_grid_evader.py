@@ -1,6 +1,7 @@
 import os
 
 import gym
+from gym_scalable.envs.grid.chaser_evader_env import ChaserEvaderEnv
 from gym_scalable.envs.grid.maps import map_loader
 from pympler.tracker import SummaryTracker
 
@@ -9,7 +10,7 @@ tracker = SummaryTracker()
 print(os.getcwd())
 env = gym.make('n-grid_evaders-v0',
                config={"mapfile": map_loader.get_5x5_map(), "randomize_start": True, "randomize_goal": True,
-                       "curriculum": True, "RL_evader": False})
+                       "curriculum": True, "RL_evader": False, "state_encoding": "st"})
 
 state = env.reset()
 i = 0

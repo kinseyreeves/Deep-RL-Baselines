@@ -8,7 +8,7 @@ register(
 
 register(
     id='n-grid_evaders-v0',
-    entry_point='gym_scalable.envs:GridEvaderEnv',
+    entry_point='gym_scalable.envs:ChaserEvaderEnv',
 )
 
 register(

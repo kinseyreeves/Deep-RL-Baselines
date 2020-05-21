@@ -185,7 +185,7 @@ class GridMap:
         encoding = pos[1] * self.get_nowall_size() + pos[0] + 1
         return encoding
 
-    def encode_tabular(self, entitity_positions=None, captured_goal = False):
+    def encode_tabular(self, entitity_positions=None, captured_goal = False, maze=True):
         """
         Encodes for a tabular learning algorithm. Returns a hashable
         tuple of the entities, and goals positions as single integers. i.e.
@@ -197,15 +197,20 @@ class GridMap:
         state = np.zeros(len(entitity_positions))
         for i in range(0, len(state)):
             state[i] = self.convert_table_position(entitity_positions[i])
-        current_goals = self.get_goals().intersection(self.get_static_goals())
-        goal_state = np.zeros(len(self.get_static_goals()))
-        if current_goals:
-            for i, goal in enumerate(current_goals):
-                goal_state[i] = self.convert_table_position(goal)
 
-        cap = 1 if captured_goal else 0
+        if not maze:
+            out = state
+        else:
+            current_goals = self.get_goals().intersection(self.get_static_goals())
+            goal_state = np.zeros(len(self.get_static_goals()))
+            if current_goals:
+                for i, goal in enumerate(current_goals):
+                    goal_state[i] = self.convert_table_position(goal)
 
-        return np.concatenate([state, sorted(goal_state, reverse=True), [cap]])
+            cap = 1 if captured_goal else 0
+
+            out = np.concatenate([state, sorted(goal_state, reverse=True), [cap]])
+        return out
 
     def get_curriculum_goal_positions(self):
         """
