@@ -185,7 +185,7 @@ class GridMap:
         encoding = pos[1] * self.get_nowall_size() + pos[0] + 1
         return encoding
 
-    def encode_tabular(self, entitity_positions=None):
+    def encode_tabular(self, entitity_positions=None, captured_goal = False, maze=True):
         """
         Encodes for a tabular learning algorithm. Returns a hashable
         tuple of the entities, and goals positions as single integers. i.e.
@@ -197,12 +197,20 @@ class GridMap:
         state = np.zeros(len(entitity_positions))
         for i in range(0, len(state)):
             state[i] = self.convert_table_position(entitity_positions[i])
-        current_goals = self.get_goals().intersection(self.get_static_goals())
-        goal_state = np.zeros(len(self.get_static_goals()))
-        if current_goals:
-            for i, goal in enumerate(current_goals):
-                goal_state[i] = self.convert_table_position(goal)
-        return np.concatenate([state, sorted(goal_state, reverse=True)])
+
+        if not maze:
+            out = state
+        else:
+            current_goals = self.get_goals().intersection(self.get_static_goals())
+            goal_state = np.zeros(len(self.get_static_goals()))
+            if current_goals:
+                for i, goal in enumerate(current_goals):
+                    goal_state[i] = self.convert_table_position(goal)
+
+            cap = 1 if captured_goal else 0
+
+            out = np.concatenate([state, sorted(goal_state, reverse=True), [cap]])
+        return out
 
     def get_curriculum_goal_positions(self):
         """
@@ -241,12 +249,28 @@ class GridMap:
                         encoding[y // 2][x // 2] = self.state_encoding_maze[self.map[y][x]]
                     else:
                         encoding[y // 2][x // 2] = self.state_encoding_nonmaze[self.map[y][x]]
+
         if entities:
-            n = 3
             for e in entities:
+                n = e.get_encode_val()
                 e_pos = e.get_pos()
                 encoding[e_pos[1] // 2][e_pos[0] // 2] = n
         return encoding
+
+    def encode_stacked(self, entity_positions = None, captured_goal = False):
+        """
+        :param entity_positions:
+        :param captured_goal: Whether or not agent has captured the goal
+        :return:
+        """
+        enc = self.encode_tabular(entitity_positions=entity_positions,
+                                  captured_goal = captured_goal)
+        out = (np.arange(self.get_tabular_encoding_size()) == enc[...,None]-1).astype(int)
+        return out
+
+    def get_encoding_stacked_shape(self, num_goals):
+        """Gets the shape of an encoded 1hot stacked state"""
+        return num_goals + 2, self.get_tabular_encoding_size()
 
     def mark_position(self, pos):
         """

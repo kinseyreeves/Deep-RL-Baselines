@@ -55,6 +55,10 @@ class ChaserEvaderEnv(gym.Env, GridEnv):
             self.observation_space = spaces.Box(low=0, high=6,
                                                 shape=self.grid.get_encoding_nowalls_shape(),
                                                 dtype=np.float32)
+        elif self.stack_encoded_state:
+            self.observation_space = spaces.Box(low=0, high=1,
+                                                shape=self.grid.get_encoding_stacked_shape(0),
+                                                dtype=np.float32)
         else:
             m = self.grid.get_tabular_encoding_size()
             high = np.array([m,m])
@@ -116,8 +120,10 @@ class ChaserEvaderEnv(gym.Env, GridEnv):
             self.state = self.grid.encode(entities=self.entities)
         elif self.nw_encoded_state:
             self.state = self.grid.encode_no_walls(entities=self.entities)
+        elif self.stack_encoded_state:
+            self.state = self.grid.encode_stacked([e.get_pos() for e in self.entities])
         else:
-            encoding = self.grid.encode_tabular([e.get_pos() for e in self.entities])
+            encoding = self.grid.encode_tabular([e.get_pos() for e in self.entities], maze=False)
             if self.normalize_state:
                 self.state = utils.normalize(encoding, 0, self.grid.get_tabular_encoding_size())
             else:
@@ -174,21 +180,3 @@ class ChaserEvaderEnv(gym.Env, GridEnv):
                 self.reward = -1
             else:
                 self.reward = 1
-
-    def set_state(self):
-        """
-        Sets the state
-        :return:
-        """
-        if self.encoded_state:
-            self.state = self.grid.encode(entities=self.entities)
-        elif self.nw_encoded_state:
-            self.state = self.grid.encode_no_walls(entities=self.entities)
-        else:
-            if self.normalize_state:
-                self.state = [utils.normalize(self.evader.x, 0, self.grid.size),
-                              utils.normalize(self.evader.y, 0, self.grid.size),
-                              utils.normalize(self.chaser.x, 0, self.grid.size),
-                              utils.normalize(self.chaser.y, 0, self.grid.size)]
-            else:
-                self.state = [self.evader.x, self.evader.y, self.chaser.x, self.chaser.y]
