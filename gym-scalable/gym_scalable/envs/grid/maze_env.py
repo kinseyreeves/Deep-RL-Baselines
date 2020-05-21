@@ -54,6 +54,10 @@ class MazeEnv(gym.Env, GridEnv):
             self.observation_space = spaces.Box(low=0, high=6,
                                                 shape=self.grid.get_encoding_nowalls_shape(),
                                                 dtype=np.float32)
+        elif self.stack_encoded_state:
+            self.observation_space = spaces.Box(low = 0, high = 1,
+                                                shape = self.grid.get_encoding_nowalls_shape(),
+                                                dtype=np.float32)
         else:
             m = self.grid.get_tabular_encoding_size()
             high = np.array([m] + [m] * self.num_goals)
