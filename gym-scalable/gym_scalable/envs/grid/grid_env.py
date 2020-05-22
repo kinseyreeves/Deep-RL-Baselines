@@ -43,7 +43,7 @@ class GridEnv():
         self.normalize_state = config["normalize_state"] if "normalize_state" in config else False
         self.capture_reward = config["capture_reward"] if "capture_reward" in config else False
         self.randomize_goal = config["randomize_goal"] if "randomize_goal" in config else False
-        self.state_encoding = config["state_encoding"] if "state_encoding" in config else "nw"
+        self.state_encoding = config["state_encoding"] if "state_encoding" in config else "st"
         self.slowdown_step = config["slowdown_step"] if "slowdown_step" in config else False
         self.curriculum = config["curriculum"] if "curriculum" in config else False
         self.curriculum_steps = config["curriculum_eps"] if "curriculum_eps" in config else 100

@@ -257,20 +257,29 @@ class GridMap:
                 encoding[e_pos[1] // 2][e_pos[0] // 2] = n
         return encoding
 
-    def encode_stacked(self, entity_positions = None, captured_goal = False):
+    def encode_stacked(self, entity_positions = None, captured_goal = False, maze=True):
         """
         :param entity_positions:
         :param captured_goal: Whether or not agent has captured the goal
         :return:
         """
+
         enc = self.encode_tabular(entitity_positions=entity_positions,
                                   captured_goal = captured_goal)
         out = (np.arange(self.get_tabular_encoding_size()) == enc[...,None]-1).astype(int)
+
+        # Don't use rest of matrix
+        if not maze:
+            out = out[0:len(entity_positions)]
+
         return out
 
-    def get_encoding_stacked_shape(self, num_goals):
+    def get_encoding_stacked_shape(self, num_entities_goals, maze=True):
         """Gets the shape of an encoded 1hot stacked state"""
-        return num_goals + 2, self.get_tabular_encoding_size()
+        if(maze):
+            return num_entities_goals + 2, self.get_tabular_encoding_size()
+        else:
+            return num_entities_goals, self.get_tabular_encoding_size()
 
     def mark_position(self, pos):
         """
