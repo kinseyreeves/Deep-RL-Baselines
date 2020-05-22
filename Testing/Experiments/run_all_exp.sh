@@ -34,7 +34,7 @@
 #TEST todo hyperparam tuning
 
 #TEST population based learning
-python maze_experiments.py --rl PPO --name PPO_1reward_rstart_rgoal_1msteps --random_goals --random_start --1reward --num_goals 1 --encoding st
+#python maze_experiments.py --rl PPO --name PPO_1reward_rstart_rgoal_1msteps --random_goals --random_start --1reward --num_goals 1
 
 ##### ################### MAZE EXPERIMENTS ##########################################
 
@@ -93,7 +93,7 @@ python maze_experiments.py --rl PPO --name PPO_1reward_rstart_rgoal_1msteps --ra
 #########CHASER EVADER EXPERIMENTS##########
 ##
 #####CHASER, EACH ALGORITHM
-#python chaser_evader_experiments.py --rl PPO --steps 500000 --name PPO_chaser_rsrg_500k_smenc --random_goals --random_start
+python chaser_evader_experiments.py --rl PPO --steps 500000 --name PPO_chaser_rsrg_500k_smenc --random_goals --random_start
 #python chaser_evader_experiments.py --rl DQN --steps 500000 --name DQN_chaser_rsrg_500k_smenc --random_goals --random_start
 #python chaser_evader_experiments.py --rl A2C --steps 500000 --name A2C_chaser_rsrg_500k_smenc --random_goals --random_start
 #python chaser_evader_experiments.py --rl APEX-DQN --steps 500000 --name APEX-DQN_chaser_rsrg_500k_smenc --random_goals --random_start

@@ -61,8 +61,8 @@ class MazeEnv(gym.Env, GridEnv):
                                                 dtype=np.float32)
         else:
             m = self.grid.get_tabular_encoding_size()
-            high = np.array([m] + [m] * self.num_goals)
-            low = np.array([0] + [0] * self.num_goals)
+            high = np.array([m,m] + [m] * self.num_goals)
+            low = np.array([0,0] + [0] * self.num_goals)
             self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
 
         # Goal strategies, fixed, random or curriculum

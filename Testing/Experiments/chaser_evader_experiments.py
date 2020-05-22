@@ -24,10 +24,9 @@ parser.add_argument('--rl', type=str, default="PPO")
 parser.add_argument('--rl_evader', dest='rl_evader', action='store_true', default=False)
 parser.add_argument('--random_goals', dest='random_goals', action='store_true', default=False)
 parser.add_argument('--random_start', dest='random_start', action='store_true', default=False)
-parser.add_argument('--encode_state', dest='encode_state', action='store_true', default=False)
 parser.add_argument('--curriculum', dest='curriculum', action='store_true', default=False)
 parser.add_argument('--curriculum_eps', type=int, default=100)
-parser.add_argument('--encoding', type=str, default="pos")
+parser.add_argument('--encoding', type=str, default="st")
 
 args = parser.parse_args()
 

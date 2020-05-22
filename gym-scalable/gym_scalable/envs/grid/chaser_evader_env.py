@@ -57,7 +57,7 @@ class ChaserEvaderEnv(gym.Env, GridEnv):
                                                 dtype=np.float32)
         elif self.stack_encoded_state:
             self.observation_space = spaces.Box(low=0, high=1,
-                                                shape=self.grid.get_encoding_stacked_shape(0),
+                                                shape=self.grid.get_encoding_stacked_shape(2, maze=False),
                                                 dtype=np.float32)
         else:
             m = self.grid.get_tabular_encoding_size()
@@ -121,7 +121,7 @@ class ChaserEvaderEnv(gym.Env, GridEnv):
         elif self.nw_encoded_state:
             self.state = self.grid.encode_no_walls(entities=self.entities)
         elif self.stack_encoded_state:
-            self.state = self.grid.encode_stacked([e.get_pos() for e in self.entities])
+            self.state = self.grid.encode_stacked([e.get_pos() for e in self.entities], maze=False)
         else:
             encoding = self.grid.encode_tabular([e.get_pos() for e in self.entities], maze=False)
             if self.normalize_state:

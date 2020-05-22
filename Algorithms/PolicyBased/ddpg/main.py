@@ -85,6 +85,9 @@ def run(extra_joints=1):
             state = new_state
             episode_reward += reward
 
+            if(ep_n>100):
+                env.render()
+
             if done or step == MAX_EP_STEPS:
                 ep_n +=1
                 writer.add_scalar('ddpg/ep_reward', episode_reward, ep_n)

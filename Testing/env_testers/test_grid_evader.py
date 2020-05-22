@@ -24,6 +24,8 @@ while i < 100000:
     env.render()
     s = env.reset()
     print(s)
+    print(s.shape)
+    input()
     # print(env.controlled_entity.get_randomness())
 
     continue
