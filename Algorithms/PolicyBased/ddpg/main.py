@@ -6,6 +6,7 @@ from tensorboardX import SummaryWriter
 import time
 import pandas as pd
 import sys
+import util
 
 """
 DDPG implementation using pytorch
@@ -24,7 +25,7 @@ N_EPISODES = 2000
 
 MAX_EP_STEPS = 250
 
-HIDDEN_SIZE = 200
+HIDDEN_SIZE = 256
 
 VAR_MIN = 0.08
 VAR_RED = 0.99995
@@ -54,7 +55,7 @@ def run(extra_joints=1):
     action_size = env.action_space.shape[0]
     ddpg_agent = agent.DDPGAgent(state_size, action_size, hidden_size=HIDDEN_SIZE, tau=TAU)
     # memory = util.ReplayMemory()
-    # noise = util.OUNoise(env.action_space)
+    noise = util.OUNoise(env.action_space)
     # print(env.observation_space.shape )
 
     var = 2
@@ -62,12 +63,16 @@ def run(extra_joints=1):
     while True:
         state = env.reset()
         episode_reward = 0
-        # noise.reset()
+        noise.reset()
 
         for step in range(MAX_EP_STEPS + 1):
             total_steps+=1
             action = ddpg_agent.get_action(state)[0]
-            action = np.clip(np.random.normal(action, var), -1, 1)
+
+            action = noise.get_action(action, step)
+
+            # Gaussian noise
+            # action = np.clip(np.random.normal(action, var), -1, 1)
 
             # input()
             new_state, reward, done, _ = env.step(action)
@@ -85,8 +90,8 @@ def run(extra_joints=1):
             state = new_state
             episode_reward += reward
 
-            if(ep_n>100):
-                env.render()
+            # if(ep_n>200):
+            #     env.render()
 
             if done or step == MAX_EP_STEPS:
                 ep_n +=1
@@ -105,7 +110,7 @@ def run(extra_joints=1):
         if ep_n % checkpoint == 0:
             print("Saving data")
 
-            out_df.to_csv(f"{extra_joints}_{TAU}df.csv")
+            out_df.to_csv(f"{extra_joints}_{TAU}_OU_df.csv")
 
 
 run(extra_joints=int(sys.argv[1]))

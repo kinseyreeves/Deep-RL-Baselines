@@ -6,21 +6,11 @@ import time
 import os
 import mlrose
 from itertools import permutations
-
+from gym_scalable.envs.grid.maps.map_loader import *
 
 print(os.getcwd())
 from pympler.tracker import SummaryTracker
 
-tracker = SummaryTracker()
-
-config = {"mapfile": "/home/krer/Documents/Deep-RL-Baselines/gym-scalable/gym_scalable/envs/grid/maps/map_5x5.txt",
-          "normalize_state": True,"randomize_goals":True, "randomize_start": True, "num_goals": 3,
-          "capture_reward": False}
-env = gym.make('n-maze-v0', config=config)
-
-state = env.reset()
-
-goal = env.grid.goal
 
 
 def get_dist(order, coords_list):
@@ -101,7 +91,6 @@ def get_tsp_greedy_dist(coords_list, dist_list):
     rest = coords_list[1:]
     combos = permutations(rest,len(rest))
     best_dist = 100
-    best_path = []
 
     for i in combos:
         path = [start] + list(i)
@@ -114,6 +103,18 @@ def get_tsp_greedy_dist(coords_list, dist_list):
     return best_dist
 
 
+tracker = SummaryTracker()
+
+config = {"mapfile": get_7x7_map(),
+          "normalize_state": True,"randomize_goal":True, "randomize_start": True, "num_goals": 3,
+          "capture_reward": False}
+
+env = gym.make('n-maze-v0', config=config)
+
+state = env.reset()
+
+goal = env.grid.goal
+1
 dists = []
 i = 0
 while i < 10000:
@@ -121,11 +122,11 @@ while i < 10000:
     i += 1
     #env.render()
 
-
     coords_list, dist_list = env.grid.get_dist_list(env.entity.get_pos())
-
-    dists.append(get_tsp_greedy_dist(coords_list, dist_list))
-
+    d = get_tsp_greedy_dist(coords_list, dist_list)
+    #print(d)
+    dists.append(d)
+    #input()
     env.reset()
 
 print(dists)
