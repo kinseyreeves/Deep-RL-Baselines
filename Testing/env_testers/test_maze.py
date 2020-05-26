@@ -6,7 +6,7 @@ from pympler.tracker import SummaryTracker
 
 tracker = SummaryTracker()
 
-config = {"mapfile": map_loader.get_8x8_map(),
+config = {"mapfile": map_loader.get_6x6_map(),
           "randomize_start": True,
           "randomize_goal":True,
           "curriculum": False,
@@ -14,7 +14,6 @@ config = {"mapfile": map_loader.get_8x8_map(),
           "capture_reward": True,
           "state_encoding": "st"
           }
-
 
 env = gym.make('n-maze-v0', config=config)
 
@@ -48,7 +47,7 @@ while i < 100000:
     if (done):
         a = input()
         state = env.reset()
-    # time.sleep(0.1)
+
     a = input()
 
 tracker.print_diff()

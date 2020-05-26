@@ -10,8 +10,8 @@ class Critic(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
         super(Critic, self).__init__()
         self.linear1 = nn.Linear(input_size, hidden_size)
-        self.linear2 = nn.Linear(hidden_size, 100)
-        self.linear3 = nn.Linear(100, 1)
+        self.linear2 = nn.Linear(hidden_size, 256)
+        self.linear3 = nn.Linear(256, 1)
 
         # torch.nn.init.xavier_uniform(self.linear1.weight)
         # torch.nn.init.xavier_uniform(self.linear2.weight)
@@ -40,8 +40,8 @@ class Actor(nn.Module):
         super(Actor, self).__init__()
         self.l1 = nn.Linear(input_size, hidden_size)
         self.l2 = nn.Linear(hidden_size, hidden_size)
-        self.l22 = nn.Linear(hidden_size, 100)
-        self.l3 = nn.Linear(100, output_size)
+        self.l22 = nn.Linear(hidden_size, 256)
+        self.l3 = nn.Linear(256, output_size)
 
         # torch.nn.init.xavier_uniform(self.l1.weight)
         # torch.nn.init.xavier_uniform(self.l2.weight)
