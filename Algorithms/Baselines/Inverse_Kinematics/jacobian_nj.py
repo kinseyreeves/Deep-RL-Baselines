@@ -49,7 +49,7 @@ def get_jacobian(nj, eff_coords, joints):
 #Run tests
 out_df = pd.DataFrame()
 for test in range(7, 10):
-    extra_j = test
+    extra_j = 3
     env = gym.make('n-joints-v0', config={"extra_joints": extra_j, "extra_state": True})
     # f.write(str(extra_j) + ",")
     act_size = env.action_space.shape[0]
@@ -93,6 +93,7 @@ for test in range(7, 10):
             rewards.append(reward)
             # print(rewards)
             time.sleep(0.001)
+            input()
             # print("here")
 
     #f.write("\n")
