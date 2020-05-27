@@ -1,0 +1,1 @@
+python reacher_experiments.py --rl DQN --extra_joints 4 --steps 50000

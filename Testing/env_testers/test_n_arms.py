@@ -4,7 +4,7 @@ from pympler.tracker import SummaryTracker
 
 tracker = SummaryTracker()
 
-env = gym.make('n-joints-v0', config={"extra_joints": 1, "extra_state": False})
+env = gym.make('n-joints-v0', config={"extra_joints": 4, "extra_state": False})
 i = 0
 
 # print(env.action_space)
@@ -35,7 +35,7 @@ while i < 200000:
     # for i in range
     state, reward, done, _ = env.step(action)
     # print(state)
-
+    env.render()
     # print(i)
     # print("reward : ", reward)
     # print(state)
