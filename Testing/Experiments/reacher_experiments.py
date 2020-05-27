@@ -41,7 +41,7 @@ def tune_ddpg_nj_runner(trainer, name, nj):
 
                      "env_config": {"extra_joints": nj, "full_state": False, "normalize_state": True}},
              checkpoint_freq=10, checkpoint_at_end=True, stop={"timesteps_total": args.steps},
-             name=f"{nj}-joints-{name}", )
+             name=f"{nj}-tune-joints-{name}", )
 
 def tune_td3_nj_runner(trainer, name, nj):
     tune.run(trainer,
@@ -53,7 +53,7 @@ def tune_td3_nj_runner(trainer, name, nj):
 
                      "env_config": {"extra_joints": nj, "full_state": False, "normalize_state": True}},
              checkpoint_freq=10, checkpoint_at_end=True, stop={"timesteps_total": args.steps},
-             name=f"{nj}-joints-{name}", )
+             name=f"{nj}-tune-joints-{name}", )
 
 def tune_ppo_nj_runner(trainer, name, nj):
 
@@ -69,7 +69,7 @@ def tune_ppo_nj_runner(trainer, name, nj):
                      "env_config": {"extra_joints": nj, "full_state": False, "normalize_state": True}},
              checkpoint_freq=10, checkpoint_at_end=True,
              # stop={"timesteps_total": args.steps},
-             name=f"{nj}-joints-{name}",)
+             name=f"{nj}-tune-joints-{name}",)
 
 trainer = rllib_trainers.get_trainer(args.rl)
 
@@ -83,6 +83,6 @@ if(args.tune_search):
     if(args.rl == "TD3"):
         tune_td3_nj_runner(trainer, name,joints)
     if(args.rl == "PPO"):
-        PPO_tune_runner(trainer, name, joints)
+        tune_ppo_nj_runner(trainer, name, joints)
 else:
     nj_runner(trainer,name,joints)
