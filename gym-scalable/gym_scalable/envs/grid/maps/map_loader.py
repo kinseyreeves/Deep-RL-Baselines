@@ -12,7 +12,6 @@ def get_3x3_map():
 def get_4x4_map():
     return dir_path + "/map_4x4.txt"
 
-
 def get_5x5_map():
     return dir_path + "/map_5x5.txt"
 
@@ -28,6 +27,8 @@ def get_7x7_map():
 def get_8x8_map():
     return dir_path + "/map_8x8.txt"
 
+def get_15x15_map():
+    return dir_path + "/map_15x15.txt"
 
 def get_empty_3x3_map():
     return dir_path + "/map_3x3_empty.txt"

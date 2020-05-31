@@ -20,6 +20,7 @@ class GridEnv():
         random.seed(1)
 
         self.steps = 0
+        self.total_steps = 0
         self.reward = 0
         self.done = False
         self.action_space = spaces.Discrete(4)
@@ -46,9 +47,13 @@ class GridEnv():
         self.state_encoding = config["state_encoding"] if "state_encoding" in config else "st"
         self.slowdown_step = config["slowdown_step"] if "slowdown_step" in config else False
         self.curriculum = config["curriculum"] if "curriculum" in config else False
-        self.curriculum_steps = config["curriculum_eps"] if "curriculum_eps" in config else 100
+        self.curriculum_eps = config["curriculum_eps"] if "curriculum_eps" in config else 100
 
         self.grid = GridMap(self.map_file, S_WIDTH)
+
+        # Ensure parameters work with eachother
+        if self.curriculum:
+            self.randomize_goal = False
 
         if self.state_encoding == "nw":
             self.nw_encoded_state = True
@@ -67,6 +72,7 @@ class GridEnv():
 
         self.steps += 1
         self.reward = 0
+        self.total_eps +=1
 
     def reset(self):
         if self.curriculum:
@@ -75,6 +81,7 @@ class GridEnv():
         self.steps = 0
         self.done = False
         self.total_eps += 1
+
 
     def render(self):
         if self.screen is None:
@@ -88,7 +95,7 @@ class GridEnv():
         time.sleep(0.1)
 
     def update_curriculum(self, curriculum_eps = 100, decay_value=0.99, min_value=0.2):
-        if self.total_eps % curriculum_eps == 0:
+        if self.total_eps+1 % curriculum_eps == 0:
             self.curriculum_value = max(min_value, self.curriculum_value * decay_value)
 
     def get_curriculum_value(self):

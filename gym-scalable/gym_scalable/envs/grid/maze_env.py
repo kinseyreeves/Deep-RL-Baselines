@@ -126,12 +126,11 @@ class MazeEnv(gym.Env, GridEnv):
             self.grid.add_random_goals(self.num_goals)
         # Curriculum goals
         elif self.curriculum:
-            self.update_curriculum_positions(curriculum_eps=self.curriculum_steps)
+            self.update_curriculum_positions(curriculum_eps=self.curriculum_eps)
             self.grid.clear_goals()
             self.grid.add_goals(
                 random.sample(self.grid.get_curriculum_goal_positions(),
                               self.num_goals))
-        # Fixed goals
         else:
             self.grid.clear_goals()
             self.grid.add_goals(self.static_goals)

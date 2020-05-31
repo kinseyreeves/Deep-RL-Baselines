@@ -131,19 +131,19 @@ class GridMap:
                 if self.render_goals:
                     if self.map[y][x] == 'G':
                         r_goal = ((round(((x - 1) / 2) * self.block_width + (self.block_width / 2))),
-                                  round((((y - 1) / 2) * self.block_height + (self.block_height / 2))), 10, 10)
+                                  round((((y - 1) / 2) * self.block_height + (self.block_height / 2))), 15, 15)
                         pygame.draw.rect(screen, (50, 255, 0), r_goal)
-                    if self.map[y][x] == 'S':
-                        r_start = ((round(((x - 1) / 2) * self.block_width + (self.block_width / 2))),
-                                   round((((y - 1) / 2) * self.block_height + (self.block_height / 2))), 10, 10)
-                        pygame.draw.rect(screen, (255, 50, 0), r_start)
+                    # if self.map[y][x] == 'S':
+                    #     r_start = ((round(((x - 1) / 2) * self.block_width + (self.block_width / 2))),
+                    #                round((((y - 1) / 2) * self.block_height + (self.block_height / 2))), 10, 10)
+                    #     pygame.draw.rect(screen, (255, 50, 0), r_start)
 
         # Render marked positions
         for pos in self.marked_positions:
             x = pos[0]
             y = pos[1]
             rect = ((round(((x - 1) / 2) * self.block_width + (self.block_width / 2))),
-                    round((((y - 1) / 2) * self.block_height + (self.block_height / 2))), 3, 3)
+                    round((((y - 1) / 2) * self.block_height + (self.block_height / 2))), 5, 5)
             pygame.draw.rect(screen, (10, 10, 10), rect)
 
         # Util rendering
@@ -233,7 +233,6 @@ class GridMap:
         if entitity_positions:
             self.set_curriculum_goals(self.curriculum_goals.difference(set(entitity_positions)))
 
-        # print(self.curriculum_goals)
 
     def encode_no_walls(self, entities=None, maze=True):
         """
@@ -572,7 +571,9 @@ class GridMap:
         return random.choice(list(self.walkable.difference(self.goals).difference(all_entities)))
 
     def set_random_start(self):
-        self.set_map(self.start[0], self.start[1], ' ')
+        #Check if we've just added a goal here
+        if self.get_map(self.start[0], self.start[1]) != 'G':
+            self.set_map(self.start[0], self.start[1], ' ')
         pos_pos = self.walkable - self.goals - {self.goal}
         self.start = random.choice(list(pos_pos))
         self.set_map(self.start[0], self.start[1], 'S')
@@ -603,6 +604,9 @@ class GridMap:
 
     def set_map(self, x, y, val):
         self.map[y][x] = val
+
+    def get_map(self, x, y):
+        return self.map[y][x]
 
     def set_curriculum_goals(self, curriculum_goals):
         self.curriculum_goals = curriculum_goals
