@@ -96,6 +96,29 @@ def DQN_tune_runner(trainer, mapfile, name, mapsize, args):
              name=f"{args.name}_maze-{mapsize}x{mapsize}-{goals}goals-{name}-{args.encoding}")
 
 
+def DQN_runner(trainer, mapfile, name, mapsize, args):
+    if (args.num_goals):
+        goals = args.num_goals
+    else:
+        goals = mapsize
+    tune.run(trainer,
+             config={"env": MazeEnv,
+
+                     'lr': grid_search([0.0001, 0.001, 0.01]),
+                     'dueling': False,
+                     'prioritized_replay': True,
+
+                     'noisy': grid_search([True, False]),
+                     'buffer_size': grid_search([1000, 5000, 20000]),
+                     'model': {
+                         'fcnet_hiddens': grid_search([[128, 128], [256, 256]])
+                     },
+                     "env_config": get_env_config(mapfile, args, goals)},
+             checkpoint_freq=10, checkpoint_at_end=True,
+             # stop={"timesteps_total": args.steps},
+             name=f"{args.name}_maze-{mapsize}x{mapsize}-{goals}goals-{name}-{args.encoding}")
+
+
 def PPO_tune_runner(trainer, mapfile, name, mapsize, args):
     if (args.num_goals):
         goals = args.num_goals
@@ -120,6 +143,28 @@ def PPO_tune_runner(trainer, mapfile, name, mapsize, args):
              name=f"{args.name}_maze-{mapsize}x{mapsize}-{goals}goals-{name}-{args.encoding}")
 
 
+def PPO_runner(trainer, mapfile, name, mapsize, args):
+    if (args.num_goals):
+        goals = args.num_goals
+    else:
+        goals = mapsize
+    tune.run(trainer,
+             config={"env": MazeEnv,
+
+                     "use_critic": True,
+                     "clip_param": 0.5,
+                     "kl_target": 0.01,
+
+                     'model': {
+                         'fcnet_hiddens': [256, 256]
+                     },
+                     "env_config": get_env_config(mapfile, args, goals)},
+             checkpoint_freq=10, checkpoint_at_end=True,
+             # stop={"timesteps_total": args.steps},
+             name=f"{args.name}_maze-{mapsize}x{mapsize}-{goals}goals-{name}-{args.encoding}")
+
+
+
 def tune_runner(trainer, mapfile, name, mapsize, args):
     if (args.num_goals):
         goals = args.num_goals
@@ -132,6 +177,7 @@ def tune_runner(trainer, mapfile, name, mapsize, args):
              checkpoint_freq=10, checkpoint_at_end=True,
              # stop={"timesteps_total": args.steps},
              name=f"{args.name}_maze-{mapsize}x{mapsize}-{goals}goals-{name}-{args.encoding}")
+
 
 def curriculum_tune_runner(trainer, mapfile, name, mapsize, args):
     if (args.num_goals):
@@ -189,4 +235,11 @@ else:
     if (args.curriculum):
         curriculum_tune_runner(trainer, map, name, args.map_size, args)
     else:
-        tune_runner(trainer, mapfile, name, args.map_size, args)
+        if args.rl == "PPO":
+            print("running PPO exp")
+            PPO_runner(trainer, mapfile, name, args.map_size, args)
+        elif args.rl == "DQN":
+            print("running DQN exp")
+            tune_runner(trainer, mapfile, name, args.map_size, args)
+        else:
+            tune_runner(trainer, mapfile, name, args.map_size, args)
