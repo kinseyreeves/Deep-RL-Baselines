@@ -21,8 +21,6 @@ def get_dist(order, coords_list):
         dist += env.grid.get_astar_dist(coords_list[pos], coords_list[next_pos])
     return dist
 
-
-
 def best_dist(order, coords_list):
     """
     Gets the best possible path distance given the TSP order
@@ -31,7 +29,6 @@ def best_dist(order, coords_list):
     dist_for = 0
     dist_back = 0
     order_for, order_back = None, None
-    # print(order)
     for x, pos in enumerate(order):
         if pos == 0:
 
@@ -47,9 +44,6 @@ def best_dist(order, coords_list):
     return order_back, dist_back
 
 def get_tsp_optim_dist(coords_list, dist_list):
-    #entity_pos = env.entity.get_pos()
-
-
     fitness_coords = mlrose.TravellingSales(coords=coords_list)
     fitness_dists = mlrose.TravellingSales(distances=dist_list)
 
@@ -80,7 +74,6 @@ def calc_dist(path):
         pos = path[i]
         next_pos = path[i+1]
         dist+= env.grid.get_astar_dist(pos, next_pos)
-        #print(f"{pos} {next_pos} with d : {env.grid.get_astar_distance(pos, next_pos)}")
 
     return dist
 
@@ -105,8 +98,8 @@ def get_tsp_greedy_dist(coords_list, dist_list):
 
 tracker = SummaryTracker()
 
-config = {"mapfile": get_7x7_map(),
-          "normalize_state": True,"randomize_goal":True, "randomize_start": True, "num_goals": 3,
+config = {"mapfile": get_5x5_map(),
+          "normalize_state": True,"randomize_goal":True, "randomize_start": True, "num_goals": 6,
           "capture_reward": False}
 
 env = gym.make('n-maze-v0', config=config)
@@ -114,21 +107,24 @@ env = gym.make('n-maze-v0', config=config)
 state = env.reset()
 
 goal = env.grid.goal
-1
+
 dists = []
 i = 0
-while i < 10000:
+while i < 1000:
 
     i += 1
     #env.render()
 
     coords_list, dist_list = env.grid.get_dist_list(env.entity.get_pos())
     d = get_tsp_greedy_dist(coords_list, dist_list)
-    #print(d)
+    #env.render()
+
     dists.append(d)
     #input()
     env.reset()
+    if(i%10==0):
+        print(i)
 
-print(dists)
+#print(dists)
 print(np.average(dists))
 

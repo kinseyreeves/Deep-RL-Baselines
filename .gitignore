@@ -21,4 +21,6 @@ results/chaser_vs_evader_results
 /results/encoded_maze_neg01_reward_rsrg/
 /results/.ipynb_checkpoints/
 /experiments/run_all_exp.sh
+Algorithms/PolicyBased/ddpg/data
+Algorithms/PolicyBased/ddpg/old
 *Kinsey-Ubuntu

@@ -6,12 +6,12 @@ from pympler.tracker import SummaryTracker
 
 tracker = SummaryTracker()
 
-config = {"mapfile": map_loader.get_7x7_map(),
+config = {"mapfile": map_loader.get_3x3_map(),
           "randomize_start": True,
           "randomize_goal":True,
           "curriculum": False,
-          "num_goals": 8,
-          "capture_reward": True,
+          "num_goals": 1,
+          "capture_reward": False,
           "state_encoding": "st"
           }
 
@@ -31,10 +31,11 @@ while i < 100000:
 
     action_size = env.action_space.n
     env.render()
-    env.reset()
+    #env.reset()
     a = input()
 
     state, reward, done, _ = env.step(action)
+    print(reward)
     print(state.shape)
     #print(state)
     #print(env.grid.get_encoding_stacked_shape(num_goals=4))
