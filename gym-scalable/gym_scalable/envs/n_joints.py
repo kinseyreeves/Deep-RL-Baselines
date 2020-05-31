@@ -202,12 +202,12 @@ class NJointArm(gym.Env):
         reward = self.calc_reward(action)
         state = self.get_state()
 
-        if (USE_MOUSE and self.screen and pygame.mouse.get_focused()):
+        if USE_MOUSE and self.screen and pygame.mouse.get_focused():
             mouse_pos = pygame.mouse.get_pos()
             self.ob_x = mouse_pos[0]
             self.ob_y = mouse_pos[1]
 
-        if (self.steps > MAX_STEPS):
+        if self.steps > MAX_STEPS:
             self.done = True
 
         if self.get_dist() < DIST_THRESH and (not self.done):

@@ -44,7 +44,7 @@ encoding = None
 logdir = "~/ray_results/maze"
 
 
-def tune_runner(trainer, mapfile, name, mapsize, args):
+def tune_runner_changing_nn(trainer, mapfile, name, mapsize, args):
     if (args.num_goals):
         goals = args.num_goals
     else:
@@ -133,6 +133,27 @@ def tune_runner(trainer, mapfile, name, mapsize, args):
              # stop={"timesteps_total": args.steps},
              name=f"{args.name}_maze-{mapsize}x{mapsize}-{goals}goals-{name}-{args.encoding}")
 
+def curriculum_tune_runner(trainer, mapfile, name, mapsize, args):
+    if (args.num_goals):
+        goals = args.num_goals
+    else:
+        goals = mapsize
+    tune.run(trainer,
+         config={"env": MazeEnv,
+                 "num_workers":0,
+                 "env_config": {"mapfile": mapfile,
+                      "state_encoding": args.encoding,
+                      "randomize_start": args.random_start,
+                      "num_goals": goals,
+                      "randomize_goal": args.random_goals,
+                      "capture_reward": args.reward,
+                      "curriculum": args.curriculum,
+                      "curriculum_eps": grid_search([50, 100, 200, 500])}
+                 },
+         checkpoint_freq=10, checkpoint_at_end=True,
+         # stop={"timesteps_total": args.steps},
+         name=f"{args.name}_maze-{mapsize}x{mapsize}-{goals}goals-{name}-{args.encoding}")
+
 
 def get_env_config(mapfile, args, goals):
     config = {"mapfile": mapfile,
@@ -144,7 +165,6 @@ def get_env_config(mapfile, args, goals):
               "curriculum": args.curriculum,
               "curriculum_eps": args.curriculum_eps}
     return config
-
 
 # ################################################### #
 # # -----------------##Training##-------------------- #
@@ -166,4 +186,7 @@ if (args.tune_search):
     else:
         tune_runner(trainer, mapfile, name, args.map_size, args)
 else:
-    tune_runner(trainer, mapfile, name, args.map_size, args)
+    if (args.curriculum):
+        curriculum_tune_runner(trainer, map, name, args.map_size, args)
+    else:
+        tune_runner(trainer, mapfile, name, args.map_size, args)
