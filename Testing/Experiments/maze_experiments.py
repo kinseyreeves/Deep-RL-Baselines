@@ -217,7 +217,7 @@ def curriculum_tune_runner(trainer, mapfile, name, mapsize, args):
                       "randomize_goal": args.random_goals,
                       "capture_reward": args.reward,
                       "curriculum": args.curriculum,
-                      "curriculum_eps": grid_search([50, 100, 200, 500])}
+                      "curriculum_eps": args.curriculum_eps}
                  },
          checkpoint_freq=10, checkpoint_at_end=True,
          # stop={"timesteps_total": args.steps},
@@ -241,6 +241,7 @@ def get_env_config(mapfile, args, goals):
 
 
 mapfile = map_loader.get_size_map(args.map_size)
+print("here")
 
 name = args.rl
 trainer = rllib_trainers.get_trainer(name)
@@ -256,7 +257,9 @@ if (args.tune_search):
         tune_runner(trainer, mapfile, name, args.map_size, args)
 else:
     if (args.curriculum):
-        curriculum_tune_runner(trainer, map, name, args.map_size, args)
+
+        print("curriculum running")
+        curriculum_tune_runner(trainer, mapfile, name, args.map_size, args)
     else:
         if args.rl == "PPO":
             print("running PPO exp")
