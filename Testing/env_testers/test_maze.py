@@ -6,12 +6,12 @@ from pympler.tracker import SummaryTracker
 
 tracker = SummaryTracker()
 
-config = {"mapfile": map_loader.get_size_map(15),
+config = {"mapfile": map_loader.get_size_map(4),
           "randomize_start": True,
-          "randomize_goal":False,
-          "curriculum": True,
+          "randomize_goal":True,
+          "curriculum": False,
           "curriculum_eps" :5,
-          "num_goals": 3,
+          "num_goals": 6,
           "capture_reward": False,
           "state_encoding": "st"
           }

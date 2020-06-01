@@ -4,7 +4,7 @@ from pympler.tracker import SummaryTracker
 
 tracker = SummaryTracker()
 
-env = gym.make('n-joints-v0', config={"extra_joints": 4, "extra_state": False})
+env = gym.make('n-joints-v0', config={"extra_joints": 6, "extra_state": False})
 i = 0
 
 # print(env.action_space)

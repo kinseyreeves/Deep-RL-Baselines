@@ -30,7 +30,7 @@ parser.add_argument('--encoding', type=str, default="st")
 
 args = parser.parse_args()
 
-map_sizes = [3, 5, 8]
+map_sizes = [5]
 
 
 def tune_runner(trainer, mapfile, name, mapsize):
@@ -59,7 +59,7 @@ def tune_runner(trainer, mapfile, name, mapsize):
              checkpoint_at_end=True,
              #stop={"timesteps_total": args.steps},
 
-             name=f"{args.name}-{mapsize}x{mapsize}-{name}-{args.encoding}")
+             name=f"{args.name}-{mapsize}x{mapsize}-{args.rl}-{args.encoding}")
 
 
 # ##################################################### #
@@ -68,17 +68,8 @@ def tune_runner(trainer, mapfile, name, mapsize):
 name = args.rl
 trainer = rllib_trainers.get_trainer(name)
 
-mapfile = map_loader.get_3x3_map()
-mapsize = 3
-
-tune_runner(trainer, mapfile, name, mapsize)
-
 mapfile = map_loader.get_5x5_map()
 mapsize = 5
 
 tune_runner(trainer, mapfile, name, mapsize)
 
-mapfile = map_loader.get_8x8_map()
-mapsize = 8
-
-tune_runner(trainer, mapfile, name, mapsize)
