@@ -4,13 +4,14 @@ import gym
 from gym_scalable.envs.grid.chaser_evader_env import ChaserEvaderEnv
 from gym_scalable.envs.grid.maps import map_loader
 from pympler.tracker import SummaryTracker
+import time
 
 tracker = SummaryTracker()
 
 print(os.getcwd())
 env = gym.make('n-grid_evaders-v0',
                config={"mapfile": map_loader.get_5x5_map(), "randomize_start": True, "randomize_goal": True,
-                       "curriculum": True, "RL_evader": False, "state_encoding": "st"})
+                       "curriculum": True, "RL_evader": False,"curriculum_eps":10, "state_encoding": "st"})
 
 state = env.reset()
 i = 0
@@ -22,13 +23,9 @@ while i < 100000:
     # input()
     i += 1
     env.render()
-    s = env.reset()
-    print(s)
-    print(s.shape)
-    input()
+    print(env.total_eps)
     # print(env.controlled_entity.get_randomness())
 
-    continue
     # action_ = np.zeros(env.action_space.n)
 
     # print(action_)
@@ -56,6 +53,10 @@ while i < 100000:
     # print(f"{state}  {reward}")
 
     # print(env.normalize_state)
+    env.reset()
+    print(env.curriculum_value)
+    input()
+    continue
     if (done):
         env.reset()
 
