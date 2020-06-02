@@ -198,7 +198,7 @@ def curriculum_tune_runner(trainer, mapfile, name, mapsize, args):
                  },
          checkpoint_freq=10, checkpoint_at_end=True,
          # stop={"timesteps_total": args.steps},
-         name=f"{args.name}_maze-{mapsize}x{mapsize}-{goals}goals-{name}-{args.encoding}")
+         name=f"{args.name}_maze-{mapsize}x{mapsize}-{goals}goals-{name}-{args.encoding}-{args.curriculum_eps}")
 
 
 def get_env_config(mapfile, args, goals):

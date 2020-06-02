@@ -72,11 +72,10 @@ class GridEnv():
 
         self.steps += 1
         self.reward = 0
-        self.total_eps +=1
 
     def reset(self):
         if self.curriculum:
-            self.update_curriculum()
+            self.update_curriculum(curriculum_eps=self.curriculum_eps)
         self.reward = 0
         self.steps = 0
         self.done = False
@@ -95,7 +94,7 @@ class GridEnv():
         time.sleep(0.1)
 
     def update_curriculum(self, curriculum_eps = 100, decay_value=0.99, min_value=0.2):
-        if self.total_eps+1 % curriculum_eps == 0:
+        if (self.total_eps+1) % curriculum_eps == 0:
             self.curriculum_value = max(min_value, self.curriculum_value * decay_value)
 
     def get_curriculum_value(self):
