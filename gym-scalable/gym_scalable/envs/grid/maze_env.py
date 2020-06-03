@@ -89,7 +89,7 @@ class MazeEnv(gym.Env, GridEnv):
         """
         GridEnv.step(self, action)
         captured_goal = False
-        self.reward = 0 if self.capture_reward else -.1
+        self.reward = -0.1
 
         self.entity.update(self.action)
 
@@ -98,8 +98,6 @@ class MazeEnv(gym.Env, GridEnv):
             captured_goal = True
 
             if self.capture_reward:
-                self.reward = 1
-            else:
                 self.reward = 1
 
             if self.grid.num_goals() == 0:

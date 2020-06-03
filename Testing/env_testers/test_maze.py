@@ -6,7 +6,7 @@ from pympler.tracker import SummaryTracker
 
 tracker = SummaryTracker()
 
-config = {"mapfile": map_loader.get_size_map(4),
+config = {"mapfile": map_loader.get_size_map(3),
           "randomize_start": True,
           "randomize_goal":True,
           "curriculum": False,
@@ -35,8 +35,8 @@ while i < 100000:
     a = input()
 
 
-    env.reset()
-    continue
+    #env.reset()
+    #continue
     state, reward, done, _ = env.step(action)
     print(reward)
     #print(state.shape)

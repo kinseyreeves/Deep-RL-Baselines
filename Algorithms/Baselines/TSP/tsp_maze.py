@@ -98,7 +98,7 @@ def get_tsp_greedy_dist(coords_list, dist_list):
 
 tracker = SummaryTracker()
 
-config = {"mapfile": get_size_map(9),
+config = {"mapfile": get_size_map(3),
           "normalize_state": True,"randomize_goal":True, "randomize_start": True, "num_goals": 3,
           "capture_reward": False}
 
@@ -113,15 +113,16 @@ i = 0
 while i < 100:
 
     i += 1
-    #env.render()
+    env.render()
 
     coords_list, dist_list = env.grid.get_dist_list(env.entity.get_pos())
     d = get_tsp_greedy_dist(coords_list, dist_list)
     #env.render()
 
     dists.append(d)
-    #input()
-    env.reset()
+    input()
+
+    #env.reset()
     print(i)
     if(i%2==0):
         print(np.average(dists))
