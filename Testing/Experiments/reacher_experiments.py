@@ -8,7 +8,9 @@ parser = argparse.ArgumentParser(description='Reacher experiment runner')
 
 parser.add_argument('--extra_joints', type=int, default=1)
 parser.add_argument('--rl', type=str, default="DDPG")
+
 parser.add_argument('--steps', type=int, default=50000)
+
 parser.add_argument('--tune_search', dest='tune_search', action='store_true', default=False)
 parser.add_argument('--name', type=str, default="test")
 
@@ -17,7 +19,7 @@ args = parser.parse_args()
 def nj_runner(trainer, name, nj):
     tune.run(trainer,
              config={"env": NJointArm,
-                     'lr': grid_search([0.0001]),
+                     #'lr': grid_search([0.0001]),
                      # "exploration_config": {"type": "GaussianNoise"},
                      'model': {
                          # 'fcnet_hiddens': grid_search([[128, 128], [256,256]])
@@ -28,7 +30,7 @@ def nj_runner(trainer, name, nj):
                           "full_state": False,
                           "normalize_state": True}},
              checkpoint_freq=10, checkpoint_at_end=True,
-             #stop={"timesteps_total": args.steps},
+             stop={"timesteps_total": args.steps},
              name=f"{nj}-joints-{name}")
 
 def tune_ddpg_nj_runner(trainer, name, nj):
@@ -67,7 +69,7 @@ def tune_ppo_nj_runner(trainer, name, nj):
                      },
                      "env_config": {"extra_joints": nj, "full_state": False, "normalize_state": True}},
              checkpoint_freq=10, checkpoint_at_end=True,
-             # stop={"timesteps_total": args.steps},
+             stop={"timesteps_total": args.steps},
              name=f"{nj}-tune-joints-{name}",)
 
 trainer = rllib_trainers.get_trainer(args.rl)
@@ -82,6 +84,7 @@ if(args.tune_search):
     if(args.rl == "TD3"):
         tune_td3_nj_runner(trainer, name,joints)
     if(args.rl == "PPO"):
+        print("Tune PPO running")
         tune_ppo_nj_runner(trainer, name, joints)
 else:
     nj_runner(trainer,name,joints)
