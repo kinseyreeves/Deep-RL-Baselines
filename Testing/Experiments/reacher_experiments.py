@@ -8,9 +8,11 @@ parser = argparse.ArgumentParser(description='Reacher experiment runner')
 
 parser.add_argument('--extra_joints', type=int, default=1)
 parser.add_argument('--rl', type=str, default="DDPG")
-parser.add_argument('--steps', type=int, default=1000000000)
-parser.add_argument('--tune_search', dest='tune_search', action='store_true', default=False)
 
+parser.add_argument('--steps', type=int, default=50000)
+
+parser.add_argument('--tune_search', dest='tune_search', action='store_true', default=False)
+parser.add_argument('--name', type=str, default="test")
 
 args = parser.parse_args()
 
@@ -62,7 +64,6 @@ def tune_ppo_nj_runner(trainer, name, nj):
                      "use_critic": grid_search([True, False]),
                      "clip_param": grid_search([0.1, 0.3, 0.5]),
                      "kl_target": grid_search([0.005, 0.01]),
-
                      'model': {
                          'fcnet_hiddens': grid_search([[128, 128], [256, 256], [512, 512]])
                      },
@@ -74,7 +75,7 @@ def tune_ppo_nj_runner(trainer, name, nj):
 trainer = rllib_trainers.get_trainer(args.rl)
 
 ###Experiments
-name = args.rl
+name = args.name
 joints = args.extra_joints
 
 if(args.tune_search):
