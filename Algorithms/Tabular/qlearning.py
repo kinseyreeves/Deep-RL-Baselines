@@ -25,7 +25,7 @@ class Q_table:
         if state in self.vals:
             self.vals[state][action] = val
         else:
-            self.vals[state] = np.ones(self.action_size)
+            self.vals[state] = np.zeros(self.action_size)
 
     def get_action(self, state):
         return np.argmax(self.vals[state])
@@ -48,29 +48,27 @@ class Q_Dict:
         if state in self.vals:
             self.vals[state][action] = val
 
-
     def get_action(self, state):
         state = self.convert_state(state)
         if state in self.vals:
             return np.argmax(self.vals[state])
         else:
-            self.vals[state] = np.ones(self.action_size)*0.1
+            self.vals[state] = np.ones(self.action_size)
             return np.argmax(self.vals[state])
 
     def get_qval(self, state, action):
-
         state = self.convert_state(state)
         if state in self.vals:
             return self.vals[state][action]
         else:
-            self.vals[state] = np.ones(self.action_size)*0.1
+            self.vals[state] = np.ones(self.action_size)
             return self.vals[state][action]
 
     def convert_state(self, lst):
         return tuple([int(x) for x in lst])
 res_df = pd.DataFrame()
 
-def QLearning(env, episodes, epsilon, lr, discount, eps_decay=0.9999):
+def QLearning(env, episodes, epsilon, lr=0.1, discount=0.99, eps_decay=0.9999):
     """
     Q learning implementation with Qtable
     :param env:
@@ -89,7 +87,7 @@ def QLearning(env, episodes, epsilon, lr, discount, eps_decay=0.9999):
     state = env.reset()
 
     i = 0
-    ep_steps =0
+    ep_steps = 0
     ep_lens = []
     while i < episodes:
         #print((i, epsilon))
@@ -102,6 +100,14 @@ def QLearning(env, episodes, epsilon, lr, discount, eps_decay=0.9999):
             action = Q.get_action(state)
 
         state_n, reward, done, info = env.step(action)
+
+        # Q(s',a*)
+        next_qval = Q.get_qval(state_n, Q.get_action(state_n))
+
+        # Q(s,a) = Q(s,a) + alpha * (r + gamma * Q(s',a*) - Q(s,a))
+        #new_qval = (1 - lr) * Q.get_qval(state, action) + lr * (reward + discount * next_qval)
+        new_qval = Q.get_qval(state, action) + lr * (reward + discount * next_qval - Q.get_qval(state, action))
+
         if done:
             i+=1
             ep_lens.append(ep_steps)
@@ -109,11 +115,6 @@ def QLearning(env, episodes, epsilon, lr, discount, eps_decay=0.9999):
             ep_steps = 0
             state = env.reset()
             continue
-        # Q(s',a*)
-        next_qval = Q.get_qval(state_n, Q.get_action(state_n))
-
-        # Q(s,a) = Q(s,a) + alpha * (r + gamma * Q(s',a*) - Q(s,a))
-        new_qval = (1 - lr) * Q.get_qval(state, action) + lr * (reward + discount * next_qval)
 
         Q.update_qval(state, action, new_qval)
 
@@ -138,6 +139,7 @@ def eval(env, qt):
         s, reward, done, info = env.step(action)
         rewards.append(reward)
         print(s)
+        input()
 
         if (done):
             i += 1
@@ -159,15 +161,16 @@ def eval(env, qt):
 # qt = QLearning(env, 10000, 0.1, 0.3, 0.99)
 # eval(env, qt)
 
-config = {"mapfile": map_loader.get_3x3_map(), "randomize_start": True, "randomize_goal": True, "curriculum": False, "num_goals": 3,
+config = {"mapfile": map_loader.get_size_map(2), "randomize_start": False, "randomize_goal": False, "curriculum": False, "num_goals": 1,
           "capture_reward": True, "state_encoding": "pos"}
 env = gym.make('n-maze-v0', config=config)
 
-qt = QLearning(env, 10000, 0.3, 0.1, 0.99)
+qt = QLearning(env, 1000, 0.1)
+print(dict(qt.vals))
 print("done size 3")
-# eval(env, qt)
-#
-# input()
+eval(env, qt)
+exit(0)
+input()
 
 config["mapfile"] = map_loader.get_4x4_map()
 env = gym.make('n-maze-v0', config=config)

@@ -73,11 +73,14 @@ for test in range(7, 10):
                 break
 
             targ_vec = np.concatenate((obj_pos - eff_pos, [0]))
+            print(targ_vec)
+
             targ_vec = np.reshape(targ_vec, (3, 1))
             targ_unit_vec = targ_vec / np.linalg.norm(targ_vec)
 
             deltaR = dist_per_update * targ_unit_vec
             J = get_jacobian(extra_j, eff_pos, joint_poss)
+            print(J)
             JInv = np.linalg.pinv(J)
             deltaTheta = JInv.dot(deltaR)
             dt_action = np.reshape(deltaTheta, (extra_j + 1,))
