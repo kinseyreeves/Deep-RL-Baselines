@@ -8,11 +8,11 @@
 /usr/bin/timeout 1800s python ../maze_experiments.py --rl A2C --name A2C_goal_changing --random_goals --random_start --1reward --num_goals 10 --encoding st --map_size 5
 
 /usr/bin/timeout 1800s python ../maze_experiments.py --rl A2C --name A2C_maze_changing --random_goals --random_start --1reward --num_goals 3 --encoding st --map_size 3
-/usr/bin/timeout 1800s python ../maze_experiments.py --rl A2C --name PPO_goal_changing --random_goals --random_start --1reward --num_goals 3 --encoding st --map_size 4
-/usr/bin/timeout 1800s python ../maze_experiments.py --rl A2C --name PPO_goal_changing --random_goals --random_start --1reward --num_goals 3 --encoding st --map_size 5
-/usr/bin/timeout 1800s python ../maze_experiments.py --rl A2C --name PPO_goal_changing --random_goals --random_start --1reward --num_goals 3 --encoding st --map_size 6
-/usr/bin/timeout 1800s python ../maze_experiments.py --rl A2C --name PPO_goal_changing --random_goals --random_start --1reward --num_goals 3 --encoding st --map_size 7
-/usr/bin/timeout 1800s python ../maze_experiments.py --rl A2C --name PPO_goal_changing --random_goals --random_start --1reward --num_goals 3 --encoding st --map_size 8
+/usr/bin/timeout 1800s python ../maze_experiments.py --rl A2C --name A2C_maze_changing --random_goals --random_start --1reward --num_goals 3 --encoding st --map_size 4
+/usr/bin/timeout 1800s python ../maze_experiments.py --rl A2C --name A2C_maze_changing --random_goals --random_start --1reward --num_goals 3 --encoding st --map_size 5
+/usr/bin/timeout 1800s python ../maze_experiments.py --rl A2C --name A2C_maze_changing --random_goals --random_start --1reward --num_goals 3 --encoding st --map_size 6
+/usr/bin/timeout 1800s python ../maze_experiments.py --rl A2C --name A2C_maze_changing --random_goals --random_start --1reward --num_goals 3 --encoding st --map_size 7
+/usr/bin/timeout 1800s python ../maze_experiments.py --rl A2C --name A2C_maze_changing --random_goals --random_start --1reward --num_goals 3 --encoding st --map_size 8
 
 
 #Final Reacher baseline
