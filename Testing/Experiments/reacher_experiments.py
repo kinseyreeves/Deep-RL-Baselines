@@ -16,11 +16,54 @@ parser.add_argument('--name', type=str, default="test")
 
 args = parser.parse_args()
 
-def nj_runner(trainer, name, nj):
+def PPO_runner(trainer, name, nj):
+    tune.run(trainer,
+             config={"env": NJointArm,
+                    'use_critic':False,
+                     'kl_target':0.005,
+                     'clip_param':0.3,
+                     'model': {
+                         # 'fcnet_hiddens': grid_search([[128, 128], [256,256]])
+                         'fcnet_hiddens': [512, 512],
+                     },
+                     "env_config":
+                         {"extra_joints": nj,
+                          "full_state": False,
+                          "normalize_state": True}},
+             checkpoint_freq=10, checkpoint_at_end=True,
+             stop={"timesteps_total": args.steps},
+             name=f"{nj}-joints-{name}")
+
+def TD3_runner(trainer, name, nj):
+    tune.run(trainer,
+             config={"env": NJointArm,
+                     #'lr': grid_search([0.0001]),
+
+                     "buffer_size":10000,
+                     "prioritized_replay":False,
+                     "tau":0.001,
+                     "train_batch_size":512,
+                     'model': {
+                         # 'fcnet_hiddens': grid_search([[128, 128], [256,256]])
+                         'fcnet_hiddens': [256, 256],
+                     },
+                     "env_config":
+                         {"extra_joints": nj,
+                          "full_state": False,
+                          "normalize_state": True}},
+             checkpoint_freq=10, checkpoint_at_end=True,
+             stop={"timesteps_total": args.steps},
+             name=f"{nj}-joints-{name}")
+
+def DDPG_runner(trainer, name, nj):
     tune.run(trainer,
              config={"env": NJointArm,
                      #'lr': grid_search([0.0001]),
                      # "exploration_config": {"type": "GaussianNoise"},
+                     "train_batch_size":512,
+                     "prioritized_replay":True,
+                     "tau":0.001,
+                     "buffer_size":5000,
                      'model': {
                          # 'fcnet_hiddens': grid_search([[128, 128], [256,256]])
                          'fcnet_hiddens': [256, 256],
@@ -87,4 +130,12 @@ if(args.tune_search):
         print("Tune PPO running")
         tune_ppo_nj_runner(trainer, name, joints)
 else:
-    nj_runner(trainer,name,joints)
+    if (args.rl == "DDPG"):
+        print("DDPG running")
+        DDPG_runner(trainer, name, joints)
+    if (args.rl == "TD3"):
+        print("TD3 running")
+        TD3_runner(trainer, name, joints)
+    if (args.rl == "PPO"):
+        print("PPO running")
+        PPO_runner(trainer, name, joints)

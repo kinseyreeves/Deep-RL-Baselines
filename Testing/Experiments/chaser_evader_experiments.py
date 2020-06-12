@@ -12,6 +12,7 @@ from gym_scalable.envs.grid.chaser_evader_env import ChaserEvaderEnv
 from gym_scalable.envs.grid.maps import map_loader
 import rllib_trainers
 from ray.tune import grid_search
+from runners import *
 import argparse
 
 parser = argparse.ArgumentParser(description='ChaserEvaser experiment runner')
@@ -29,37 +30,6 @@ parser.add_argument('--curriculum_eps', type=int, default=100)
 parser.add_argument('--encoding', type=str, default="st")
 
 args = parser.parse_args()
-
-map_sizes = [5]
-
-
-def tune_runner(trainer, mapfile, name, mapsize):
-    print(mapfile)
-
-    if mapsize not in map_sizes:
-        return
-
-    tune.run(trainer,
-             config={"env": ChaserEvaderEnv,
-                     'lr': grid_search([0.0001]),
-                     'model': {
-                         # 'fcnet_hiddens': grid_search([[128, 128], [256,256]])
-                         'fcnet_hiddens': [256, 256],
-                     },
-
-                     "env_config": {"mapfile": mapfile,
-                                    "RL_evader": args.rl_evader,
-                                    "state_encoding": args.encoding,
-                                    "randomize_start": args.random_start,
-                                    "randomize_goal": args.random_goals,
-                                    "curriculum": args.curriculum,
-                                    "curriculum_eps": args.curriculum_eps
-                                    }},
-             checkpoint_freq=10,
-             checkpoint_at_end=True,
-             #stop={"timesteps_total": args.steps},
-
-             name=f"{args.name}-{mapsize}x{mapsize}-{args.rl}-{args.encoding}-{args.curriculum_eps}")
 
 
 # ##################################################### #
