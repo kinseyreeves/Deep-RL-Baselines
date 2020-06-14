@@ -1,6 +1,6 @@
 
 #Final A2C
-<<<<<<< HEAD
+
 /usr/bin/timeout 1800s python ../maze_experiments.py --rl A2C --name A2C_goal_changing --random_goals --random_start --1reward --num_goals 1 --encoding st --map_size 5
 /usr/bin/timeout 1800s python ../maze_experiments.py --rl A2C --name A2C_goal_changing --random_goals --random_start --1reward --num_goals 2 --encoding st --map_size 5
 /usr/bin/timeout 1800s python ../maze_experiments.py --rl A2C --name A2C_goal_changing --random_goals --random_start --1reward --num_goals 4 --encoding st --map_size 5
