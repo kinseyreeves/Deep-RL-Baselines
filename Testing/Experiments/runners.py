@@ -1,20 +1,33 @@
 import rllib_trainers
 from gym_scalable.envs.grid.maps import map_loader
 from gym_scalable.envs.grid.maze_env import MazeEnv
+from gym_scalable.envs.grid.chaser_evader_env import ChaserEvaderEnv
 from pympler.tracker import SummaryTracker
 from ray import tune
 from ray.tune import grid_search
 
-def get_env_config(mapfile, args, goals):
-    config = {"mapfile": mapfile,
-              "state_encoding": args.encoding,
-              "randomize_start": args.random_start,
-              "num_goals": goals,
-              "randomize_goal": args.random_goals,
-              "capture_reward": args.reward,
-              "curriculum": args.curriculum,
-              "curriculum_eps": args.curriculum_eps}
+def get_env_config(mapfile, args, goals, type="maze"):
+    config = {}
+    if(type=="maze"):
+        config = {"mapfile": mapfile,
+                  "state_encoding": args.encoding,
+                  "randomize_start": args.random_start,
+                  "num_goals": goals,
+                  "randomize_goal": args.random_goals,
+                  "capture_reward": args.reward,
+                  "curriculum": args.curriculum,
+                  "curriculum_eps": args.curriculum_eps}
+
+    if(type=="ch_ev"):
+        config= {"mapfile": mapfile,
+                       "RL_evader": args.rl_evader,
+                       "state_encoding": args.encoding,
+                       "randomize_start": args.random_start,
+                       "randomize_goal": args.random_goals,
+                       "curriculum": args.curriculum,
+                       "curriculum_eps": args.curriculum_eps}
     return config
+
 
 def tune_runner_changing_nn(trainer, mapfile, name, mapsize, args):
     if (args.num_goals):
@@ -135,7 +148,7 @@ def A2C_tune_runner(trainer, mapfile, name, mapsize, args):
              name=f"{args.name}_maze-{mapsize}x{mapsize}-{goals}goals-{name}-{args.encoding}")
 
 
-def DQN_runner(trainer, mapfile, name, mapsize, args):
+def DQN_maze_runner(trainer, mapfile, name, mapsize, args):
     """
     DQN runner with good parameters
     :param trainer:
@@ -164,7 +177,7 @@ def DQN_runner(trainer, mapfile, name, mapsize, args):
              name=f"{args.name}_maze-{mapsize}x{mapsize}-{goals}goals-{name}-{args.encoding}")
 
 
-def PPO_runner(trainer, mapfile, name, mapsize, args):
+def PPO_maze_runner(trainer, mapfile, name, mapsize, args):
     """
     PPO runner with good parameters
     :param trainer:
@@ -194,7 +207,7 @@ def PPO_runner(trainer, mapfile, name, mapsize, args):
              name=f"{args.name}_maze-{mapsize}x{mapsize}-{goals}goals-{name}-{args.encoding}")
 
 
-def A2C_runner(trainer, mapfile, name, mapsize, args):
+def A2C_maze_runner(trainer, mapfile, name, mapsize, args):
     """
     A2C runner with good parameters
     :param trainer:
@@ -222,7 +235,83 @@ def A2C_runner(trainer, mapfile, name, mapsize, args):
              # stop={"timesteps_total": args.steps},
              name=f"{args.name}_maze-{mapsize}x{mapsize}-{goals}goals-{name}-{args.encoding}")
 
+def DQN_ch_ev_runner(trainer, mapfile, name, mapsize, args):
+    """
+    DQN runner with good parameters
+    :param trainer:
+    :param mapfile:
+    :param name:
+    :param mapsize:
+    :param args:
+    :return:
+    """
 
+    tune.run(trainer,
+             config={"env": ChaserEvaderEnv,
+
+                     'dueling': True,
+                     'prioritized_replay': True,
+                     'buffer_size': 50000,
+                     'model': {
+                         'fcnet_hiddens': grid_search([256])
+                     },
+                     "env_config": get_env_config(mapfile, args, 1, type="ch_ev")},
+             checkpoint_freq=10, checkpoint_at_end=True,
+             # stop={"timesteps_total": args.steps},
+             name=f"{args.name}_ch_ev-{mapsize}x{mapsize}--{name}-{args.encoding}")
+
+
+def PPO_ch_ev_runner(trainer, mapfile, name, mapsize, args):
+    """
+    PPO runner with good parameters
+    :param trainer:
+    :param mapfile:
+    :param name:
+    :param mapsize:
+    :param args:
+    :return:
+    """
+
+    tune.run(trainer,
+             config={"env": ChaserEvaderEnv,
+
+                     "use_critic": True,
+                     "clip_param": 0.5,
+                     "kl_target": 0.01,
+
+                     'model': {
+                         'fcnet_hiddens': [256, 256]
+                     },
+                     "env_config": get_env_config(mapfile, args, 1, type="ch_ev")},
+             checkpoint_freq=10, checkpoint_at_end=True,
+             # stop={"timesteps_total": args.steps},
+             name=f"{args.name}_ch_ev-{mapsize}x{mapsize}--{name}-{args.encoding}")
+
+
+def A2C_ch_ev_runner(trainer, mapfile, name, mapsize, args):
+    """
+    A2C runner with good parameters
+    :param trainer:
+    :param mapfile:
+    :param name:
+    :param mapsize:
+    :param args:
+    :return:
+    """
+
+    tune.run(trainer,
+             config={"env": ChaserEvaderEnv,
+
+                     "use_critic": False,
+                     "use_gae" : False,
+                     "grad_clip":0.005,
+                     'model': {
+                         'fcnet_hiddens': [256, 256]
+                     },
+                     "env_config": get_env_config(mapfile, args, 1,type="ch_ev")},
+             checkpoint_freq=10, checkpoint_at_end=True,
+             # stop={"timesteps_total": args.steps},
+             name=f"{args.name}_ch_ev-{mapsize}x{mapsize}--{name}-{args.encoding}")
 
 def tune_runner(trainer, mapfile, name, mapsize, args):
     if (args.num_goals):

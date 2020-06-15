@@ -38,17 +38,15 @@ args = parser.parse_args()
 # # ################################################### #
 name = args.rl
 trainer = rllib_trainers.get_trainer(name)
-
-mapfile = map_loader.get_5x5_map()
-mapsize = 5
+mapfile = map_loader.get_size_map(args.map_size)
 
 
 if args.rl == "PPO":
     print("running PPO exp")
-    PPO_runner(trainer, mapfile, name, args.map_size, args)
+    PPO_ch_ev_runner(trainer, mapfile, name, args.map_size, args)
 elif args.rl == "DQN":
     print("running DQN exp")
-    tune_runner(trainer, mapfile, name, args.map_size, args)
+    DQN_ch_ev_runner(trainer, mapfile, name, args.map_size, args)
 else:
-    tune_runner(trainer, mapfile, name, args.map_size, args)
+    A2C_ch_ev_runner(trainer, mapfile, name, args.map_size, args)
 

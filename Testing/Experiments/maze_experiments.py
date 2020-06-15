@@ -72,9 +72,9 @@ else:
     else:
         if args.rl == "PPO":
             print("running PPO exp")
-            PPO_runner(trainer, mapfile, name, args.map_size, args)
+            PPO_maze_runner(trainer, mapfile, name, args.map_size, args)
         elif args.rl == "DQN":
             print("running DQN exp")
-            tune_runner(trainer, mapfile, name, args.map_size, args)
+            tune_maze_runner(trainer, mapfile, name, args.map_size, args)
         else:
-            tune_runner(trainer, mapfile, name, args.map_size, args)
+            tune_maze_runner(trainer, mapfile, name, args.map_size, args)
