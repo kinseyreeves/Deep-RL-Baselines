@@ -58,13 +58,13 @@
 
 #Chaser
 
-/usr/bin/timeout 1800s python ../chaser_evader_experiments.py --rl A2C --name chaser_final --random_goals --random_start --rl_evader --map_size 3
+/usr/bin/timeout 1800s python ../chaser_evader_experiments.py --rl A2C --name chaser_final --random_goals --random_start --map_size 3
 
-/usr/bin/timeout 1800s python ../chaser_evader_experiments.py --rl A2C --name chaser_final --random_goals --random_start --rl_evader --map_size 5
+/usr/bin/timeout 1800s python ../chaser_evader_experiments.py --rl A2C --name chaser_final --random_goals --random_start --map_size 5
 
-/usr/bin/timeout 1800s python ../chaser_evader_experiments.py --rl A2C --name chaser_final --random_goals --random_start --rl_evader --map_size 7
+/usr/bin/timeout 1800s python ../chaser_evader_experiments.py --rl A2C --name chaser_final --random_goals --random_start --map_size 7
 
-/usr/bin/timeout 1800s python ../chaser_evader_experiments.py --rl A2C --name chaser_final --random_goals --random_start --rl_evader --map_size 9
+/usr/bin/timeout 1800s python ../chaser_evader_experiments.py --rl A2C --name chaser_final --random_goals --random_start --map_size 9
 
 
 
