@@ -28,6 +28,7 @@ parser.add_argument('--random_start', dest='random_start', action='store_true', 
 parser.add_argument('--curriculum', dest='curriculum', action='store_true', default=False)
 parser.add_argument('--curriculum_eps', type=int, default=100)
 parser.add_argument('--encoding', type=str, default="st")
+parser.add_argument('--map_size', type=int, default=5)
 
 args = parser.parse_args()
 
@@ -41,5 +42,13 @@ trainer = rllib_trainers.get_trainer(name)
 mapfile = map_loader.get_5x5_map()
 mapsize = 5
 
-tune_runner(trainer, mapfile, name, mapsize)
+
+if args.rl == "PPO":
+    print("running PPO exp")
+    PPO_runner(trainer, mapfile, name, args.map_size, args)
+elif args.rl == "DQN":
+    print("running DQN exp")
+    tune_runner(trainer, mapfile, name, args.map_size, args)
+else:
+    tune_runner(trainer, mapfile, name, args.map_size, args)
 
