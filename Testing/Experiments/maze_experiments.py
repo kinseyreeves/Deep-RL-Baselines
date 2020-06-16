@@ -75,6 +75,6 @@ else:
             PPO_maze_runner(trainer, mapfile, name, args.map_size, args)
         elif args.rl == "DQN":
             print("running DQN exp")
-            tune_maze_runner(trainer, mapfile, name, args.map_size, args)
+            DQN_maze_runner(trainer, mapfile, name, args.map_size, args)
         else:
-            tune_maze_runner(trainer, mapfile, name, args.map_size, args)
+            A2C_maze_runner(trainer, mapfile, name, args.map_size, args)

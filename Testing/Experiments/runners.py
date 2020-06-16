@@ -169,11 +169,10 @@ def DQN_maze_runner(trainer, mapfile, name, mapsize, args):
                      'prioritized_replay': True,
                      'buffer_size': 50000,
                      'model': {
-                         'fcnet_hiddens': grid_search([256])
+                         'fcnet_hiddens': [256],
                      },
                      "env_config": get_env_config(mapfile, args, goals)},
              checkpoint_freq=10, checkpoint_at_end=True,
-             # stop={"timesteps_total": args.steps},
              name=f"{args.name}_maze-{mapsize}x{mapsize}-{goals}goals-{name}-{args.encoding}")
 
 

@@ -10,7 +10,7 @@ from gym_scalable.envs.grid.maps import map_loader
 tracker = SummaryTracker()
 
 print(os.getcwd())
-env = gym.make('n-grid_evaders-v0', config= {"mapfile" : map_loader.get_6x6_map(),
+env = gym.make('n-grid_evaders-v0', config= {"mapfile" : map_loader.get_5x5_map(),
                                              "encoded_state":True,
                                              "randomize_start":True,
                                              "randomize_goal" : True,
