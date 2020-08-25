@@ -2,6 +2,8 @@
 
 Thesis project, implementing vairous gyms to test various Deep RL algorithms against as baselines.
 Each environment is able to scale in complexity of either total state space size or the inherent difficulty of the problem.
+To read more, read the associated thesis which uses Rllibs library within these environments:
+
 
 
 Any questions email me:
@@ -54,8 +56,9 @@ config = {
 
 ```
 <p>
-    <img src="images/7joints.png" width="220" height="240" />
+    <img src="images/7joints.png" width="300" height="300" />
 </p>
+A 7 jointed reacher.
 
     
  ## Grid World
@@ -96,8 +99,13 @@ The size of these can be found using gyms observation_space variables.
  
 Goal is to pick up the rewards in as few steps as possible. Baseline is based on A* and then a brute force TSP implementation. 
 
-![4x4 maze]
-(https://github.com/kinseyreeves/Deep-RL-Baselines/blob/master/images/4x4_maze.png)
+<p>
+    <img src="images/4x4_maze.png" width="300" height="300" />
+    A 4x4 maze. 
+</p>
+
+
+
 
 #### Config
 `
@@ -118,8 +126,10 @@ config = {"mapfile": map_loader.get_size_map(3),
 Goal is to evade the chaser as long as possible, follows the same. Follows the same config as the general grid world config.
 To set it to be RL-controlled chaser or RL-controlld evader, change the RL_evader variable. RL_evader = True means RL controlling the evader.
 
-![evader_chaser]
-(https://github.com/kinseyreeves/Deep-RL-Baselines/blob/master/images/evader_chaser.png)
+<p>
+    <img src="images/evader_chaser.png" width="300" height="300" />
+    An evader maze. 
+</p>
 
 
 
