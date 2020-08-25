@@ -117,8 +117,8 @@ config = {"mapfile": map_loader.get_size_map(3),
 Goal is to evade the chaser as long as possible, follows the same. Follows the same config as the general grid world config.
 To set it to be RL-controlled chaser or RL-controlld evader, change the RL_evader variable. RL_evader = True means RL controlling the evader.
 
-![Image of Grid evader/chaser]
-(/images/evader_chaser.png)
+![ScreenShot]
+(https://github.com/kinseyreeves/Deep-RL-Baselines/blob/master/images/evader_chaser.png)
 
 
 
