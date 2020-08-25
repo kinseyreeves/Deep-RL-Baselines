@@ -54,9 +54,9 @@ config = {
 
 ```
 <p>
-![7-jointed reacher]
-(https://github.com/kinseyreeves/Deep-RL-Baselines/blob/master/images/7joints.png)
+    <img src="images/7joints.png" width="220" height="240" />
 </p>
+
     
  ## Grid World
  - Grid-Evader
