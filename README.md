@@ -118,7 +118,7 @@ Goal is to evade the chaser as long as possible, follows the same. Follows the s
 To set it to be RL-controlled chaser or RL-controlld evader, change the RL_evader variable. RL_evader = True means RL controlling the evader.
 
 ![Image of Grid evader/chaser]
-(https://github.com/kinseyreeves/Deep-RL-Baselines/blob/master/images/evader_chaser.png)
+(/images/evader_chaser.png)
 
 
 
