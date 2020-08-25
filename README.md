@@ -3,8 +3,13 @@
 Thesis project, implementing vairous gyms to test various Deep RL algorithms against as baselines.
 Each environment is able to scale in complexity of either total state space size or the inherent difficulty of the problem.
 To read more, read the associated thesis which uses Rllibs library within these environments:
+https://github.com/kinseyreeves/Deep-RL-Baselines/blob/master/Masters_Thesis.pdf
 
-
+#### The repo contains
+- gym-scalable : the codebase of each environment using the openai gym structure
+- Testing->env_testers : examples on running the environments without deeprl
+- Testing->Experiments : examples of the experiments using rllib Tune
+- Algorithms : some deep RL algorithms implemented in Pytorch.
 
 Any questions email me:
 kreeves@student.unimelb.edu.au
@@ -26,6 +31,9 @@ import gym_scalable
 
 env = gym.make('n-joints-v0',  config = {"extra_joints": 1, "extra_state": False})
 ```
+With this, the environment can be run using Rays Rllib and Tune. See more on how to run custom Rllib environments using Tune:
+https://docs.ray.io/en/latest/tune/index.html
+
 The available environments : 
 *A set of environments needs to be registered, todo.
 
@@ -101,8 +109,9 @@ Goal is to pick up the rewards in as few steps as possible. Baseline is based on
 
 <p>
     <img src="images/4x4_maze.png" width="300" height="300" />
-    A 4x4 maze. 
+    
 </p>
+A 4x4 maze. 
 
 
 
@@ -128,8 +137,8 @@ To set it to be RL-controlled chaser or RL-controlld evader, change the RL_evade
 
 <p>
     <img src="images/evader_chaser.png" width="300" height="300" />
-    An evader maze. 
+    
 </p>
-
+An evader maze. 
 
 
