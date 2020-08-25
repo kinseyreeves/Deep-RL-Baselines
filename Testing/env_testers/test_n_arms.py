@@ -1,5 +1,4 @@
 import gym
-from gym_scalable.envs.n_joints import NJointArm
 from pympler.tracker import SummaryTracker
 
 tracker = SummaryTracker()

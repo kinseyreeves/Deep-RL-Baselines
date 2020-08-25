@@ -8,9 +8,9 @@ tracker = SummaryTracker()
 
 config = {"mapfile": map_loader.get_size_map(3),
           "randomize_start": True,
-          "randomize_goal":True,
+          "randomize_goal": True,
           "curriculum": False,
-          "curriculum_eps" :5,
+          "curriculum_eps": 5,
           "num_goals": 6,
           "capture_reward": False,
           "state_encoding": "st"
@@ -34,15 +34,14 @@ while i < 100000:
     env.render()
     a = input()
 
-
-    #env.reset()
-    #continue
+    # env.reset()
+    # continue
     state, reward, done, _ = env.step(action)
     print(reward)
-    #print(state.shape)
-    #print(state)
-    #print(env.grid.get_encoding_stacked_shape(num_goals=4))
-    #print(f"{state}, {reward}, {done}")
+    # print(state.shape)
+    # print(state)
+    # print(env.grid.get_encoding_stacked_shape(num_goals=4))
+    # print(f"{state}, {reward}, {done}")
     if (done):
         print(f"finished {i}")
 

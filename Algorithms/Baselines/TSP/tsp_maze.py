@@ -98,8 +98,8 @@ def get_tsp_greedy_dist(coords_list, dist_list):
 
 tracker = SummaryTracker()
 
-config = {"mapfile": get_size_map(3),
-          "normalize_state": True,"randomize_goal":True, "randomize_start": True, "num_goals": 3,
+config = {"mapfile": get_size_map(9),
+          "normalize_state": True,"randomize_goal":True, "randomize_start": True, "num_goals": 1,
           "capture_reward": False}
 
 env = gym.make('n-maze-v0', config=config)
@@ -113,20 +113,22 @@ i = 0
 while i < 100:
 
     i += 1
-    env.render()
+    #env.render()
 
     coords_list, dist_list = env.grid.get_dist_list(env.entity.get_pos())
     d = get_tsp_greedy_dist(coords_list, dist_list)
     #env.render()
-
+    #print(d)
     dists.append(d)
-    input()
+    env.reset()
+    #input()
 
     #env.reset()
-    print(i)
-    if(i%2==0):
-        print(np.average(dists))
+    #print(i)
+    #if(i%2==0):
+        #print(np.average(dists))
 
-#print(dists)
-print(np.average(dists))
+print(dists)
+print(f"Average distance: {np.average(dists)}")
+
 
